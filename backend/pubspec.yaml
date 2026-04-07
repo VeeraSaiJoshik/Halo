@@ -1,0 +1,14 @@
+name: detection_engine
+description: Data intake module for a trading analysis backend.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  http: ^1.1.0
+  web_socket_channel: ^2.4.0
+
+dev_dependencies:
+  test: ^1.25.0
