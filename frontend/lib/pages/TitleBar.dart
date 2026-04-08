@@ -16,22 +16,25 @@ class _TitleBarState extends State<TitleBar> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 55,
+      height: 53,
       padding: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        border: BoxBorder.fromLTRB(
-          bottom: BorderSide(color: CustomColors.accent, width: 2)
-        )
-      ),
+      
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Container(rr
+          Container(
             height: 45,
             child: CommandButtons()
           ), 
           Container(width: 10),
-          WindowTab(context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]))
+          WindowTab(
+            context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]),
+            isActive: true,
+          ),
+          WindowTab(
+            context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]),
+            isActive: false,
+          )
         ],
       ),
     );

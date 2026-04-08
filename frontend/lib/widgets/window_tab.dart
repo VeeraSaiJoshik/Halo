@@ -27,10 +27,13 @@ class _WindowTabState extends State<WindowTab> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Container(
       decoration: BoxDecoration(
         borderRadius: _borderRadius,
-        color: CustomColors.accent
+        color: widget.isActive ? CustomColors.accent : Colors.transparent,
       ),
       height: 45, 
       width: 270, 
@@ -67,7 +70,7 @@ class _WindowTabState extends State<WindowTab> with SingleTickerProviderStateMix
             width: 29, 
             height: 29, 
             decoration: BoxDecoration(
-              color: Colors.blue, 
+              color: widget.isActive ? Colors.blue : Colors.grey.withAlpha(100),
               borderRadius: BorderRadius.circular(5)
             ),
             child: Center(
@@ -80,6 +83,15 @@ class _WindowTabState extends State<WindowTab> with SingleTickerProviderStateMix
           )
         ],
       )
+        ),
+        if (!widget.isActive)
+          Container(
+            margin: EdgeInsets.only(left: 4),
+            width: 2,
+            height: 42,
+            color: CustomColors.accent,
+          ),
+      ],
     );
   }
 }
