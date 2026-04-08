@@ -8,6 +8,9 @@ class MainFlutterWindow: NSWindow {
     self.contentViewController = flutterViewController
     self.setFrame(windowFrame, display: true)
 
+    flutterViewController.backgroundColor = .clear
+    self.backgroundColor = NSColor.clear
+
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()
