@@ -1,11 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/controllers/BrowserTabsController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 class TitleBar extends StatefulWidget {
-  const TitleBar({super.key});
+  final BrowserTabsController controller;
+  const TitleBar({super.key, required this.controller});
 
   @override
   State<TitleBar> createState() => _TitleBarState();
@@ -16,24 +19,35 @@ class _TitleBarState extends State<TitleBar> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 53,
+      height: 40,
       padding: EdgeInsets.symmetric(horizontal: 10),
       
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Container(
-            height: 45,
+            height: 48,
             child: CommandButtons()
           ), 
           Container(width: 10),
-          WindowTab(
-            context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]),
-            isActive: true,
-          ),
-          WindowTab(
-            context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]),
-            isActive: false,
+          ...widget.controller.tabs.map((tab) => WindowTab(context: tab, switchTab: widget.controller.switchTab,)),
+          Container(width: 10),
+          InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            onTap: () {
+              setState(() {
+                var curTab = widget.controller.getCurrentTab();
+                if(curTab != null) {
+                  curTab.isActive = false;
+                }
+                widget.controller.newTab();
+              });
+            },
+            child: Container(height: 38, child: Center(
+              child: FaIcon(FontAwesomeIcons.plus, size: 15, color: CustomColors.background)
+            ))
           )
         ],
       ),
