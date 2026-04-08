@@ -1,5 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/widgets/window_tab.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 class TitleBar extends StatefulWidget {
   const TitleBar({super.key});
@@ -13,7 +16,7 @@ class _TitleBarState extends State<TitleBar> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 45,
+      height: 55,
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         border: BoxBorder.fromLTRB(
@@ -21,8 +24,14 @@ class _TitleBarState extends State<TitleBar> {
         )
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          CommandButtons()
+          Container(rr
+            height: 45,
+            child: CommandButtons()
+          ), 
+          Container(width: 10),
+          WindowTab(context: WindowInfo(activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"]))
         ],
       ),
     );
@@ -83,6 +92,7 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
         animation: Listenable.merge([redController, orangeController, greenController]),
         builder: (context, _) => Row(
           spacing: 10,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               height: 15,
