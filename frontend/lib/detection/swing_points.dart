@@ -1,4 +1,4 @@
-import 'package:frontend/models/candle.dart';
+import '../models/candle.dart';
 import 'candle_buffer.dart';
 
 enum SwingType { high, low }

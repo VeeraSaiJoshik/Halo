@@ -1,4 +1,4 @@
-import 'package:frontend/models/candle.dart';
+import '../models/candle.dart';
 
 /// Rolling buffer of OHLCV candles, capped at [maxSize].
 /// Also tracks ATR(14) incrementally for use by detection algorithms.
