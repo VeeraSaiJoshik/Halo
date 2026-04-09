@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 
 class BottomNavModal extends StatelessWidget {
-  const BottomNavModal({super.key});
+  AppController controller;
+  BottomNavModal({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +23,27 @@ class BottomNavModal extends StatelessWidget {
         spacing: 5,
         mainAxisSize: MainAxisSize.min,
         children: [
-          BototmNavBarIcons(icon: "stocks", directionMulti: 1,),
-          BototmNavBarIcons(icon: "search"),
-          BototmNavBarIcons(icon: "icon", directionMulti: -1)
+          InkWell(
+            splashColor: Colors.transparent,
+            onTap: () => {
+              controller.switchTabSubPage(AppPage.STOCKS)
+            },
+            child: BototmNavBarIcons(icon: "stocks", directionMulti: 1, showFrost: controller.getCurrentTab()!.currentPage == AppPage.STOCKS ,),
+          ),
+          InkWell(
+            splashColor: Colors.transparent,
+            onTap: () => {
+              controller.switchTabSubPage(AppPage.BROWSE)
+            },
+            child: BototmNavBarIcons(icon: "search", showFrost: controller.getCurrentTab()!.currentPage == AppPage.BROWSE),
+          ),
+          InkWell(
+            splashColor: Colors.transparent,
+            onTap: () => {
+              controller.switchTabSubPage(AppPage.AI_SUMMARY)
+            },
+            child: BototmNavBarIcons(icon: "icon", directionMulti: -1, showFrost: controller.getCurrentTab()!.currentPage == AppPage.AI_SUMMARY)
+          ),
         ],
       ),
     );
@@ -64,7 +84,7 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
                 height: 47,
                 padding: EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 41, 54, 69),
+                  color: CustomColors.accent,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
                     color: CustomColors.background.withValues(alpha: 0.07),
@@ -89,7 +109,8 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
                         end: Alignment.bottomRight,
                         colors: [
                           Colors.white.withValues(alpha: 0.18),
-                          Colors.white.withValues(alpha: 0.02),
+                          Colors.white.withValues(alpha: 0.05),
+                          Colors.white.withValues(alpha: 0.00),
                         ],
                       ),
                     ),

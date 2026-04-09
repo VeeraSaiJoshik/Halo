@@ -1,13 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/controllers/BrowserTabsController.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 class TitleBar extends StatefulWidget {
-  final BrowserTabsController controller;
+  final AppController controller;
   const TitleBar({super.key, required this.controller});
 
   @override

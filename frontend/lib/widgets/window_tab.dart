@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:frontend/controllers/BrowserTabsController.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 

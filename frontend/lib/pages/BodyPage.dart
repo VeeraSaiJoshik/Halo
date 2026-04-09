@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/controllers/BrowserTabsController.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
-import 'package:frontend/pages/WebView.dart';
+import 'package:frontend/pages/views/AISummaryView.dart';
+import 'package:frontend/pages/views/SearchView.dart';
+import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class BodyPageDart extends StatefulWidget {
-  final BrowserTabsController webController;
+  final AppController webController;
   const BodyPageDart({super.key, required this.webController});
 
   @override
@@ -32,16 +34,22 @@ class _BodyPageDartState extends State<BodyPageDart> {
             child: Row(
               children: [
                 widget.webController.getCurrentTab() == null ? Container() : 
-                Expanded(child: CustomWebView(controller: widget.webController.getCurrentTab()!.webController!))
+                Expanded(
+                  child: widget.webController.getCurrentTab()!.currentPage == AppPage.STOCKS ?  
+                      CustomWebView(controller: widget.webController.getCurrentTab()!.webController!) : 
+                    widget.webController.getCurrentTab()!.currentPage == AppPage.BROWSE ?  
+                      SearchView() : 
+                      AISummaryView()
+                )
               ],
             ),
           ), 
-          Positioned(
+          widget.webController.getCurrentTab() == null ? Container() : Positioned(
             left: 0, 
             right: 0,
             bottom: 8,
             child:Center(
-              child: BottomNavModal(),
+              child: BottomNavModal(controller: widget.webController,),
             ),
           ),
         ],

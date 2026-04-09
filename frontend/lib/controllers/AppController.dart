@@ -3,18 +3,25 @@ import 'package:frontend/widgets/window_tab.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+enum AppPage {
+  STOCKS, 
+  BROWSE, 
+  AI_SUMMARY
+}
+
 class WindowInfo {
   final List<String> activeStocks;
   final WebViewController? webController;
   late bool isActive;
   late String uuid;
+  late AppPage currentPage;
 
-  WindowInfo({required this.activeStocks, required this.webController, required this.isActive}){
+  WindowInfo({required this.activeStocks, required this.webController, required this.isActive, this.currentPage = AppPage.STOCKS}){
     uuid = const Uuid().v4();
   }
 }
 
-class BrowserTabsController extends ChangeNotifier{
+class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
 
   void newTab() {
@@ -63,6 +70,11 @@ class BrowserTabsController extends ChangeNotifier{
       }
     }
 
+    notifyListeners();
+  }
+
+  void switchTabSubPage(AppPage page) {
+    getCurrentTab()!.currentPage = page;
     notifyListeners();
   }
 

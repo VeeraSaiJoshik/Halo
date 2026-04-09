@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/controllers/BrowserTabsController.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/pages/BodyPage.dart';
 import 'package:frontend/pages/TitleBar.dart';
@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  BrowserTabsController controller = BrowserTabsController();
+  AppController controller = AppController();
 
   @override
   Widget build(BuildContext context) {
