@@ -75,3 +75,7 @@ __data
 
 public/upload
 types/env.d.ts
+
+.env
+.dart_tool/
+build/
