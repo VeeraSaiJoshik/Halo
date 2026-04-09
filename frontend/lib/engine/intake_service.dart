@@ -13,6 +13,7 @@ typedef OnCandlesReady = void Function(
   String symbol,
   String timeframe,
   List<Candle> historicalCandles,
+  DataSource source,
 );
 typedef OnNewCandle = void Function(Candle candle);
 
@@ -83,7 +84,7 @@ class IntakeService {
       _lastCandleTimestamp = history.last.timestamp;
     }
 
-    onTickerSwitch?.call(symbol, timeframe, history);
+    onTickerSwitch?.call(symbol, timeframe, history, _currentResolved!.source);
     _startPolling();
   }
 

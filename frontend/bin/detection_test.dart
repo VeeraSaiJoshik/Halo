@@ -19,6 +19,80 @@ import 'dart:io';
 // When false: report file is NOT written to disk (console output still works).
 const bool kWriteReports = true;
 
+// ── Asset profile ─────────────────────────────────────────────────────────────
+
+class AssetProfile {
+  final String name;
+  final int staleCandles;
+  final double minDispAtrMult;
+  final double sweepRevMult;
+  final double clusterTolMult;
+  final double fvgMaxAtrMult;
+  final double fvgMinAtrMult;
+  final double largeDispAtrMult;
+  final double veryLargeDispAtrMult;
+  final double maxFillPct;
+  const AssetProfile({
+    required this.name,
+    required this.staleCandles,
+    required this.minDispAtrMult,
+    required this.sweepRevMult,
+    required this.clusterTolMult,
+    required this.fvgMaxAtrMult,
+    required this.fvgMinAtrMult,
+    required this.largeDispAtrMult,
+    required this.veryLargeDispAtrMult,
+    required this.maxFillPct,
+  });
+
+  static const crypto = AssetProfile(
+    name: 'crypto',
+    staleCandles: 30,
+    minDispAtrMult: 0.5,
+    sweepRevMult: 0.2,
+    clusterTolMult: 0.15,
+    fvgMaxAtrMult: 1.5,
+    fvgMinAtrMult: 0.1,
+    largeDispAtrMult: 1.5,
+    veryLargeDispAtrMult: 2.0,
+    maxFillPct: 0.9,
+  );
+
+  static const usEquities = AssetProfile(
+    name: 'us_equities',
+    staleCandles: 20,
+    minDispAtrMult: 0.35,
+    sweepRevMult: 0.25,
+    clusterTolMult: 0.12,
+    fvgMaxAtrMult: 1.2,
+    fvgMinAtrMult: 0.08,
+    largeDispAtrMult: 1.2,
+    veryLargeDispAtrMult: 1.8,
+    maxFillPct: 0.9,
+  );
+
+  static const forex = AssetProfile(
+    name: 'forex',
+    staleCandles: 25,
+    minDispAtrMult: 0.4,
+    sweepRevMult: 0.3,
+    clusterTolMult: 0.10,
+    fvgMaxAtrMult: 1.3,
+    fvgMinAtrMult: 0.08,
+    largeDispAtrMult: 1.3,
+    veryLargeDispAtrMult: 1.9,
+    maxFillPct: 0.9,
+  );
+
+  static AssetProfile fromSource(String source) {
+    switch (source) {
+      case 'alpaca': return usEquities;
+      case 'finnhub': return forex;
+      default: return crypto; // binance, coinbase, unknown
+    }
+  }
+}
+
 // ── Inline Candle model (no package import needed) ────────────────────────────
 
 class Candle {
@@ -134,7 +208,10 @@ class Fvg {
   double get mid => (upper + lower) / 2;
 }
 
-List<Fvg> findFvgs(CandleBuffer buf, {double minAtrMult = 0.1, double maxAtrMult = 1.5, double minDispAtrMult = 0.5}) {
+List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult = 0.1, double maxAtrMult = 1.5, double minDispAtrMult = 0.5}) {
+  minAtrMult    = profile?.fvgMinAtrMult    ?? minAtrMult;
+  maxAtrMult    = profile?.fvgMaxAtrMult    ?? maxAtrMult;
+  minDispAtrMult = profile?.minDispAtrMult  ?? minDispAtrMult;
   final candles = buf.candles;
   final atr = buf.atr;
   final result = <Fvg>[];
@@ -173,8 +250,9 @@ List<Fvg> findFvgs(CandleBuffer buf, {double minAtrMult = 0.1, double maxAtrMult
     }
   }
 
-  // Auto-invalidate near-fully-filled FVGs (≥90% consumed — the imbalance is gone)
-  final unfilled = result.where((f) => f.status != FvgStatus.filled && f.fillPct < 0.9).toList();
+  // Auto-invalidate near-fully-filled FVGs (imbalance is consumed — drop them)
+  final maxFill = profile?.maxFillPct ?? 0.9;
+  final unfilled = result.where((f) => f.status != FvgStatus.filled && f.fillPct < maxFill).toList();
 
   // FIX: deduplicate overlapping FVG zones within 1x ATR — collapse into the strongest (largest gap) representative
   return _deduplicateFvgs(unfilled, atr);
@@ -270,8 +348,8 @@ List<LiqCluster> findClusters(CandleBuffer buf, {int lookback = 3, double tolMul
 
 /// FIX: one sweep event per cluster (not one per candle).
 /// Keeps the most recent sweep as representative; tracks repeat count.
-List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2}) {
-  final clusters = findClusters(buf);
+List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2, double tolMult = 0.15}) {
+  final clusters = findClusters(buf, tolMult: tolMult);
   final atr = buf.atr;
   final minRev = atr * revMult;
   final candles = buf.candles;
@@ -493,22 +571,23 @@ Future<void> main(List<String> args) async {
 
   print('✓ ${candles.length} candles fetched');
 
+  final profile = AssetProfile.fromSource(source);
+
   final buf = CandleBuffer();
   buf.loadHistory(candles);
 
-  final swings  = findSwings(buf.candles);
-  final fvgs    = findFvgs(buf);
-  final clusters = findClusters(buf);
-  final sweeps  = findSweeps(buf);
-  final bosList = findBos(buf);
-  final price   = candles.last.close;
-  final atr     = buf.atr;
+  final swings   = findSwings(buf.candles);
+  final fvgs     = findFvgs(buf, profile: profile);
+  final clusters = findClusters(buf, tolMult: profile.clusterTolMult);
+  final sweeps   = findSweeps(buf, revMult: profile.sweepRevMult, tolMult: profile.clusterTolMult);
+  final bosList  = findBos(buf);
+  final price    = candles.last.close;
+  final atr      = buf.atr;
 
   // Build scored setups
-  // Recency: signals older than 30 candles are stale and contribute half score.
-  // Directional alignment: opposing signals (e.g. bullish sweep on bearish FVG)
-  //   contribute half weight and flag the setup as mixed-direction for the LLM.
-  const int staleCandles = 30;
+  // Recency: signals older than profile.staleCandles are stale (half score).
+  // Directional alignment: opposing signals flag setup as mixed-direction.
+  final int staleCandles = profile.staleCandles;
   final totalCandles = buf.length;
 
   final allSetups = <_Setup>[];
@@ -528,8 +607,8 @@ Future<void> main(List<String> args) async {
     double score = 1.5; // base: FVG
 
     // Displacement magnitude bonus: large displacement candles signal stronger imbalance
-    if (atr > 0 && f.dispSize > atr * 2.0) score += 1.0;       // very large displacement ("god candle")
-    else if (atr > 0 && f.dispSize > atr * 1.5) score += 0.5;  // moderately large displacement
+    if (atr > 0 && f.dispSize > atr * profile.veryLargeDispAtrMult) score += 1.0;      // god candle
+    else if (atr > 0 && f.dispSize > atr * profile.largeDispAtrMult) score += 0.5;     // large displacement
 
     // Aligned sweeps: full weight if fresh, half if stale
     if (alignedSweeps.isNotEmpty) {
@@ -570,6 +649,7 @@ Future<void> main(List<String> args) async {
 
     final md = _buildReport(
       symbol: symbol, timeframe: timeframe, source: source,
+      profile: profile,
       generatedAt: ts, candles: candles, buf: buf,
       swings: swings, fvgs: fvgs, clusters: clusters,
       sweeps: sweeps, bosList: bosList,
@@ -607,6 +687,7 @@ String _buildReport({
   required String symbol,
   required String timeframe,
   required String source,
+  required AssetProfile profile,
   required DateTime generatedAt,
   required List<Candle> candles,
   required CandleBuffer buf,
@@ -633,6 +714,7 @@ String _buildReport({
   sb.writeln('**Symbol:** $symbol  ');
   sb.writeln('**Timeframe:** $timeframe  ');
   sb.writeln('**Data source:** $source  ');
+  sb.writeln('**Asset profile:** ${profile.name}  ');
   sb.writeln('**Current price:** \$${price.toStringAsFixed(4)}  ');
   sb.writeln('**ATR(14):** \$${atr.toStringAsFixed(4)}  ');
   sb.writeln();
@@ -665,15 +747,46 @@ Be direct and critical. The goal is to calibrate the engine, not to find reasons
   sb.writeln('---');
   sb.writeln();
 
+  // ── Asset profile context ───────────────────────────────────────────────────
+  sb.writeln('## Asset Profile: `${profile.name}`');
+  sb.writeln();
+  sb.writeln('''
+The engine uses **asset-specific tuning profiles** because crypto, US equities, and forex have structurally different price behaviour. The same raw threshold (e.g. what counts as a "large" displacement candle, or how quickly a signal goes stale) would misfire badly if applied uniformly across asset classes.
+
+This report was generated using the **`${profile.name}`** profile. Key behavioural differences vs. other profiles:
+''');
+
+  // Print a comparison table of all three profiles so the LLM has full context
+  sb.writeln('| Parameter | crypto | us_equities | forex | **This report** |');
+  sb.writeln('|-----------|--------|-------------|-------|-----------------|');
+  sb.writeln('| Staleness cutoff (candles) | 30 | 20 | 25 | **${profile.staleCandles}** |');
+  sb.writeln('| Min displacement (× ATR) | 0.50 | 0.35 | 0.40 | **${profile.minDispAtrMult}** |');
+  sb.writeln('| Sweep reversal min (× ATR) | 0.20 | 0.25 | 0.30 | **${profile.sweepRevMult}** |');
+  sb.writeln('| Cluster tolerance (× ATR) | 0.15 | 0.12 | 0.10 | **${profile.clusterTolMult}** |');
+  sb.writeln('| FVG max width (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.fvgMaxAtrMult}** |');
+  sb.writeln('| Large displacement (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.largeDispAtrMult}** |');
+  sb.writeln('| "God candle" threshold (× ATR) | 2.00 | 1.80 | 1.90 | **${profile.veryLargeDispAtrMult}** |');
+  sb.writeln('| FVG invalidated above fill % | 90% | 90% | 90% | **${(profile.maxFillPct * 100).toStringAsFixed(0)}%** |');
+  sb.writeln();
+  sb.writeln('''**Why this matters for your evaluation:**
+- A signal being "stale" in this report means it is older than **${profile.staleCandles} candles** on a $timeframe chart — that is approximately ${_stalePretty(profile.staleCandles, timeframe)}. Stale signals score at half weight.
+- A "large displacement" FVG here means the displacement candle body exceeded **${profile.largeDispAtrMult}× ATR** at time of formation. A "god candle" exceeded **${profile.veryLargeDispAtrMult}× ATR**.
+- Sweep wicks must reverse at least **${profile.sweepRevMult}× ATR** from the extreme to be counted. Anything less is treated as a continuation, not a reversal.
+- FVGs are dropped from scoring once they are **>${(profile.maxFillPct * 100).toStringAsFixed(0)}% filled** — the imbalance is considered consumed.
+- If you are comparing this report to one from a different asset class, the scores are not directly comparable — the coefficients are different by design.
+''');
+  sb.writeln('---');
+  sb.writeln();
+
   // ── Scoring legend ──────────────────────────────────────────────────────────
   sb.writeln('## Scoring System (Quick Reference)');
   sb.writeln();
   sb.writeln('| Signal | Score Contribution |');
   sb.writeln('|--------|--------------------|');
   sb.writeln('| Fair Value Gap (FVG) base | 1.5 |');
-  sb.writeln('| + Displacement candle ≥ 1.5× ATR | +0.5 |');
-  sb.writeln('| + Displacement candle ≥ 2.0× ATR ("god candle") | +1.0 |');
-  sb.writeln('| + Aligned Liquidity Sweep (fresh ≤30 candles) | +2.0 |');
+  sb.writeln('| + Displacement candle ≥ ${profile.largeDispAtrMult}× ATR | +0.5 |');
+  sb.writeln('| + Displacement candle ≥ ${profile.veryLargeDispAtrMult}× ATR ("god candle") | +1.0 |');
+  sb.writeln('| + Aligned Liquidity Sweep (fresh ≤${profile.staleCandles} candles) | +2.0 |');
   sb.writeln('| + Aligned Liquidity Sweep (stale) | +1.0 |');
   sb.writeln('| + Opposing Sweep (mixed signal flag) | +0.25 |');
   sb.writeln('| + Aligned Break of Structure (fresh) | +1.5 |');
@@ -914,3 +1027,18 @@ Be direct and critical. The goal is to calibrate the engine, not to find reasons
 }
 
 String _fmt(DateTime dt) => dt.toUtc().toIso8601String().substring(0, 16);
+
+/// Converts a candle count + timeframe string into an approximate human duration.
+/// e.g. 30 candles on "5m" → "~2.5 hours", 20 candles on "1h" → "~20 hours"
+String _stalePretty(int candles, String timeframe) {
+  final m = RegExp(r'^(\d+)([mhd])$').firstMatch(timeframe);
+  if (m == null) return '$candles candles';
+  final n = int.parse(m.group(1)!);
+  final unit = m.group(2)!;
+  final totalMinutes = candles * (unit == 'm' ? n : unit == 'h' ? n * 60 : n * 1440);
+  if (totalMinutes < 60) return '~$totalMinutes minutes';
+  final hours = totalMinutes / 60;
+  if (hours < 24) return '~${hours % 1 == 0 ? hours.toInt() : hours.toStringAsFixed(1)} hours';
+  final days = hours / 24;
+  return '~${days % 1 == 0 ? days.toInt() : days.toStringAsFixed(1)} days';
+}

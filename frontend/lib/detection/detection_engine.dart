@@ -1,5 +1,7 @@
 import '../models/candle.dart';
+import '../engine/ticker_resolver.dart';
 
+import 'asset_profile.dart';
 import 'candle_buffer.dart';
 import 'swing_points.dart';
 import 'fvg.dart';
@@ -7,6 +9,7 @@ import 'liquidity_sweep.dart';
 import 'bos.dart';
 import 'confluence.dart';
 
+export 'asset_profile.dart';
 export 'candle_buffer.dart';
 export 'swing_points.dart';
 export 'fvg.dart';
@@ -35,6 +38,7 @@ class DetectionEngine {
   final CandleBuffer _buffer;
   String _symbol = '';
   String _timeframe = '';
+  AssetProfile _profile = AssetProfile.crypto;
 
   // Deduplication: track timestamps of events we've already emitted
   // so that a BOS/FVG detected on candle N isn't re-emitted on candle N+1.
@@ -56,9 +60,18 @@ class DetectionEngine {
   /// Called by the intake service when the user switches to a new chart.
   /// Loads history, resets state, and runs a full scan so existing patterns
   /// are immediately available.
-  void switchTicker(String symbol, String timeframe, List<Candle> history) {
+  ///
+  /// Pass [source] so the engine can auto-select the correct [AssetProfile]
+  /// (crypto thresholds for Binance, equity thresholds for Alpaca, etc.).
+  void switchTicker(
+    String symbol,
+    String timeframe,
+    List<Candle> history, {
+    DataSource? source,
+  }) {
     _symbol = symbol;
     _timeframe = timeframe;
+    _profile = source != null ? AssetProfile.fromSource(source) : AssetProfile.crypto;
     _emittedEventKeys.clear();
     _buffer.loadHistory(history);
   }
@@ -97,6 +110,7 @@ class DetectionEngine {
 
   String get symbol => _symbol;
   String get timeframe => _timeframe;
+  AssetProfile get profile => _profile;
   CandleBuffer get buffer => _buffer;
   double get atr => _buffer.atr;
 
