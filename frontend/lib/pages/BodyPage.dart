@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/controllers/BrowserTabsController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/pages/WebView.dart';
+import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class BodyPageDart extends StatefulWidget {
@@ -23,12 +24,28 @@ class _BodyPageDartState extends State<BodyPageDart> {
         color: CustomColors.primary,
         borderRadius: BorderRadius.circular(10)
       ),
-      child: Row(
+      child: Stack(
         children: [
-          widget.webController.getCurrentTab() == null ? Container() : 
-          Expanded(child: CustomWebView(controller: widget.webController.getCurrentTab()!.webController!))
+          Container(
+            width: double.infinity, 
+            height: double.infinity,
+            child: Row(
+              children: [
+                widget.webController.getCurrentTab() == null ? Container() : 
+                Expanded(child: CustomWebView(controller: widget.webController.getCurrentTab()!.webController!))
+              ],
+            ),
+          ), 
+          Positioned(
+            left: 0, 
+            right: 0,
+            bottom: 8,
+            child:Center(
+              child: BottomNavModal(),
+            ),
+          ),
         ],
-      ),
+      )
     );
   }
 }
