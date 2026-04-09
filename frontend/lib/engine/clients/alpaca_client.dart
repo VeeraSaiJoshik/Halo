@@ -1,8 +1,7 @@
 import 'dart:convert';
 
+import 'package:frontend/models/candle.dart';
 import 'package:http/http.dart' as http;
-
-import '../../models/candle.dart';
 
 class AlpacaClient {
   final String apiKey;

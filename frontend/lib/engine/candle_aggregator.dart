@@ -1,4 +1,4 @@
-import '../models/candle.dart';
+import 'package:frontend/models/candle.dart';
 
 class CandleAggregator {
   final int periodMinutes;

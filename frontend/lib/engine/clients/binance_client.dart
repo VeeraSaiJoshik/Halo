@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-
-import '../../models/candle.dart';
+import 'package:frontend/models/candle.dart';
 
 class BinanceClient {
   final String baseUrl;

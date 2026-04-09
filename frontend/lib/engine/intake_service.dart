@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../models/candle.dart';
+import 'package:frontend/models/candle.dart';
 import 'candle_aggregator.dart';
 import 'clients/alpaca_client.dart';
 import 'clients/binance_client.dart';
