@@ -4,19 +4,19 @@ import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 enum AppPage {
-  STOCKS, 
-  BROWSE, 
-  AI_SUMMARY
+  PORTAL, 
+  GRAPH_VIEWER, 
+  NOTIFICATIONS
 }
 
 class WindowInfo {
-  final List<String> activeStocks;
+  final String Stock;
   final WebViewController? webController;
   late bool isActive;
   late String uuid;
-  late AppPage currentPage;
+  late List<AppPage> pages;
 
-  WindowInfo({required this.activeStocks, required this.webController, required this.isActive, this.currentPage = AppPage.STOCKS}){
+  WindowInfo({required this.Stock, required this.webController, required this.isActive, this.pages = const [AppPage.PORTAL]}){
     uuid = const Uuid().v4();
   }
 }
@@ -27,6 +27,7 @@ class AppController extends ChangeNotifier{
   void newTab() {
     final controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     ..setNavigationDelegate(
       NavigationDelegate(
         onProgress: (int progress) {
@@ -45,9 +46,9 @@ class AppController extends ChangeNotifier{
       ),
     )
 
-    ..loadRequest(Uri.parse('https://flutter.dev'));
+    ..loadRequest(Uri.parse('https://www.webull.com/center'));
     tabs.add(
-      WindowInfo(webController: controller, activeStocks: ["IXIC", "IXIC", "IXIC", "IXIC"], isActive: true)
+      WindowInfo(webController: controller, Stock: "GOOG", isActive: true)
     );
 
     notifyListeners();
@@ -74,7 +75,7 @@ class AppController extends ChangeNotifier{
   }
 
   void switchTabSubPage(AppPage page) {
-    getCurrentTab()!.currentPage = page;
+    //getCurrentTab()!.currentPage = page;
     notifyListeners();
   }
 

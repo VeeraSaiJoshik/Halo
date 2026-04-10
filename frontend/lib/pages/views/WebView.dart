@@ -51,7 +51,7 @@ class _WebViewState extends State<CustomWebView>
           borderRadius: BorderRadius.circular(5),
         ),
         child: Stack(
-          children: [
+          children: [ 
             WebViewWidget(controller: widget.controller),
             Positioned(
               left: 0,

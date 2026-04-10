@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/BodyPage.dart';
 import 'package:frontend/pages/TitleBar.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:frontend/widgets/background_gradient_animation.dart';
+import 'package:frontend/widgets/searchBar.dart';
+import 'package:window_manager/window_manager.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   AppController controller = AppController();
+  GlobalKey<CustomSearchBarState> searchBarKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +27,44 @@ class _HomePageState extends State<HomePage> {
       listenable: controller, builder: (context, _) {
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            color: CustomColors.accent.withOpacity(0.7)
+            color: Colors.grey.shade900
           ),
           width: double.infinity,
-          child: Column(
-            children: [
-              TitleBar(controller: controller),
-              Expanded(
-                child: BodyPageDart(webController: controller,)
-              )
-            ],
+          child: BackgroundGradientAnimation(
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    TitleBar(controller: controller),
+                    Expanded(
+                      child: BodyPageDart(webController: controller,)
+                    )
+                  ],
+                ),
+                Positioned(
+                  left: 0, right: 0, top: 0, bottom: 0,
+                  child: Center(
+                    child: CustomSearchBar(
+                      key: searchBarKey,
+                    ),
+                  ),
+                ), 
+                Positioned(
+                  bottom: 20, 
+                  right: 20, 
+                  child: InkWell(
+                    onTap: () => {
+                      searchBarKey.currentState?.toggleSearchBarState()
+                    },
+                    child: Container(
+                      height: 20, 
+                      width: 20, 
+                      color: Colors.red,
+                    )
+                  ),
+                )
+              ],
+            )
           ),
         );
       }

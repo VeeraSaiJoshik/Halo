@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -7,7 +11,9 @@ void main() async {
 
   await windowManager.ensureInitialized();
 
-  runApp(const MyApp());
+  runApp(ProviderScope(
+    child: MyApp(),
+  ));
 
   WindowOptions windowOptions = const WindowOptions(
     backgroundColor: Colors.transparent,
@@ -24,12 +30,66 @@ void main() async {
 
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> with WindowListener {
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  /// Returns true to consume the event (prevents further propagation).
+  bool _onKey(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+
+    final meta = HardwareKeyboard.instance.isMetaPressed;
+    final key  = event.logicalKey;
+    final bus  = ref.read(appEventBusProvider);
+
+    if (meta && key == LogicalKeyboardKey.keyT) {
+      bus.emit(AppEvent.newTab);
+      return true;
+    }
+    if (meta && key == LogicalKeyboardKey.keyW) {
+      bus.emit(AppEvent.closeTab);
+      return true;
+    }
+    if (meta && key == LogicalKeyboardKey.keyK) {
+      bus.emit(AppEvent.openSearch);
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  void onWindowEnterFullScreen() => setState(() => 
+    ref.read(windowProvider.notifier).updateFullScreenStatus(true)
+  );
+
+  @override
+  void onWindowLeaveFullScreen() => setState(() => 
+    ref.read(windowProvider.notifier).updateFullScreenStatus(false)
+  );
+
   @override
   Widget build(BuildContext context) {
+    final windowContext = ref.watch(windowProvider);
+
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
@@ -37,10 +97,10 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.transparent,
       ),
       home: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(windowContext.isFullScreen ? 0 : 15),
         child: Scaffold(
           body: HomePage(),
-        )
+        ),
       ),
     );
   }

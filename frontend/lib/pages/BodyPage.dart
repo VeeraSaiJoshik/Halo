@@ -1,59 +1,64 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/SearchView.dart';
 import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-class BodyPageDart extends StatefulWidget {
+class BodyPageDart extends ConsumerStatefulWidget {
   final AppController webController;
   const BodyPageDart({super.key, required this.webController});
 
   @override
-  State<BodyPageDart> createState() => _BodyPageDartState();
+  ConsumerState<BodyPageDart> createState() => _BodyPageDartState();
 }
 
-class _BodyPageDartState extends State<BodyPageDart> {
+class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: double.infinity,
-      width: double.infinity,
-      padding: EdgeInsets.all(7.5),
-      decoration: BoxDecoration(
-        color: CustomColors.primary,
-        borderRadius: BorderRadius.circular(10)
-      ),
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity, 
-            height: double.infinity,
-            child: Row(
+      margin: EdgeInsets.fromLTRB(11.5, 0, 11.5, 11.5),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: EdgeInsets.all(5),
+            child: Stack(
               children: [
-                widget.webController.getCurrentTab() == null ? Container() : 
-                Expanded(
-                  child: widget.webController.getCurrentTab()!.currentPage == AppPage.STOCKS ?  
-                      CustomWebView(controller: widget.webController.getCurrentTab()!.webController!) : 
-                    widget.webController.getCurrentTab()!.currentPage == AppPage.BROWSE ?  
-                      SearchView() : 
-                      AISummaryView()
-                )
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Row(
+                    children: [
+                      widget.webController.getCurrentTab() == null ? Expanded(
+                        child: Container(height: double.infinity),
+                      ) :
+                      Expanded(
+                        child:CustomWebView(controller: widget.webController.getCurrentTab()!.webController!)
+                      )
+                    ],
+                  ),
+                ),
+                widget.webController.getCurrentTab() == null ? Container() : Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  child: Center(
+                    child: BottomNavModal(controller: widget.webController,),
+                  ),
+                ),
               ],
             ),
-          ), 
-          widget.webController.getCurrentTab() == null ? Container() : Positioned(
-            left: 0, 
-            right: 0,
-            bottom: 8,
-            child:Center(
-              child: BottomNavModal(controller: widget.webController,),
-            ),
           ),
-        ],
-      )
+        ),
+      ),
     );
   }
 }

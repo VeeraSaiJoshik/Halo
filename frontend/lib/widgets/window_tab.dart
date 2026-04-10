@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -16,8 +17,8 @@ class WindowTab extends StatefulWidget {
 class _WindowTabState extends State<WindowTab>
     with SingleTickerProviderStateMixin {
   static const _borderRadius = BorderRadius.only(
-    topLeft: Radius.circular(10),
-    topRight: Radius.circular(10),
+    topLeft: Radius.circular(5),
+    topRight: Radius.circular(5),
   );
 
   bool isHovering = false;
@@ -30,92 +31,88 @@ class _WindowTabState extends State<WindowTab>
       overlayColor: WidgetStateProperty.all(Colors.transparent),
       onHover: (hover) => setState(() => isHovering = hover),
       onTap: () => widget.switchTab(widget.context),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Container(
-            decoration: widget.context.isActive
-                ? BoxDecoration(
-                    borderRadius: _borderRadius,
-                    gradient: RadialGradient(
-                      center: Alignment(-1, -1),
-                      radius: 0.9,
-                      colors: [
-                        CustomColors.primary.withOpacity(0.6),
-                        CustomColors.primary,
-                      ],
-                    ),
-                  )
-                : isHovering
-                ? BoxDecoration(
-                    borderRadius: _borderRadius,
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        CustomColors.primary.withAlpha(150),
-                        CustomColors.primary.withAlpha(150),
-                        CustomColors.primary.withAlpha(150),
-                        CustomColors.primary.withAlpha(150),
-                        CustomColors.primary.withAlpha(150),
-                        CustomColors.primary,
-                      ],
-                    ),
-                  )
-                : BoxDecoration(
-                    borderRadius: _borderRadius,
-                    color: Colors.transparent,
-                  ),
-            height: 38,
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+        child: BackdropFilter(
+          filter: widget.context.isActive ? ImageFilter.blur(sigmaX: 20, sigmaY: 20) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+          child: Container(
+            decoration: widget.context.isActive ?  BoxDecoration(
+                borderRadius: _borderRadius,
+                color: Colors.black.withOpacity(0.6),
+              ) : BoxDecoration(
+                borderRadius: _borderRadius,
+                color: Colors.transparent 
+              ),
+            height: 34,
             width: 240,
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.symmetric(horizontal: 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.network(
-                  "https://companieslogo.com/img/orig/BULL.D-6d2a06d1.png?t=1744647436",
-                  width: 20,
-                  height: 20,
-                  color: Colors.white,
+                SizedBox(
+                  height: 17, 
+                  width: 17, 
+                  child: Image.network(
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/1280px-Google_Favicon_2025.svg.png",
+                    fit: BoxFit.contain
+                  ),
                 ),
                 SizedBox(width: 8),
                 Row(
                   spacing: 8,
                   children: [
-                    ...widget.context.activeStocks.indexed.map((
-                      (int, String) entry,
-                    ) {
-                      final isLast =
-                          entry.$1 == widget.context.activeStocks.length - 1;
-                      return Row(
-                        spacing: 8,
-                        children: [
-                          Text(
-                            entry.$2,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (!isLast)
-                            Container(
-                              height: 29,
-                              width: 1,
-                              color: Colors.white.withAlpha(100),
-                            ),
-                        ],
-                      );
-                    }),
+                    Text(
+                      widget.context.Stock, 
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ) 
                   ],
                 ),
                 Expanded(child: SizedBox()),
                 Container(
-                  width: 29,
-                  height: 29,
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  height: 25,
                   decoration: BoxDecoration(
                     color: widget.context.isActive
-                        ? Colors.blue
-                        : Colors.grey.withAlpha(100),
+                        ? Colors.red.withOpacity(0.4)
+                        : Colors.grey.withAlpha(50),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center, 
+                    mainAxisAlignment: MainAxisAlignment.center, 
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 3,
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.arrowDown, 
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                      Text(
+                        '-0.42%',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ]
+                  )
+                ),
+                Container(
+                  width: 5
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: widget.context.isActive
+                        ? Colors.blue.withOpacity(0.4)
+                        : Colors.grey.withAlpha(50),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Center(
@@ -132,7 +129,7 @@ class _WindowTabState extends State<WindowTab>
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

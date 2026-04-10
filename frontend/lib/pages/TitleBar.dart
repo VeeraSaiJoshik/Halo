@@ -21,7 +21,7 @@ class _TitleBarState extends State<TitleBar> {
     return Container(
       width: double.infinity,
       height: 40,
-      padding: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: 17),
       
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,

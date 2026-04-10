@@ -26,23 +26,23 @@ class BottomNavModal extends StatelessWidget {
           InkWell(
             splashColor: Colors.transparent,
             onTap: () => {
-              controller.switchTabSubPage(AppPage.STOCKS)
+              controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
             },
-            child: BototmNavBarIcons(icon: "stocks", directionMulti: 1, showFrost: controller.getCurrentTab()!.currentPage == AppPage.STOCKS ,),
+            child: BototmNavBarIcons(icon: "stocks", directionMulti: 1, showFrost: controller.getCurrentTab()!.pages[0] == AppPage.GRAPH_VIEWER ,),
           ),
           InkWell(
             splashColor: Colors.transparent,
             onTap: () => {
-              controller.switchTabSubPage(AppPage.BROWSE)
+              controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
             },
-            child: BototmNavBarIcons(icon: "search", showFrost: controller.getCurrentTab()!.currentPage == AppPage.BROWSE),
+            child: BototmNavBarIcons(icon: "search", showFrost: controller.getCurrentTab()!.pages[0] == AppPage.GRAPH_VIEWER),
           ),
           InkWell(
             splashColor: Colors.transparent,
             onTap: () => {
-              controller.switchTabSubPage(AppPage.AI_SUMMARY)
+              controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
             },
-            child: BototmNavBarIcons(icon: "icon", directionMulti: -1, showFrost: controller.getCurrentTab()!.currentPage == AppPage.AI_SUMMARY)
+            child: BototmNavBarIcons(icon: "icon", directionMulti: -1, showFrost: controller.getCurrentTab()!.pages[0] == AppPage.GRAPH_VIEWER)
           ),
         ],
       ),
