@@ -5,6 +5,7 @@ import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:window_manager/window_manager.dart';
 
 class TitleBar extends StatefulWidget {
   final AppController controller;
@@ -111,28 +112,46 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
           spacing: 10,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              height: 15,
-              width: 15,
-              decoration: BoxDecoration(
-                color: redAnimation.value,
-                borderRadius: BorderRadius.circular(100),
+            InkWell(
+              splashColor: Colors.transparent, 
+              onTap: () => {
+                windowManager.close()
+              },
+              child: Container(
+                height: 15,
+                width: 15,
+                decoration: BoxDecoration(
+                  color: redAnimation.value,
+                  borderRadius: BorderRadius.circular(100),
+                ),
               ),
             ),
-            Container(
-              height: 15,
-              width: 15,
-              decoration: BoxDecoration(
-                color: orangeAnimation.value,
-                borderRadius: BorderRadius.circular(100),
+            InkWell(
+              splashColor: Colors.transparent, 
+              onTap: () => {
+                windowManager.minimize()
+              },
+              child: Container(
+                height: 15,
+                width: 15,
+                decoration: BoxDecoration(
+                  color: orangeAnimation.value,
+                  borderRadius: BorderRadius.circular(100),
+                ),
               ),
             ),
-            Container(
-              height: 15,
-              width: 15,
-              decoration: BoxDecoration(
-                color: greenAnimation.value,
-                borderRadius: BorderRadius.circular(100),
+            InkWell(
+              splashColor: Colors.transparent, 
+              onTap: () => {
+                windowManager.maximize()
+              },
+              child: Container(
+                height: 15,
+                width: 15,
+                decoration: BoxDecoration(
+                  color: greenAnimation.value,
+                  borderRadius: BorderRadius.circular(100),
+                ),
               ),
             ),
           ],
