@@ -249,7 +249,10 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
     }
   }
 
-  // Update fill status against last candle
+  // Update fill status against last candle.
+  // Price-past-zone invalidation: if current close has powered through the zone
+  // entirely (bullish FVG: close < lower; bearish FVG: close > upper), the
+  // imbalance is invalidated — price rejected the level rather than respecting it.
   final last = candles.last;
   for (final fvg in result) {
     if (fvg.dir == FvgDir.bullish) {
@@ -258,6 +261,8 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
     } else {
       if (last.high >= fvg.upper) { fvg.status = FvgStatus.filled; fvg.fillPct = 1.0; }
       else if (last.high > fvg.lower) { fvg.fillPct = (last.high - fvg.lower) / fvg.gap; fvg.status = FvgStatus.partial; }
+      // Bearish FVG invalidated if close has rallied above the entire zone
+      if (last.close > fvg.upper) { fvg.status = FvgStatus.filled; fvg.fillPct = 1.0; }
     }
   }
 
@@ -663,18 +668,23 @@ Future<void> main(List<String> args) async {
     if (opposingSweeps.isNotEmpty) score += 0.25;
 
     // Aligned BOS: linearly decayed from full weight (fresh) to near-zero (at expiry).
-    // age=0 → 1.5, age=stale → 0.75, age=expiry(150) → ~0.0
+    // age=0 → 1.5, age=expiry(150) → ~0.0. Capped at 1.5 regardless of event count.
     if (alignedBos.isNotEmpty) {
       const bosExpiry = 150.0;
-      // Use the freshest aligned BOS for scoring
       final freshestAge = alignedBos
           .map((b) => totalCandles - 1 - b.candleIndex)
           .reduce((a, b) => a < b ? a : b);
       final decay = (1.0 - (freshestAge / bosExpiry)).clamp(0.0, 1.0);
-      score += 1.5 * decay;
+      score += (1.5 * decay).clamp(0.0, 1.5); // cap: more events don't stack
     }
-    // Opposing BOS: quarter weight
-    if (opposingBos.isNotEmpty) score += 0.25;
+    // Opposing BOS: quarter weight, also capped (3+ opposing events don't keep adding)
+    if (opposingBos.isNotEmpty) score += 0.25.clamp(0.0, 0.25);
+
+    // Chop zone penalty: when opposing BOS count ≥ aligned BOS count, the zone
+    // has been broken in both directions — it's a congestion area, not a clean
+    // structural level. Additive BOS scoring was rewarding this noise.
+    final isChopZone = matchBos.isNotEmpty && opposingBos.length >= alignedBos.length;
+    if (isChopZone) score *= 0.7;
 
     // Sliding fill penalty: a partially consumed imbalance is worth less.
     //   <50% fill  → no penalty
@@ -709,7 +719,8 @@ Future<void> main(List<String> args) async {
                          hasMixedDirection: hasMixed,
                          hasSameBarSweep: sameBar,
                          hasFillVelocity: fillTooFast,
-                         isCounterTrend: counterTrend));
+                         isCounterTrend: counterTrend,
+                         isChopZone: isChopZone));
   }
   allSetups.sort((a, b) => b.score.compareTo(a.score));
 
@@ -757,6 +768,7 @@ class _Setup {
   final bool hasSameBarSweep;    // sweep formed on same candle as FVG — one event not two
   final bool hasFillVelocity;    // FVG >70% filled within 5 candles of formation
   final bool isCounterTrend;     // FVG direction opposes recent BOS trend
+  final bool isChopZone;         // opposing BOS ≥ aligned BOS — congestion, not structure
   const _Setup({
     required this.fvg, required this.score, required this.approaching,
     required this.matchSweeps, required this.matchBos,
@@ -764,6 +776,7 @@ class _Setup {
     this.hasSameBarSweep = false,
     this.hasFillVelocity = false,
     this.isCounterTrend = false,
+    this.isChopZone = false,
   });
 }
 
@@ -897,6 +910,7 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| 💧 Fill 70–95%: imbalance structurally weak | score ×0.5 | fast fill |');
   sb.writeln('| 💧 Fill 70–95% + age ≤5 candles: born dead | score ×0.25 total | fast fill |');
   sb.writeln('| ↩ Counter-trend: recent BOS (last 20 candles) oppose FVG direction | score ×0.6 | counter-trend |');
+  sb.writeln('| 🔀 Chop zone: opposing BOS count ≥ aligned BOS count near zone | score ×0.7 | chop zone |');
   sb.writeln();
   sb.writeln('Signals within 1× ATR of the same price level combine. Minimum score to appear: **2.0**. AI trigger threshold: **3.5** with price approaching the zone.');
   sb.writeln();
@@ -1021,7 +1035,8 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
       final sameBar     = s.hasSameBarSweep  ? ' ⚡ same-bar sweep' : '';
       final fillFast    = s.hasFillVelocity  ? ' 💧 fast fill' : '';
       final ctrTrend    = s.isCounterTrend   ? ' ↩ counter-trend' : '';
-      sb.writeln('### Setup ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$app$mixed$sameBar$fillFast$ctrTrend');
+      final chopZone    = s.isChopZone       ? ' 🔀 chop zone' : '';
+      sb.writeln('### Setup ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$app$mixed$sameBar$fillFast$ctrTrend$chopZone');
       sb.writeln();
       sb.writeln('| Field | Value |');
       sb.writeln('|-------|-------|');
@@ -1037,6 +1052,7 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
       if (s.hasSameBarSweep)  sb.writeln('| ⚡ Same-bar sweep | Sweep and FVG formed on the same candle — treated as one event, sweep score halved |');
       if (s.hasFillVelocity)  sb.writeln('| 💧 Fast fill penalty | FVG >70% filled within 5 candles of formation — imbalance lacked holding power, base score halved |');
       if (s.isCounterTrend)   sb.writeln('| ↩ Counter-trend | Recent BOS events oppose this FVG\'s direction — 0.6× multiplier applied |');
+      if (s.isChopZone)       sb.writeln('| 🔀 Chop zone | Opposing BOS events ≥ aligned BOS events near zone — congestion area, not clean structure — 0.7× multiplier applied |');
       if (s.matchSweeps.isNotEmpty) {
         sb.writeln('| Sweep Confluence | ${s.matchSweeps.length} sweep(s) near zone |');
         for (final sw in s.matchSweeps) {
@@ -1077,7 +1093,8 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
       final sameTag   = s.hasSameBarSweep  ? ' ⚡ same-bar sweep' : '';
       final fillTag   = s.hasFillVelocity  ? ' 💧 fast fill' : '';
       final ctrTag    = s.isCounterTrend   ? ' ↩ counter-trend' : '';
-      sb.writeln('### 🔴 Candidate ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$mixedTag$sameTag$fillTag$ctrTag');
+      final chopTag   = s.isChopZone       ? ' 🔀 chop zone' : '';
+      sb.writeln('### 🔴 Candidate ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$mixedTag$sameTag$fillTag$ctrTag$chopTag');
       sb.writeln();
       sb.writeln('**Current price:** \$${price.toStringAsFixed(4)}  ');
       sb.writeln('**Zone:** \$${s.fvg.lower.toStringAsFixed(4)} – \$${s.fvg.upper.toStringAsFixed(4)}  ');
