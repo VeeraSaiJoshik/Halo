@@ -197,11 +197,12 @@ class Fvg {
   final double upper, lower;
   final DateTime timestamp;
   final double dispSize;
+  final int candleIndex; // index of the displacement (middle) candle in the buffer
   FvgStatus status;
   double fillPct;
 
   Fvg({required this.dir, required this.upper, required this.lower,
-       required this.timestamp, required this.dispSize,
+       required this.timestamp, required this.dispSize, required this.candleIndex,
        this.status = FvgStatus.active, this.fillPct = 0.0});
 
   double get gap => upper - lower;
@@ -229,12 +230,12 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
     final bullGap = c2.low - c0.high;
     if (bullGap > minGap && bullGap <= maxGap && c1.close > c1.open) {
       result.add(Fvg(dir: FvgDir.bullish, lower: c0.high, upper: c2.low,
-                     timestamp: c1.timestamp, dispSize: dispSize));
+                     timestamp: c1.timestamp, dispSize: dispSize, candleIndex: i));
     }
     final bearGap = c0.low - c2.high;
     if (bearGap > minGap && bearGap <= maxGap && c1.close < c1.open) {
       result.add(Fvg(dir: FvgDir.bearish, lower: c2.high, upper: c0.low,
-                     timestamp: c1.timestamp, dispSize: dispSize));
+                     timestamp: c1.timestamp, dispSize: dispSize, candleIndex: i));
     }
   }
 
@@ -250,9 +251,9 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
     }
   }
 
-  // Auto-invalidate near-fully-filled FVGs (imbalance is consumed — drop them)
-  final maxFill = profile?.maxFillPct ?? 0.9;
-  final unfilled = result.where((f) => f.status != FvgStatus.filled && f.fillPct < maxFill).toList();
+  // Hard drop: fully filled or ≥95% consumed — the imbalance is gone.
+  // Sliding fill penalty (50–95%) is applied in the scorer, not here.
+  final unfilled = result.where((f) => f.status != FvgStatus.filled && f.fillPct < 0.95).toList();
 
   // FIX: deduplicate overlapping FVG zones within 1x ATR — collapse into the strongest (largest gap) representative
   return _deduplicateFvgs(unfilled, atr);
@@ -321,7 +322,10 @@ List<LiqCluster> findClusters(CandleBuffer buf, {int lookback = 3, double tolMul
   final swings = findSwings(buf.candles, lookback: lookback);
   final atr = buf.atr;
   if (atr == 0.0 || swings.isEmpty) return [];
-  final tol = atr * tolMult;
+  // Stability fix: use a slightly wider tolerance so minor ATR fluctuations
+  // between scans don't dissolve clusters that were valid a moment ago.
+  // The extra 0.05 gives ~33% more tolerance band without grouping unrelated levels.
+  final tol = atr * (tolMult + 0.05);
 
   List<LiqCluster> side(List<SwingPoint> pts, SweepDir dir) {
     final sorted = List<SwingPoint>.from(pts)..sort((a, b) => a.price.compareTo(b.price));
@@ -413,7 +417,7 @@ class Bos {
 /// Tracks how many candles re-broke the same level as repeatCount metadata.
 /// Also applies recency decay — events older than [staleCandleAge] candles
 /// are still returned but flagged via candleIndex so the scorer can down-weight them.
-List<Bos> findBos(CandleBuffer buf, {int lookback = 3, double minMult = 0.05}) {
+List<Bos> findBos(CandleBuffer buf, {int lookback = 3, double minMult = 0.05, int expiryCandles = 150}) {
   final candles = buf.candles;
   final atr = buf.atr;
   if (candles.length < 5 || atr == 0.0) return [];
@@ -470,8 +474,11 @@ List<Bos> findBos(CandleBuffer buf, {int lookback = 3, double minMult = 0.05}) {
     }
   }
 
-  return [...seenHighBreaks.values, ...seenLowBreaks.values]
+  final totalCandles = candles.length;
+  // Hard expire BOS events older than expiryCandles — ancient structure is noise.
+  final all = [...seenHighBreaks.values, ...seenLowBreaks.values]
     ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  return all.where((b) => (totalCandles - 1 - b.candleIndex) < expiryCandles).toList();
 }
 
 // ── HTTP helpers (dart:io, no packages) ──────────────────────────────────────
@@ -590,6 +597,14 @@ Future<void> main(List<String> args) async {
   final int staleCandles = profile.staleCandles;
   final totalCandles = buf.length;
 
+  // Trend bias: count BOS direction among the most recent 20 candles.
+  // Used to discount counter-trend setups — a bullish FVG in a bearish BOS
+  // regime, or vice versa, gets a 0.6× multiplier on the final score.
+  const int trendWindow = 20;
+  final recentBos = bosList.where((b) => (totalCandles - 1 - b.candleIndex) <= trendWindow).toList();
+  final recentBullBos = recentBos.where((b) => b.dir == BosDir.bullish).length;
+  final recentBearBos = recentBos.where((b) => b.dir == BosDir.bearish).length;
+
   final allSetups = <_Setup>[];
   for (final f in fvgs) {
     final nearFvg     = (price - f.mid).abs() < atr * 1.5;
@@ -610,25 +625,67 @@ Future<void> main(List<String> args) async {
     if (atr > 0 && f.dispSize > atr * profile.veryLargeDispAtrMult) score += 1.0;      // god candle
     else if (atr > 0 && f.dispSize > atr * profile.largeDispAtrMult) score += 0.5;     // large displacement
 
-    // Aligned sweeps: full weight if fresh, half if stale
+    // Aligned sweeps: full weight if fresh, half if stale.
+    // Same-bar penalty: if the sweep occurred on the exact candle that formed the FVG,
+    // they are one price action event — halve the sweep contribution to avoid double-counting.
     if (alignedSweeps.isNotEmpty) {
       final fresh = alignedSweeps.any((s) => (totalCandles - 1 - s.candleIndex) <= staleCandles);
-      score += fresh ? 2.0 : 1.0;
+      final sameBar = alignedSweeps.any((s) => s.candleIndex == f.candleIndex);
+      double sweepScore = fresh ? 2.0 : 1.0;
+      if (sameBar) sweepScore *= 0.5; // same-bar FVG+sweep is one event, not two
+      score += sweepScore;
     }
-    // Opposing sweeps: quarter weight regardless (they add mild uncertainty, not confirmation)
+    // Opposing sweeps: quarter weight regardless
     if (opposingSweeps.isNotEmpty) score += 0.25;
 
-    // Aligned BOS: full weight if fresh, half if stale
+    // Aligned BOS: linearly decayed from full weight (fresh) to near-zero (at expiry).
+    // age=0 → 1.5, age=stale → 0.75, age=expiry(150) → ~0.0
     if (alignedBos.isNotEmpty) {
-      final fresh = alignedBos.any((b) => (totalCandles - 1 - b.candleIndex) <= staleCandles);
-      score += fresh ? 1.5 : 0.5;
+      const bosExpiry = 150.0;
+      // Use the freshest aligned BOS for scoring
+      final freshestAge = alignedBos
+          .map((b) => totalCandles - 1 - b.candleIndex)
+          .reduce((a, b) => a < b ? a : b);
+      final decay = (1.0 - (freshestAge / bosExpiry)).clamp(0.0, 1.0);
+      score += 1.5 * decay;
     }
     // Opposing BOS: quarter weight
     if (opposingBos.isNotEmpty) score += 0.25;
 
+    // Sliding fill penalty: a partially consumed imbalance is worth less.
+    //   <50% fill  → no penalty
+    //   50–70%    → ×0.85 (mildly compromised)
+    //   70–95%    → ×0.5  (structurally weak)
+    // Fill velocity bonus penalty: if very new (≤5 candles) AND >70% filled,
+    //   extra ×0.5 on top — the imbalance had no holding power at all.
+    final fvgAge = totalCandles - 1 - f.candleIndex;
+    bool fillTooFast = false;
+    if (f.fillPct >= 0.70) {
+      score *= 0.5;
+      if (fvgAge <= 5) { score *= 0.5; fillTooFast = true; }
+    } else if (f.fillPct >= 0.50) {
+      score *= 0.85;
+    }
+
+    // Trend alignment: if recent BOS events are predominantly counter to this FVG's direction,
+    // apply a 0.6× multiplier — the setup is swimming against the structural current.
+    bool counterTrend = false;
+    if (recentBos.isNotEmpty) {
+      final dominantBearish = recentBearBos > recentBullBos;
+      final dominantBullish = recentBullBos > recentBearBos;
+      counterTrend = (fvgIsBull && dominantBearish) || (!fvgIsBull && dominantBullish);
+      if (counterTrend) score *= 0.6;
+    }
+
+    // Detect same-bar sweep for reporting (penalty already applied above)
+    final sameBar = alignedSweeps.any((s) => s.candleIndex == f.candleIndex);
+
     allSetups.add(_Setup(fvg: f, score: score, approaching: nearFvg,
                          matchSweeps: matchSweeps, matchBos: matchBos,
-                         hasMixedDirection: hasMixed));
+                         hasMixedDirection: hasMixed,
+                         hasSameBarSweep: sameBar,
+                         hasFillVelocity: fillTooFast,
+                         isCounterTrend: counterTrend));
   }
   allSetups.sort((a, b) => b.score.compareTo(a.score));
 
@@ -671,13 +728,17 @@ class _Setup {
   final bool approaching;
   final List<Sweep> matchSweeps;
   final List<Bos> matchBos;
-  /// True if any contributing signal points in the opposite direction to the FVG.
-  /// e.g. a bullish sweep near a bearish FVG. Score is penalised; LLM is warned.
-  final bool hasMixedDirection;
+  final bool hasMixedDirection;  // opposing signal near zone — score penalised
+  final bool hasSameBarSweep;    // sweep formed on same candle as FVG — one event not two
+  final bool hasFillVelocity;    // FVG >70% filled within 5 candles of formation
+  final bool isCounterTrend;     // FVG direction opposes recent BOS trend
   const _Setup({
     required this.fvg, required this.score, required this.approaching,
     required this.matchSweeps, required this.matchBos,
     required this.hasMixedDirection,
+    this.hasSameBarSweep = false,
+    this.hasFillVelocity = false,
+    this.isCounterTrend = false,
   });
 }
 
@@ -781,6 +842,8 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   // ── Scoring legend ──────────────────────────────────────────────────────────
   sb.writeln('## Scoring System (Quick Reference)');
   sb.writeln();
+  sb.writeln('**Additive scoring:**');
+  sb.writeln();
   sb.writeln('| Signal | Score Contribution |');
   sb.writeln('|--------|--------------------|');
   sb.writeln('| Fair Value Gap (FVG) base | 1.5 |');
@@ -788,10 +851,21 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| + Displacement candle ≥ ${profile.veryLargeDispAtrMult}× ATR ("god candle") | +1.0 |');
   sb.writeln('| + Aligned Liquidity Sweep (fresh ≤${profile.staleCandles} candles) | +2.0 |');
   sb.writeln('| + Aligned Liquidity Sweep (stale) | +1.0 |');
-  sb.writeln('| + Opposing Sweep (mixed signal flag) | +0.25 |');
-  sb.writeln('| + Aligned Break of Structure (fresh) | +1.5 |');
-  sb.writeln('| + Aligned Break of Structure (stale) | +0.5 |');
-  sb.writeln('| + Opposing BOS (mixed signal flag) | +0.25 |');
+  sb.writeln('| + Opposing Sweep (⚠️ mixed signal flag) | +0.25 |');
+  sb.writeln('| + Aligned BOS (linear decay: full at age 0, zero at age 150) | 0.0–1.5 |');
+  sb.writeln('| + Opposing BOS (⚠️ mixed signal flag) | +0.25 |');
+  sb.writeln();
+  sb.writeln('BOS events older than **150 candles** are hard-expired and dropped entirely.');
+  sb.writeln();
+  sb.writeln('**Penalties (multiplicative, applied after additive scoring):**');
+  sb.writeln();
+  sb.writeln('| Condition | Multiplier | Flag |');
+  sb.writeln('|-----------|-----------|------|');
+  sb.writeln('| ⚡ Same-bar sweep: sweep formed on same candle as FVG | sweep contribution ×0.5 | same-bar sweep |');
+  sb.writeln('| 💧 Fill 50–70%: imbalance mildly compromised | score ×0.85 | — |');
+  sb.writeln('| 💧 Fill 70–95%: imbalance structurally weak | score ×0.5 | fast fill |');
+  sb.writeln('| 💧 Fill 70–95% + age ≤5 candles: born dead | score ×0.25 total | fast fill |');
+  sb.writeln('| ↩ Counter-trend: recent BOS (last 20 candles) oppose FVG direction | score ×0.6 | counter-trend |');
   sb.writeln();
   sb.writeln('Signals within 1× ATR of the same price level combine. Minimum score to appear: **2.0**. AI trigger threshold: **3.5** with price approaching the zone.');
   sb.writeln();
@@ -912,8 +986,11 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
       final s = scored[i];
       final dir = s.fvg.dir == FvgDir.bullish ? '▲ Bullish' : '▼ Bearish';
       final app = s.approaching ? ' 🔴 PRICE NEAR ZONE' : '';
-      final mixed = s.hasMixedDirection ? ' ⚠️ mixed signals' : '';
-      sb.writeln('### Setup ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$app$mixed');
+      final mixed       = s.hasMixedDirection ? ' ⚠️ mixed signals' : '';
+      final sameBar     = s.hasSameBarSweep  ? ' ⚡ same-bar sweep' : '';
+      final fillFast    = s.hasFillVelocity  ? ' 💧 fast fill' : '';
+      final ctrTrend    = s.isCounterTrend   ? ' ↩ counter-trend' : '';
+      sb.writeln('### Setup ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$app$mixed$sameBar$fillFast$ctrTrend');
       sb.writeln();
       sb.writeln('| Field | Value |');
       sb.writeln('|-------|-------|');
@@ -926,6 +1003,9 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
       sb.writeln('| Fill % | ${(s.fvg.fillPct * 100).toStringAsFixed(0)}% |');
       sb.writeln('| Price Approaching | ${s.approaching ? "Yes" : "No"} |');
       sb.writeln('| Distance from Current Price | \$${(price - s.fvg.mid).abs().toStringAsFixed(4)} |');
+      if (s.hasSameBarSweep)  sb.writeln('| ⚡ Same-bar sweep | Sweep and FVG formed on the same candle — treated as one event, sweep score halved |');
+      if (s.hasFillVelocity)  sb.writeln('| 💧 Fast fill penalty | FVG >70% filled within 5 candles of formation — imbalance lacked holding power, base score halved |');
+      if (s.isCounterTrend)   sb.writeln('| ↩ Counter-trend | Recent BOS events oppose this FVG\'s direction — 0.6× multiplier applied |');
       if (s.matchSweeps.isNotEmpty) {
         sb.writeln('| Sweep Confluence | ${s.matchSweeps.length} sweep(s) near zone |');
         for (final sw in s.matchSweeps) {
@@ -962,8 +1042,11 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
     for (int i = 0; i < aiSetups.length; i++) {
       final s = aiSetups[i];
       final dir = s.fvg.dir == FvgDir.bullish ? '▲ BULLISH' : '▼ BEARISH';
-      final mixedTag = s.hasMixedDirection ? ' ⚠️ mixed signals' : '';
-      sb.writeln('### 🔴 Candidate ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$mixedTag');
+      final mixedTag  = s.hasMixedDirection ? ' ⚠️ mixed signals' : '';
+      final sameTag   = s.hasSameBarSweep  ? ' ⚡ same-bar sweep' : '';
+      final fillTag   = s.hasFillVelocity  ? ' 💧 fast fill' : '';
+      final ctrTag    = s.isCounterTrend   ? ' ↩ counter-trend' : '';
+      sb.writeln('### 🔴 Candidate ${i + 1} — $dir · Score ${s.score.toStringAsFixed(1)}$mixedTag$sameTag$fillTag$ctrTag');
       sb.writeln();
       sb.writeln('**Current price:** \$${price.toStringAsFixed(4)}  ');
       sb.writeln('**Zone:** \$${s.fvg.lower.toStringAsFixed(4)} – \$${s.fvg.upper.toStringAsFixed(4)}  ');
