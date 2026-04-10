@@ -11,6 +11,9 @@ class AlphaAdvantageClient {
     final url = Uri.parse('$route?function=SYMBOL_SEARCH&keywords=$query&apikey=$apiKey');
     final response = await http.get(url);
 
+    print(apiKey);
+    print(response.body);
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final matches = data['bestMatches'] as List<dynamic>;

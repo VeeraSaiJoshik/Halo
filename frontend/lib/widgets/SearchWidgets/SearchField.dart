@@ -19,6 +19,8 @@ class _SearchFieldState extends State<SearchField> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(),
       margin: EdgeInsets.symmetric(horizontal: 20),
       curve: Curves.easeInOutCirc,
       height: widget.height, 

@@ -99,6 +99,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
             height: searchBarHeight,
             width: searchBarWidth,
             controller: searchField,
+            onTextChange: searchStocks,
           ), 
           if(stockSearchResults.isNotEmpty) ...[
             Container(
