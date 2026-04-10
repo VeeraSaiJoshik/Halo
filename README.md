@@ -34,7 +34,7 @@ Custom title bar with animated red/orange/green window control buttons (close, m
 
 ```bash
 flutter pub get
-flutter run -d macos
+flutter run -d macos --dart-define-from-file=env.json
 ```
 
 ### API Keys (optional)

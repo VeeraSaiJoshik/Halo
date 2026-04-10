@@ -6,6 +6,8 @@ enum AppEvent {
   newTab,
   closeTab,
   openSearch,
+  moveUp, 
+  moveDown
 }
 
 /// Broadcast stream bus.  One instance lives for the lifetime of the app,

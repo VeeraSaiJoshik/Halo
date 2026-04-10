@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+class SearchField extends StatefulWidget {
+  final double height;
+  final double width;
+  final TextEditingController controller;
+
+  const SearchField({super.key, this.height = 0, this.width = 0, required this.controller});
+
+  @override
+  State<SearchField> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends State<SearchField> {
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      curve: Curves.easeInOutCirc,
+      height: widget.height, 
+      width: widget.width,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 10,
+        children: [
+          FaIcon(
+            FontAwesomeIcons.magnifyingGlass,
+            color: Colors.white,
+            size: 14,
+          ),
+          Expanded(
+            child: TextField(
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              decoration: InputDecoration(
+                hintText: "Search for stock or browse...",
+                hintStyle: TextStyle(color: Colors.white, fontSize: 16),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      )
+    );
+  }
+}

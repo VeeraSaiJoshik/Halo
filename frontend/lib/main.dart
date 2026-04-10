@@ -73,6 +73,16 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       return true;
     }
 
+    if (meta && key == LogicalKeyboardKey.arrowDown) {
+      bus.emit(AppEvent.moveDown);
+      return true;
+    }
+
+    if (meta && key == LogicalKeyboardKey.arrowUp) {
+      bus.emit(AppEvent.moveUp);
+      return true;
+    }
+
     return false;
   }
 

@@ -1,29 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 class FlagService {
   FlagService._();
 
-  /// Returns a flag widget for [country] (case-insensitive, accepts common
-  /// aliases and ISO 3166-1 alpha-2 codes).
-  ///
-  /// Uses FontAwesome's [flagUsa] for the US; Unicode emoji flags for all
-  /// other countries; and a generic [flag] icon when the country is unknown.
-  static Widget getFlag(String country, {double size = 20, Color? color}) {
+  /// Returns a flag emoji string for [country] (case-insensitive, accepts
+  /// common aliases and ISO 3166-1 alpha-2 codes).
+  /// Returns null if the country is unrecognised.
+  static String? getFlag(String country) {
     final code = _resolveCode(country);
-
-    if (code == null) {
-      return FaIcon(FontAwesomeIcons.flag, size: size, color: color);
-    }
-
-    if (code == 'US') {
-      return FaIcon(FontAwesomeIcons.flagUsa, size: size, color: color);
-    }
-
-    return Text(
-      _emojiFlag(code),
-      style: TextStyle(fontSize: size),
-    );
+    if (code == null) return null;
+    return _emojiFlag(code);
   }
 
   // ---------------------------------------------------------------------------
