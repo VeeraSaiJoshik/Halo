@@ -34,6 +34,7 @@ class AssetProfile {
   final double maxFillPct;
   final int fvgExpiryCandles;
   final int sweepExhaustionCount;
+  final double chopZoneMultiplier; // score penalty when opposing BOS ≥ aligned BOS
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -47,6 +48,7 @@ class AssetProfile {
     required this.maxFillPct,
     required this.fvgExpiryCandles,
     required this.sweepExhaustionCount,
+    required this.chopZoneMultiplier,
   });
 
   static const crypto = AssetProfile(
@@ -62,6 +64,7 @@ class AssetProfile {
     maxFillPct: 0.9,
     fvgExpiryCandles: 100,
     sweepExhaustionCount: 4,
+    chopZoneMultiplier: 0.65, // crypto chops aggressively — heavier penalty
   );
 
   static const usEquities = AssetProfile(
@@ -77,6 +80,7 @@ class AssetProfile {
     maxFillPct: 0.9,
     fvgExpiryCandles: 78,
     sweepExhaustionCount: 3,
+    chopZoneMultiplier: 0.75, // equities have more directional structure
   );
 
   static const forex = AssetProfile(
@@ -92,6 +96,7 @@ class AssetProfile {
     maxFillPct: 0.9,
     fvgExpiryCandles: 96,
     sweepExhaustionCount: 3,
+    chopZoneMultiplier: 0.75,
   );
 
   static AssetProfile fromSource(String source) {
@@ -684,7 +689,7 @@ Future<void> main(List<String> args) async {
     // has been broken in both directions — it's a congestion area, not a clean
     // structural level. Additive BOS scoring was rewarding this noise.
     final isChopZone = matchBos.isNotEmpty && opposingBos.length >= alignedBos.length;
-    if (isChopZone) score *= 0.7;
+    if (isChopZone) score *= profile.chopZoneMultiplier;
 
     // Sliding fill penalty: a partially consumed imbalance is worth less.
     //   <50% fill  → no penalty
@@ -872,6 +877,7 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| "God candle" threshold (× ATR) | 2.00 | 1.80 | 1.90 | **${profile.veryLargeDispAtrMult}** |');
   sb.writeln('| FVG invalidated above fill % | 90% | 90% | 90% | **${(profile.maxFillPct * 100).toStringAsFixed(0)}%** |');
   sb.writeln('| Sweep exhaustion count | 4 | 3 | 3 | **${profile.sweepExhaustionCount}** |');
+  sb.writeln('| Chop zone multiplier | 0.65 | 0.75 | 0.75 | **${profile.chopZoneMultiplier}** |');
   sb.writeln();
   sb.writeln('''**Why this matters for your evaluation:**
 - A signal being "stale" in this report means it is older than **${profile.staleCandles} candles** on a $timeframe chart — that is approximately ${_stalePretty(profile.staleCandles, timeframe)}. Stale signals score at half weight.

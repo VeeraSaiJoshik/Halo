@@ -52,6 +52,10 @@ class AssetProfile {
   /// A cluster swept 4+ times has likely had its liquidity drained.
   final int sweepExhaustionCount;
 
+  /// Score multiplier applied when opposing BOS ≥ aligned BOS near a zone.
+  /// Crypto chops more aggressively so gets a heavier penalty than equities/forex.
+  final double chopZoneMultiplier;
+
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -65,6 +69,7 @@ class AssetProfile {
     required this.maxFillPct,
     required this.fvgExpiryCandles,
     required this.sweepExhaustionCount,
+    required this.chopZoneMultiplier,
   });
 
   // ── Presets ──────────────────────────────────────────────────────────────────
@@ -82,8 +87,9 @@ class AssetProfile {
     largeDispAtrMult: 1.5,
     veryLargeDispAtrMult: 2.0,
     maxFillPct: 0.9,
-    fvgExpiryCandles: 100,   // ~8.3hrs on 5m — beyond this an unfilled gap is structural noise
-    sweepExhaustionCount: 4, // 4+ sweeps of same cluster → liquidity likely drained
+    fvgExpiryCandles: 100,
+    sweepExhaustionCount: 4,
+    chopZoneMultiplier: 0.65, // crypto chops aggressively — heavier penalty
   );
 
   /// US equities (stocks, ETFs) — 6.5-hour session, tighter wicks,
@@ -99,8 +105,9 @@ class AssetProfile {
     largeDispAtrMult: 1.2,
     veryLargeDispAtrMult: 1.8,
     maxFillPct: 0.9,
-    fvgExpiryCandles: 78,    // ~1 full session (6.5hrs on 5m)
+    fvgExpiryCandles: 78,
     sweepExhaustionCount: 3,
+    chopZoneMultiplier: 0.75, // equities have more directional session structure
   );
 
   /// Forex (EUR/USD, GBP/USD, …) — session-based but near-24hr, tight
@@ -116,8 +123,9 @@ class AssetProfile {
     largeDispAtrMult: 1.3,
     veryLargeDispAtrMult: 1.9,
     maxFillPct: 0.9,
-    fvgExpiryCandles: 96,    // ~8hrs on 5m — one full forex session block
+    fvgExpiryCandles: 96,
     sweepExhaustionCount: 3,
+    chopZoneMultiplier: 0.75,
   );
 
   // ── Auto-selection ────────────────────────────────────────────────────────
