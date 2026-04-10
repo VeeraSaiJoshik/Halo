@@ -70,7 +70,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       bus.emit(AppEvent.closeTab);
       return true;
     }
-    if (meta && key == LogicalKeyboardKey.keyK) {
+    if (meta && key == LogicalKeyboardKey.keyT) {
       bus.emit(AppEvent.openSearch);
       return true;
     }
