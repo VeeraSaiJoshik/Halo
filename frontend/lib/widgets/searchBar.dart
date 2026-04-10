@@ -27,13 +27,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
 
   late StreamSubscription<AppEvent> _sub;
 
-  List<StockName> stockSearchResults = [
-    StockName(symbol: "AAPL", name: "Apple", region: "US", matchScore: 0.95),
-    StockName(symbol: "AAPL", name: "Apple", region: "US", matchScore: 0.95),
-    StockName(symbol: "AAPL", name: "Apple", region: "US", matchScore: 0.95),
-    StockName(symbol: "VFIAX", name: "Apple", region: "US", matchScore: 0.95),
-    StockName(symbol: "GOOG", name: "Apple", region: "US", matchScore: 0.95)
-  ];
+  List<StockName> stockSearchResults = [];
 
 
   @override
@@ -59,6 +53,10 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   }
 
   void _onEvent(AppEvent event) {
+    if (event == AppEvent.openSearch) {
+      toggleSearchBarState();
+      return;
+    }
     if (!active || stockSearchResults.isEmpty) return;
     setState(() {
       if (event == AppEvent.moveDown) {

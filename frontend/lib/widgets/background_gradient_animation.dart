@@ -6,16 +6,16 @@ class BackgroundGradientAnimation extends StatefulWidget {
 
   const BackgroundGradientAnimation({
     super.key,
-    this.gradientStart = const Color.fromARGB(opacity, 108, 0, 162),
-    this.gradientEnd = const Color.fromARGB(opacity, 0, 17, 82),
-    this.firstColor  = const Color.fromARGB(opacity, 18, 113, 255),
-    this.secondColor = const Color.fromARGB(opacity, 221, 74, 255),
-    this.thirdColor  = const Color.fromARGB(opacity, 100, 220, 255),
-    this.fourthColor = const Color.fromARGB(opacity, 200, 50, 50),
-    this.fifthColor  = const Color.fromARGB(opacity, 180, 180, 50),
-    this.sixthColor  = const Color.fromARGB(opacity, 50, 200, 120),
-    this.seventhColor = const Color.fromARGB(opacity, 255, 100, 50),
-    this.eighthColor = const Color.fromARGB(opacity, 140, 60, 255),
+    this.gradientStart  = const Color.fromARGB(opacity, 108, 0, 162),
+    this.gradientEnd    = const Color.fromARGB(opacity, 0, 17, 82),
+    this.firstColor     = const Color.fromARGB(opacity, 18, 113, 255),
+    this.secondColor    = const Color.fromARGB(opacity, 221, 74, 255),
+    this.thirdColor     = const Color.fromARGB(opacity, 100, 220, 255),
+    this.fourthColor    = const Color.fromARGB(opacity, 200, 50, 50),
+    this.fifthColor     = const Color.fromARGB(opacity, 180, 180, 50),
+    this.sixthColor     = const Color.fromARGB(opacity, 50, 200, 120),
+    this.seventhColor   = const Color.fromARGB(opacity, 255, 100, 50),
+    this.eighthColor    = const Color.fromARGB(opacity, 140, 60, 255),
     this.blobSizeFraction = 1.2,
     this.child,
   });
@@ -31,9 +31,7 @@ class BackgroundGradientAnimation extends StatefulWidget {
   final Color seventhColor;
   final Color eighthColor;
 
-  /// Blob radius as a fraction of the shorter screen dimension.
   final double blobSizeFraction;
-
   final Widget? child;
 
   @override
@@ -44,32 +42,16 @@ class BackgroundGradientAnimation extends StatefulWidget {
 class _BackgroundGradientAnimationState
     extends State<BackgroundGradientAnimation> with TickerProviderStateMixin {
 
-  late final AnimationController _c1 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 12))..repeat();
-
-  late final AnimationController _c2 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 7))..repeat();
-
-  late final AnimationController _c3 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 10))..repeat();
-
-  late final AnimationController _c4 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 8))..repeat();
-
-  late final AnimationController _c5 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 9))..repeat();
-
-  late final AnimationController _c6 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 6))..repeat();
-
-  late final AnimationController _c7 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 11))..repeat();
-
-  late final AnimationController _c8 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 14))..repeat();
-
-  late final AnimationController _c9 = AnimationController(
-    vsync: this, duration: const Duration(seconds: 5))..repeat();
+  // Nine controllers — different durations give each blob a different speed.
+  late final AnimationController _c1 = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat();
+  late final AnimationController _c2 = AnimationController(vsync: this, duration: const Duration(seconds: 7))..repeat();
+  late final AnimationController _c3 = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+  late final AnimationController _c4 = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
+  late final AnimationController _c5 = AnimationController(vsync: this, duration: const Duration(seconds: 9))..repeat();
+  late final AnimationController _c6 = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+  late final AnimationController _c7 = AnimationController(vsync: this, duration: const Duration(seconds: 11))..repeat();
+  late final AnimationController _c8 = AnimationController(vsync: this, duration: const Duration(seconds: 14))..repeat();
+  late final AnimationController _c9 = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat();
 
   @override
   void dispose() {
@@ -88,14 +70,9 @@ class _BackgroundGradientAnimationState
           gradientStart: widget.gradientStart,
           gradientEnd: widget.gradientEnd,
           colors: [
-            widget.firstColor,
-            widget.secondColor,
-            widget.thirdColor,
-            widget.fourthColor,
-            widget.fifthColor,
-            widget.sixthColor,
-            widget.seventhColor,
-            widget.eighthColor,
+            widget.firstColor, widget.secondColor, widget.thirdColor,
+            widget.fourthColor, widget.fifthColor, widget.sixthColor,
+            widget.seventhColor, widget.eighthColor,
           ],
           blobSizeFraction: widget.blobSizeFraction,
           t1: _c1.value, t2: _c2.value, t3: _c3.value,
@@ -129,9 +106,8 @@ class _GradientPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
-    final cy = size.height / 2;
 
-    // Dark space background.
+    // Background.
     canvas.drawRect(
       Offset.zero & size,
       Paint()
@@ -143,81 +119,43 @@ class _GradientPainter extends CustomPainter {
     );
 
     final blobRadius = size.shortestSide * blobSizeFraction / 2;
-    final o300 = size.width * 0.25;
-    final o500 = size.width * 0.42;
+
+    // Each blob travels from just above the top to just below the bottom.
+    // A phase offset staggers them so they are spread across the screen at all
+    // times — with 9 evenly-phased blobs, at least 3 are always fully visible.
+    final enter  = -blobRadius * 0.3;
+    final travel = size.height + blobRadius * 0.6;
+
+    // Returns a top-to-bottom position for a blob.
+    // [t]     : controller value 0→1
+    // [phase] : 0→1 offset so blobs start at different heights
+    // [xBase] : horizontal centre lane (fraction of width)
+    // [xSway] : horizontal sway amplitude (fraction of width)
+    Offset pos(double t, double phase, double xFrac, double swayFrac) {
+      final eff = (t + phase) % 1.0;
+      final y = enter + travel * eff;
+      final x = size.width * xFrac +
+                size.width * swayFrac * math.sin(eff * 2 * math.pi);
+      return Offset(x, y);
+    }
 
     canvas.saveLayer(Offset.zero & size, Paint()..blendMode = BlendMode.hardLight);
 
-    // Blob 1 — top edge horizontal sweep.
-    _drawBlob(canvas, size,
-      Offset(cx + size.width * 0.45 * math.sin(t1 * 2 * math.pi), 0),
-      blobRadius, colors[0], BlendMode.srcOver);
-
-    // Blob 2 — orbits top-left corner at a tighter radius.
-    final a2 = -(t2 * 2 * math.pi);
-    _drawBlob(canvas, size,
-      Offset(o300 * math.cos(a2), o300 * math.sin(a2)),
-      blobRadius * 0.9, colors[1], BlendMode.screen);
-
-    // Blob 3 — orbits top-right corner.
-    final a3 = t3 * 2 * math.pi;
-    _drawBlob(canvas, size,
-      Offset(size.width + o300 * math.cos(a3), o300 * math.sin(a3)),
-      blobRadius * 0.9, colors[2], BlendMode.screen);
-
-    // Blob 4 — center horizontal sweep, stays fully within screen bounds.
-    _drawBlob(canvas, size,
-      Offset(cx + size.width * 0.38 * math.sin(t4 * 2 * math.pi), cy - size.height * 0.1),
-      blobRadius * 0.85, colors[3], BlendMode.screen);
-
-    // Blob 5 — bottom sweep with a vertical wobble.
-    _drawBlob(canvas, size,
-      Offset(
-        cx + size.width * 0.4 * math.sin(t5 * 2 * math.pi + math.pi / 3),
-        size.height * 0.8 + size.height * 0.08 * math.cos(t5 * 4 * math.pi),
-      ),
-      blobRadius * 0.8, colors[4], BlendMode.screen);
-
-    // Blob 6 — small fast circular orbit near centre. Always on screen.
-    final a6 = t6 * 2 * math.pi;
-    _drawBlob(canvas, size,
-      Offset(cx + size.width * 0.18 * math.cos(a6), cy + size.height * 0.12 * math.sin(a6)),
-      blobRadius * 0.7, colors[5], BlendMode.screen);
-
-    // Blob 7 — wide diagonal orbit for overall coverage.
-    final a7 = t7 * 2 * math.pi;
-    _drawBlob(canvas, size,
-      Offset(
-        cx - o500 + o500 * (math.cos(a7) - math.sin(a7)),
-        cy + o500 - o500 * (math.sin(a7) + math.cos(a7)),
-      ),
-      blobRadius * 0.85, colors[6], BlendMode.screen);
-
-    // Blob 8 — left-side vertical bounce. Always on screen.
-    _drawBlob(canvas, size,
-      Offset(size.width * 0.2, cy + size.height * 0.3 * math.sin(t8 * 2 * math.pi)),
-      blobRadius * 0.75, colors[7], BlendMode.screen);
-
-    // Blob 9 — fast small orbit near upper-centre. Always on screen.
-    final a9 = t9 * 2 * math.pi;
-    _drawBlob(canvas, size,
-      Offset(
-        cx + size.width * 0.14 * math.cos(a9),
-        size.height * 0.3 + size.height * 0.12 * math.sin(a9),
-      ),
-      blobRadius * 0.65, colors[3], BlendMode.screen);
+    // Nine blobs, evenly phased (0/9, 1/9, … 8/9), spread across the width.
+    _drawBlob(canvas, size, pos(t1, 0/9, 0.08, 0.03), blobRadius,        colors[0], BlendMode.srcOver);
+    _drawBlob(canvas, size, pos(t2, 1/9, 0.22, 0.00), blobRadius * 0.9,  colors[1], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t3, 2/9, 0.36, 0.04), blobRadius * 0.95, colors[2], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t4, 3/9, 0.50, 0.00), blobRadius * 0.85, colors[3], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t5, 4/9, 0.64, 0.04), blobRadius * 0.9,  colors[4], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t6, 5/9, 0.78, 0.00), blobRadius * 0.8,  colors[5], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t7, 6/9, 0.20, 0.07), blobRadius * 0.85, colors[6], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t8, 7/9, 0.55, 0.05), blobRadius * 0.75, colors[7], BlendMode.screen);
+    _drawBlob(canvas, size, pos(t9, 8/9, 0.88, 0.00), blobRadius * 0.7,  colors[0], BlendMode.screen);
 
     canvas.restore();
   }
 
-  void _drawBlob(
-    Canvas canvas,
-    Size size,
-    Offset center,
-    double radius,
-    Color color,
-    BlendMode blendMode,
-  ) {
+  void _drawBlob(Canvas canvas, Size size, Offset center, double radius, Color color, BlendMode blendMode) {
     canvas.drawCircle(
       center,
       radius,

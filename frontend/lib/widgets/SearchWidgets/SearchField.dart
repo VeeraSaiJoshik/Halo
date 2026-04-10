@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SearchField extends StatefulWidget {
   final double height;
   final double width;
   final TextEditingController controller;
+  final Function onTextChange;
 
-  const SearchField({super.key, this.height = 0, this.width = 0, required this.controller});
+  const SearchField({super.key, this.height = 0, this.width = 0, required this.controller, required this.onTextChange});
 
   @override
   State<SearchField> createState() => _SearchFieldState();
@@ -31,14 +33,24 @@ class _SearchFieldState extends State<SearchField> {
             size: 14,
           ),
           Expanded(
-            child: TextField(
-              style: TextStyle(color: Colors.white, fontSize: 16),
-              decoration: InputDecoration(
-                hintText: "Search for stock or browse...",
-                hintStyle: TextStyle(color: Colors.white, fontSize: 16),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
+            child: Focus(
+              onKeyEvent: (node, event) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                    event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  return KeyEventResult.handled; // swallows the event
+                }
+                return KeyEventResult.ignored; // lets everything else through
+              },
+              child: TextField(
+                style: TextStyle(color: Colors.white, fontSize: 16),
+                onChanged: (value) => widget.onTextChange(value),
+                decoration: InputDecoration(
+                  hintText: "Search for stock or browse...",
+                  hintStyle: TextStyle(color: Colors.white, fontSize: 16),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
               ),
             ),
           ),
