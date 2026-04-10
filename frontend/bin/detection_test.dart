@@ -32,6 +32,8 @@ class AssetProfile {
   final double largeDispAtrMult;
   final double veryLargeDispAtrMult;
   final double maxFillPct;
+  final int fvgExpiryCandles;
+  final int sweepExhaustionCount;
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -43,6 +45,8 @@ class AssetProfile {
     required this.largeDispAtrMult,
     required this.veryLargeDispAtrMult,
     required this.maxFillPct,
+    required this.fvgExpiryCandles,
+    required this.sweepExhaustionCount,
   });
 
   static const crypto = AssetProfile(
@@ -56,6 +60,8 @@ class AssetProfile {
     largeDispAtrMult: 1.5,
     veryLargeDispAtrMult: 2.0,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 100,
+    sweepExhaustionCount: 4,
   );
 
   static const usEquities = AssetProfile(
@@ -69,6 +75,8 @@ class AssetProfile {
     largeDispAtrMult: 1.2,
     veryLargeDispAtrMult: 1.8,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 78,
+    sweepExhaustionCount: 3,
   );
 
   static const forex = AssetProfile(
@@ -82,13 +90,15 @@ class AssetProfile {
     largeDispAtrMult: 1.3,
     veryLargeDispAtrMult: 1.9,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 96,
+    sweepExhaustionCount: 3,
   );
 
   static AssetProfile fromSource(String source) {
     switch (source) {
       case 'alpaca': return usEquities;
       case 'finnhub': return forex;
-      default: return crypto; // binance, coinbase, unknown
+      default: return crypto;
     }
   }
 }
@@ -253,7 +263,12 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
 
   // Hard drop: fully filled or ≥95% consumed — the imbalance is gone.
   // Sliding fill penalty (50–95%) is applied in the scorer, not here.
-  final unfilled = result.where((f) => f.status != FvgStatus.filled && f.fillPct < 0.95).toList();
+  final expiry = profile?.fvgExpiryCandles ?? 100;
+  final unfilled = result.where((f) =>
+    f.status != FvgStatus.filled &&
+    f.fillPct < 0.95 &&
+    (candles.length - 1 - f.candleIndex) < expiry
+  ).toList();
 
   // FIX: deduplicate overlapping FVG zones within 1x ATR — collapse into the strongest (largest gap) representative
   return _deduplicateFvgs(unfilled, atr);
@@ -578,6 +593,11 @@ Future<void> main(List<String> args) async {
 
   print('✓ ${candles.length} candles fetched');
 
+  final zeroVolCandles = candles.where((c) => c.volume == 0.0).length;
+  if (zeroVolCandles > 0) {
+    print('  ⚠ $zeroVolCandles zero-volume candle(s) — swing points derived from these may be unreliable');
+  }
+
   final profile = AssetProfile.fromSource(source);
 
   final buf = CandleBuffer();
@@ -631,8 +651,12 @@ Future<void> main(List<String> args) async {
     if (alignedSweeps.isNotEmpty) {
       final fresh = alignedSweeps.any((s) => (totalCandles - 1 - s.candleIndex) <= staleCandles);
       final sameBar = alignedSweeps.any((s) => s.candleIndex == f.candleIndex);
+      // Exhaustion decay: a cluster swept ≥ exhaustionCount times has likely had
+      // its liquidity drained — the sweep is a retest, not a fresh stop-hunt.
+      final exhausted = alignedSweeps.any((s) => s.repeatCount >= profile.sweepExhaustionCount);
       double sweepScore = fresh ? 2.0 : 1.0;
-      if (sameBar) sweepScore *= 0.5; // same-bar FVG+sweep is one event, not two
+      if (sameBar)   sweepScore *= 0.5;
+      if (exhausted) sweepScore *= 0.5;
       score += sweepScore;
     }
     // Opposing sweeps: quarter weight regardless
@@ -712,6 +736,7 @@ Future<void> main(List<String> args) async {
       sweeps: sweeps, bosList: bosList,
       allSetups: allSetups, aiSetups: aiSetups,
       totalCandles: totalCandles, staleCandles: staleCandles,
+      zeroVolCandles: zeroVolCandles,
     );
 
     await File(outPath).writeAsString(md);
@@ -761,6 +786,7 @@ String _buildReport({
   required List<_Setup> aiSetups,
   required int totalCandles,
   required int staleCandles,
+  required int zeroVolCandles,
 }) {
   final sb = StringBuffer();
   final price = candles.last.close;
@@ -778,6 +804,9 @@ String _buildReport({
   sb.writeln('**Asset profile:** ${profile.name}  ');
   sb.writeln('**Current price:** \$${price.toStringAsFixed(4)}  ');
   sb.writeln('**ATR(14):** \$${atr.toStringAsFixed(4)}  ');
+  if (zeroVolCandles > 0) {
+    sb.writeln('**⚠ Data quality:** $zeroVolCandles of ${candles.length} candles have zero volume — swing points and FVGs derived from these bars may be unreliable.  ');
+  }
   sb.writeln();
   sb.writeln('---');
   sb.writeln();
@@ -825,9 +854,11 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| Sweep reversal min (× ATR) | 0.20 | 0.25 | 0.30 | **${profile.sweepRevMult}** |');
   sb.writeln('| Cluster tolerance (× ATR) | 0.15 | 0.12 | 0.10 | **${profile.clusterTolMult}** |');
   sb.writeln('| FVG max width (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.fvgMaxAtrMult}** |');
+  sb.writeln('| FVG hard expiry (candles) | 100 | 78 | 96 | **${profile.fvgExpiryCandles}** |');
   sb.writeln('| Large displacement (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.largeDispAtrMult}** |');
   sb.writeln('| "God candle" threshold (× ATR) | 2.00 | 1.80 | 1.90 | **${profile.veryLargeDispAtrMult}** |');
   sb.writeln('| FVG invalidated above fill % | 90% | 90% | 90% | **${(profile.maxFillPct * 100).toStringAsFixed(0)}%** |');
+  sb.writeln('| Sweep exhaustion count | 4 | 3 | 3 | **${profile.sweepExhaustionCount}** |');
   sb.writeln();
   sb.writeln('''**Why this matters for your evaluation:**
 - A signal being "stale" in this report means it is older than **${profile.staleCandles} candles** on a $timeframe chart — that is approximately ${_stalePretty(profile.staleCandles, timeframe)}. Stale signals score at half weight.

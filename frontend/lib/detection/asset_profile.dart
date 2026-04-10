@@ -44,6 +44,14 @@ class AssetProfile {
   /// Fill percentage above which an FVG is considered consumed and dropped.
   final double maxFillPct;
 
+  /// Candles after which an FVG is hard-expired regardless of fill status.
+  /// An unfilled gap from 6 hours ago on a 5m chart is structurally irrelevant.
+  final int fvgExpiryCandles;
+
+  /// Sweep repeat count above which exhaustion decay applies.
+  /// A cluster swept 4+ times has likely had its liquidity drained.
+  final int sweepExhaustionCount;
+
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -55,6 +63,8 @@ class AssetProfile {
     required this.largeDispAtrMult,
     required this.veryLargeDispAtrMult,
     required this.maxFillPct,
+    required this.fvgExpiryCandles,
+    required this.sweepExhaustionCount,
   });
 
   // ── Presets ──────────────────────────────────────────────────────────────────
@@ -72,21 +82,25 @@ class AssetProfile {
     largeDispAtrMult: 1.5,
     veryLargeDispAtrMult: 2.0,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 100,   // ~8.3hrs on 5m — beyond this an unfilled gap is structural noise
+    sweepExhaustionCount: 4, // 4+ sweeps of same cluster → liquidity likely drained
   );
 
   /// US equities (stocks, ETFs) — 6.5-hour session, tighter wicks,
   /// volume is reliable, session gaps matter.
   static const usEquities = AssetProfile(
     name: 'us_equities',
-    staleCandles: 20,       // 20 candles in a 6.5hr session = ~1.5hrs on 5m
-    minDispAtrMult: 0.35,   // lower bar — stocks are less naturally volatile
-    sweepRevMult: 0.25,     // tighter wicks → require cleaner reversal
+    staleCandles: 20,
+    minDispAtrMult: 0.35,
+    sweepRevMult: 0.25,
     clusterTolMult: 0.12,
     fvgMaxAtrMult: 1.2,
     fvgMinAtrMult: 0.08,
-    largeDispAtrMult: 1.2,  // 1.2× ATR on a stock is already significant
+    largeDispAtrMult: 1.2,
     veryLargeDispAtrMult: 1.8,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 78,    // ~1 full session (6.5hrs on 5m)
+    sweepExhaustionCount: 3,
   );
 
   /// Forex (EUR/USD, GBP/USD, …) — session-based but near-24hr, tight
@@ -95,13 +109,15 @@ class AssetProfile {
     name: 'forex',
     staleCandles: 25,
     minDispAtrMult: 0.4,
-    sweepRevMult: 0.3,      // forex sweeps tend to be very clean or fake
-    clusterTolMult: 0.10,   // equal highs/lows cluster very tightly in forex
+    sweepRevMult: 0.3,
+    clusterTolMult: 0.10,
     fvgMaxAtrMult: 1.3,
     fvgMinAtrMult: 0.08,
     largeDispAtrMult: 1.3,
     veryLargeDispAtrMult: 1.9,
     maxFillPct: 0.9,
+    fvgExpiryCandles: 96,    // ~8hrs on 5m — one full forex session block
+    sweepExhaustionCount: 3,
   );
 
   // ── Auto-selection ────────────────────────────────────────────────────────
