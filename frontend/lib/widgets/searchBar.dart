@@ -27,6 +27,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   int activeIndex = 0;
 
   TextEditingController searchField = TextEditingController();
+  FocusNode searchFocus = FocusNode();
 
   late StreamSubscription<AppEvent> _sub;
 
@@ -51,6 +52,8 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
 
   @override
   void dispose() {
+    searchFocus.dispose();
+    searchField.dispose();
     _sub.cancel();
     super.dispose();
   }
@@ -78,13 +81,17 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
 
   void toggleSearchBarState() {
     active = !active;
+    if (active) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => searchFocus.requestFocus());
+    } else {
+      searchFocus.unfocus();
+    }
     setState(() {
       if (active) {
         searchBarHeight = 55;
         searchBarWidth = 550;
         activeIndex = 0;
-        searchField.value = TextEditingValue.empty;
-        searchField = TextEditingController();
+        searchField.clear();
         stockSearchResults = [];
         ref.read(appEventBusProvider).emit(AppEvent.searchOpened);
       } else {
@@ -116,6 +123,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
             height: searchBarHeight,
             width: searchBarWidth,
             controller: searchField,
+            focusNode: searchFocus,
             onTextChange: searchStocks,
           ), 
           if(stockSearchResults.isNotEmpty) ...[

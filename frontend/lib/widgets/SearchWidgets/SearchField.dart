@@ -6,9 +6,10 @@ class SearchField extends StatefulWidget {
   final double height;
   final double width;
   final TextEditingController controller;
+  final FocusNode focusNode;
   final Function onTextChange;
 
-  const SearchField({super.key, this.height = 0, this.width = 0, required this.controller, required this.onTextChange});
+  const SearchField({super.key, this.height = 0, this.width = 0, required this.controller, required this.focusNode, required this.onTextChange});
 
   @override
   State<SearchField> createState() => _SearchFieldState();
@@ -45,6 +46,8 @@ class _SearchFieldState extends State<SearchField> {
                 return KeyEventResult.ignored; // lets everything else through
               },
               child: TextField(
+                controller: widget.controller,
+                focusNode: widget.focusNode,
                 style: TextStyle(color: Colors.white, fontSize: 16),
                 onChanged: (value) => widget.onTextChange(value),
                 decoration: InputDecoration(
