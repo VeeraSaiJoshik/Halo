@@ -1010,6 +1010,8 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln();
   sb.writeln('Price gaps left by aggressive displacement candles. Only unfilled gaps shown.');
   sb.writeln();
+  sb.writeln('**Zone geometry note:** FVG bounds are defined as `Lower = candle[n+1].high`, `Upper = candle[n-1].low` for bearish gaps (and vice versa for bullish). The displacement candle itself (candle[n]) is never used for zone bounds — only the candle before and the candle after determine the gap. The displacement candle column is for reference only.');
+  sb.writeln();
   sb.writeln('| Direction | Lower | Upper | Gap Size | Fill % | Displacement Candle |');
   sb.writeln('|-----------|-------|-------|----------|--------|---------------------|');
   for (final f in fvgs) {
