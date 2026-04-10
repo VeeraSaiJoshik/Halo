@@ -35,6 +35,11 @@ class AssetProfile {
   final int fvgExpiryCandles;
   final int sweepExhaustionCount;
   final double chopZoneMultiplier; // score penalty when opposing BOS ≥ aligned BOS
+  /// Minimum FVG gap size as ATR multiple — gaps smaller than this are rounding noise.
+  final double fvgMinGapAtrMult;
+  /// Minimum penetration depth as ATR multiple — wick must pierce past the cluster
+  /// by at least this much. A $0.02 pierce on a $0.50 ATR didn't hunt stops.
+  final double sweepMinPenMult;
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -49,6 +54,8 @@ class AssetProfile {
     required this.fvgExpiryCandles,
     required this.sweepExhaustionCount,
     required this.chopZoneMultiplier,
+    required this.fvgMinGapAtrMult,
+    required this.sweepMinPenMult,
   });
 
   static const crypto = AssetProfile(
@@ -65,6 +72,8 @@ class AssetProfile {
     fvgExpiryCandles: 100,
     sweepExhaustionCount: 4,
     chopZoneMultiplier: 0.65, // crypto chops aggressively — heavier penalty
+    fvgMinGapAtrMult: 0.12,   // crypto: slightly looser — wicks are noisier
+    sweepMinPenMult: 0.04,    // crypto: wicks are larger, looser penetration floor
   );
 
   static const usEquities = AssetProfile(
@@ -81,6 +90,8 @@ class AssetProfile {
     fvgExpiryCandles: 78,
     sweepExhaustionCount: 3,
     chopZoneMultiplier: 0.75, // equities have more directional structure
+    fvgMinGapAtrMult: 0.15,   // equities: tighter — a $0.05 gap on a $260 stock is noise
+    sweepMinPenMult: 0.06,    // equities: tighter — a $0.02 pierce didn't hunt stops
   );
 
   static const forex = AssetProfile(
@@ -97,6 +108,8 @@ class AssetProfile {
     fvgExpiryCandles: 96,
     sweepExhaustionCount: 3,
     chopZoneMultiplier: 0.75,
+    fvgMinGapAtrMult: 0.12,
+    sweepMinPenMult: 0.05,
   );
 
   static AssetProfile fromSource(String source) {
@@ -228,6 +241,7 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
   minAtrMult    = profile?.fvgMinAtrMult    ?? minAtrMult;
   maxAtrMult    = profile?.fvgMaxAtrMult    ?? maxAtrMult;
   minDispAtrMult = profile?.minDispAtrMult  ?? minDispAtrMult;
+  final minGapAtrMult = profile?.fvgMinGapAtrMult ?? 0.12;
   final candles = buf.candles;
   final atr = buf.atr;
   final result = <Fvg>[];
@@ -235,7 +249,7 @@ List<Fvg> findFvgs(CandleBuffer buf, {AssetProfile? profile, double minAtrMult =
 
   for (int i = 1; i < candles.length - 1; i++) {
     final c0 = candles[i - 1], c1 = candles[i], c2 = candles[i + 1];
-    final minGap = atr * minAtrMult;
+    final minGap = atr * minGapAtrMult; // minimum meaningful gap size
     final maxGap = atr * maxAtrMult; // reject gaps wider than 150% ATR — those are full candle ranges, not clean imbalances
     final minDisp = atr * minDispAtrMult; // reject FVGs where the displacement candle is too small to be meaningful
 
@@ -377,10 +391,11 @@ List<LiqCluster> findClusters(CandleBuffer buf, {int lookback = 3, double tolMul
 
 /// FIX: one sweep event per cluster (not one per candle).
 /// Keeps the most recent sweep as representative; tracks repeat count.
-List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2, double tolMult = 0.15}) {
+List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2, double tolMult = 0.15, double minPenMult = 0.04}) {
   final clusters = findClusters(buf, tolMult: tolMult);
   final atr = buf.atr;
   final minRev = atr * revMult;
+  final minPen = atr * minPenMult; // minimum wick penetration past the cluster price
   final candles = buf.candles;
 
   // Map: cluster price key → best (most recent) sweep for that cluster
@@ -390,7 +405,9 @@ List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2, double tolMult =
     final c = candles[ci];
     for (final cl in clusters) {
       final key = '${cl.side.name}:${cl.price.toStringAsFixed(2)}';
-      if (cl.side == SweepDir.bullish && c.low < cl.price && c.close > cl.price && (c.close - c.low) >= minRev) {
+      final bullPen = cl.price - c.low; // how far the wick pierced below the cluster
+      if (cl.side == SweepDir.bullish && c.low < cl.price && c.close > cl.price &&
+          (c.close - c.low) >= minRev && bullPen >= minPen) {
         final existing = bestPerCluster[key];
         bestPerCluster[key] = Sweep(
           dir: SweepDir.bullish, cluster: cl, extreme: c.low, close: c.close,
@@ -398,7 +415,9 @@ List<Sweep> findSweeps(CandleBuffer buf, {double revMult = 0.2, double tolMult =
           repeatCount: (existing?.repeatCount ?? 0) + 1,
         );
       }
-      if (cl.side == SweepDir.bearish && c.high > cl.price && c.close < cl.price && (c.high - c.close) >= minRev) {
+      final bearPen = c.high - cl.price; // how far the wick pierced above the cluster
+      if (cl.side == SweepDir.bearish && c.high > cl.price && c.close < cl.price &&
+          (c.high - c.close) >= minRev && bearPen >= minPen) {
         final existing = bestPerCluster[key];
         bestPerCluster[key] = Sweep(
           dir: SweepDir.bearish, cluster: cl, extreme: c.high, close: c.close,
@@ -541,8 +560,12 @@ Future<List<Candle>> fetchAlpaca(String symbol, String timeframe) async {
   if (key.isEmpty || secret.isEmpty) throw Exception('Set ALPACA_API_KEY and ALPACA_API_SECRET');
 
   final tf = _alpacaTf(timeframe);
+  // Request a large window (5 calendar days, limit=1000) then take the last 200.
+  // Using limit=200 with a start date returns the FIRST 200 bars from that date,
+  // which on a 5-day window only reaches ~2.5 sessions and misses recent price action.
+  final start = DateTime.now().toUtc().subtract(const Duration(days: 5)).toIso8601String().split('T').first;
   final url = Uri.parse(
-    'https://data.alpaca.markets/v2/stocks/$symbol/bars?timeframe=$tf&limit=200&adjustment=split&feed=iex&sort=asc',
+    'https://data.alpaca.markets/v2/stocks/$symbol/bars?timeframe=$tf&limit=1000&start=${start}T00:00:00Z&adjustment=split&feed=iex&sort=asc',
   );
   final client = HttpClient();
   final req = await client.getUrl(url);
@@ -556,7 +579,7 @@ Future<List<Candle>> fetchAlpaca(String symbol, String timeframe) async {
 
   final data = jsonDecode(body) as Map<String, dynamic>;
   final bars = data['bars'] as List? ?? [];
-  return bars.map((b) {
+  final all = bars.map((b) {
     final bar = b as Map<String, dynamic>;
     return Candle(
       timestamp: DateTime.parse(bar['t'] as String),
@@ -567,6 +590,8 @@ Future<List<Candle>> fetchAlpaca(String symbol, String timeframe) async {
       volume: (bar['v'] as num).toDouble(),
     );
   }).toList();
+  // Return only the most recent 200 bars so the buffer size stays consistent.
+  return all.length > 200 ? all.sublist(all.length - 200) : all;
 }
 
 String _alpacaTf(String tf) {
@@ -608,7 +633,19 @@ Future<void> main(List<String> args) async {
     print('  ⚠ $zeroVolCandles zero-volume candle(s) — swing points derived from these may be unreliable');
   }
 
+  // Stale data check: warn if the most recent candle is >1 session behind now.
+  // For equities this means >1 calendar day (missed a trading session).
+  // For crypto >4 hours means the feed has a significant gap.
   final profile = AssetProfile.fromSource(source);
+  final lastTs = candles.last.timestamp;
+  final now = DateTime.now().toUtc();
+  final staleDuration = source == 'alpaca' ? const Duration(days: 1) : const Duration(hours: 4);
+  final isStaleData = now.difference(lastTs) > staleDuration;
+  if (isStaleData) {
+    print('  ⚠ STALE DATA: last candle is ${lastTs.toIso8601String().substring(0, 16)} UTC — '
+          '${now.difference(lastTs).inHours}h behind current time. '
+          'Structure scored against current price may be unreliable.');
+  }
 
   final buf = CandleBuffer();
   buf.loadHistory(candles);
@@ -616,7 +653,7 @@ Future<void> main(List<String> args) async {
   final swings   = findSwings(buf.candles);
   final fvgs     = findFvgs(buf, profile: profile);
   final clusters = findClusters(buf, tolMult: profile.clusterTolMult);
-  final sweeps   = findSweeps(buf, revMult: profile.sweepRevMult, tolMult: profile.clusterTolMult);
+  final sweeps   = findSweeps(buf, revMult: profile.sweepRevMult, tolMult: profile.clusterTolMult, minPenMult: profile.sweepMinPenMult);
   final bosList  = findBos(buf);
   final price    = candles.last.close;
   final atr      = buf.atr;
@@ -661,13 +698,16 @@ Future<void> main(List<String> args) async {
     if (alignedSweeps.isNotEmpty) {
       final fresh = alignedSweeps.any((s) => (totalCandles - 1 - s.candleIndex) <= staleCandles);
       final sameBar = alignedSweeps.any((s) => s.candleIndex == f.candleIndex);
-      // Exhaustion decay: a cluster swept ≥ exhaustionCount times has likely had
-      // its liquidity drained — the sweep is a retest, not a fresh stop-hunt.
-      final exhausted = alignedSweeps.any((s) => s.repeatCount >= profile.sweepExhaustionCount);
-      double sweepScore = fresh ? 2.0 : 1.0;
-      if (sameBar)   sweepScore *= 0.5;
-      if (exhausted) sweepScore *= 0.5;
-      score += sweepScore;
+      // Exhaustion: ALL aligned sweeps are exhausted — liquidity is drained, treat like
+      // a weak opposing signal (+0.25) rather than a meaningful stop-hunt confirmation.
+      final allExhausted = alignedSweeps.every((s) => s.repeatCount >= profile.sweepExhaustionCount);
+      if (allExhausted) {
+        score += 0.25; // exhausted cluster — nearly worthless as confirmation
+      } else {
+        double sweepScore = fresh ? 2.0 : 1.0;
+        if (sameBar) sweepScore *= 0.5;
+        score += sweepScore;
+      }
     }
     // Opposing sweeps: quarter weight regardless
     if (opposingSweeps.isNotEmpty) score += 0.25;
@@ -753,6 +793,7 @@ Future<void> main(List<String> args) async {
       allSetups: allSetups, aiSetups: aiSetups,
       totalCandles: totalCandles, staleCandles: staleCandles,
       zeroVolCandles: zeroVolCandles,
+      isStaleData: isStaleData,
     );
 
     await File(outPath).writeAsString(md);
@@ -805,6 +846,7 @@ String _buildReport({
   required int totalCandles,
   required int staleCandles,
   required int zeroVolCandles,
+  required bool isStaleData,
 }) {
   final sb = StringBuffer();
   final price = candles.last.close;
@@ -822,6 +864,12 @@ String _buildReport({
   sb.writeln('**Asset profile:** ${profile.name}  ');
   sb.writeln('**Current price:** \$${price.toStringAsFixed(4)}  ');
   sb.writeln('**ATR(14):** \$${atr.toStringAsFixed(4)}  ');
+  if (isStaleData) {
+    final lastTs = candles.last.timestamp;
+    final gapHours = DateTime.now().toUtc().difference(lastTs).inHours;
+    sb.writeln('**⚠ STALE DATA:** Last candle is ${lastTs.toIso8601String().substring(0, 16)} UTC (${gapHours}h ago). '
+               'Structure scored against current price may be unreliable — an entire session of price action is missing from this analysis.  ');
+  }
   if (zeroVolCandles > 0) {
     sb.writeln('**⚠ Data quality:** $zeroVolCandles of ${candles.length} candles have zero volume — swing points and FVGs derived from these bars may be unreliable.  ');
   }
@@ -870,11 +918,13 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| Staleness cutoff (candles) | 30 | 20 | 25 | **${profile.staleCandles}** |');
   sb.writeln('| Min displacement (× ATR) | 0.50 | 0.35 | 0.40 | **${profile.minDispAtrMult}** |');
   sb.writeln('| Sweep reversal min (× ATR) | 0.20 | 0.25 | 0.30 | **${profile.sweepRevMult}** |');
+  sb.writeln('| Sweep penetration min (× ATR) | 0.04 | 0.06 | 0.05 | **${profile.sweepMinPenMult}** |');
   sb.writeln('| Cluster tolerance (× ATR) | 0.15 | 0.12 | 0.10 | **${profile.clusterTolMult}** |');
   sb.writeln('| FVG max width (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.fvgMaxAtrMult}** |');
   sb.writeln('| FVG hard expiry (candles) | 100 | 78 | 96 | **${profile.fvgExpiryCandles}** |');
   sb.writeln('| Large displacement (× ATR) | 1.50 | 1.20 | 1.30 | **${profile.largeDispAtrMult}** |');
   sb.writeln('| "God candle" threshold (× ATR) | 2.00 | 1.80 | 1.90 | **${profile.veryLargeDispAtrMult}** |');
+  sb.writeln('| FVG min gap size (× ATR) | 0.12 | 0.15 | 0.12 | **${profile.fvgMinGapAtrMult}** |');
   sb.writeln('| FVG invalidated above fill % | 90% | 90% | 90% | **${(profile.maxFillPct * 100).toStringAsFixed(0)}%** |');
   sb.writeln('| Sweep exhaustion count | 4 | 3 | 3 | **${profile.sweepExhaustionCount}** |');
   sb.writeln('| Chop zone multiplier | 0.65 | 0.75 | 0.75 | **${profile.chopZoneMultiplier}** |');
@@ -901,6 +951,7 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| + Displacement candle ≥ ${profile.veryLargeDispAtrMult}× ATR ("god candle") | +1.0 |');
   sb.writeln('| + Aligned Liquidity Sweep (fresh ≤${profile.staleCandles} candles) | +2.0 |');
   sb.writeln('| + Aligned Liquidity Sweep (stale) | +1.0 |');
+  sb.writeln('| + Aligned Liquidity Sweep (exhausted ≥${profile.sweepExhaustionCount}×) | +0.25 (liquidity drained) |');
   sb.writeln('| + Opposing Sweep (⚠️ mixed signal flag) | +0.25 |');
   sb.writeln('| + Aligned BOS (linear decay: full at age 0, zero at age 150) | 0.0–1.5 |');
   sb.writeln('| + Opposing BOS (⚠️ mixed signal flag) | +0.25 |');
@@ -916,7 +967,7 @@ This report was generated using the **`${profile.name}`** profile. Key behaviour
   sb.writeln('| 💧 Fill 70–95%: imbalance structurally weak | score ×0.5 | fast fill |');
   sb.writeln('| 💧 Fill 70–95% + age ≤5 candles: born dead | score ×0.25 total | fast fill |');
   sb.writeln('| ↩ Counter-trend: recent BOS (last 20 candles) oppose FVG direction | score ×0.6 | counter-trend |');
-  sb.writeln('| 🔀 Chop zone: opposing BOS count ≥ aligned BOS count near zone | score ×0.7 | chop zone |');
+  sb.writeln('| 🔀 Chop zone: opposing BOS count ≥ aligned BOS count near zone | score ×${profile.chopZoneMultiplier} | chop zone |');
   sb.writeln();
   sb.writeln('Signals within 1× ATR of the same price level combine. Minimum score to appear: **2.0**. AI trigger threshold: **3.5** with price approaching the zone.');
   sb.writeln();

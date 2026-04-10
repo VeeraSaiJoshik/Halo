@@ -56,6 +56,13 @@ class AssetProfile {
   /// Crypto chops more aggressively so gets a heavier penalty than equities/forex.
   final double chopZoneMultiplier;
 
+  /// Minimum FVG gap size as ATR multiple — gaps smaller than this are rounding noise.
+  final double fvgMinGapAtrMult;
+
+  /// Minimum wick penetration past the cluster price as ATR multiple.
+  /// A $0.02 pierce on a $0.50 ATR didn't hunt stops — it just touched the level.
+  final double sweepMinPenMult;
+
   const AssetProfile({
     required this.name,
     required this.staleCandles,
@@ -70,6 +77,8 @@ class AssetProfile {
     required this.fvgExpiryCandles,
     required this.sweepExhaustionCount,
     required this.chopZoneMultiplier,
+    required this.fvgMinGapAtrMult,
+    required this.sweepMinPenMult,
   });
 
   // ── Presets ──────────────────────────────────────────────────────────────────
@@ -89,7 +98,9 @@ class AssetProfile {
     maxFillPct: 0.9,
     fvgExpiryCandles: 100,
     sweepExhaustionCount: 4,
-    chopZoneMultiplier: 0.65, // crypto chops aggressively — heavier penalty
+    chopZoneMultiplier: 0.65,
+    fvgMinGapAtrMult: 0.12,
+    sweepMinPenMult: 0.04,
   );
 
   /// US equities (stocks, ETFs) — 6.5-hour session, tighter wicks,
@@ -107,7 +118,9 @@ class AssetProfile {
     maxFillPct: 0.9,
     fvgExpiryCandles: 78,
     sweepExhaustionCount: 3,
-    chopZoneMultiplier: 0.75, // equities have more directional session structure
+    chopZoneMultiplier: 0.75,
+    fvgMinGapAtrMult: 0.15,
+    sweepMinPenMult: 0.06,
   );
 
   /// Forex (EUR/USD, GBP/USD, …) — session-based but near-24hr, tight
@@ -126,6 +139,8 @@ class AssetProfile {
     fvgExpiryCandles: 96,
     sweepExhaustionCount: 3,
     chopZoneMultiplier: 0.75,
+    fvgMinGapAtrMult: 0.12,
+    sweepMinPenMult: 0.05,
   );
 
   // ── Auto-selection ────────────────────────────────────────────────────────
