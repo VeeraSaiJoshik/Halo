@@ -143,7 +143,7 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
             InkWell(
               splashColor: Colors.transparent, 
               onTap: () => {
-                windowManager.maximize()
+                windowManager.setFullScreen(true)
               },
               child: Container(
                 height: 15,
