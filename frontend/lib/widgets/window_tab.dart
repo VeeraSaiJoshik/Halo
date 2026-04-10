@@ -53,7 +53,7 @@ class _WindowTabState extends State<WindowTab>
                   height: 17, 
                   width: 17, 
                   child: Image.network(
-                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/1280px-Google_Favicon_2025.svg.png",
+                    widget.context.Stock.imageUrl,
                     fit: BoxFit.contain
                   ),
                 ),
@@ -62,7 +62,7 @@ class _WindowTabState extends State<WindowTab>
                   spacing: 8,
                   children: [
                     Text(
-                      widget.context.Stock, 
+                      widget.context.Stock.symbol, 
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,

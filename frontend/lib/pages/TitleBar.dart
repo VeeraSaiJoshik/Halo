@@ -1,21 +1,24 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:window_manager/window_manager.dart';
 
-class TitleBar extends StatefulWidget {
+class TitleBar extends ConsumerStatefulWidget {
   final AppController controller;
   const TitleBar({super.key, required this.controller});
 
   @override
-  State<TitleBar> createState() => _TitleBarState();
+  ConsumerState<TitleBar> createState() => _TitleBarState();
 }
 
-class _TitleBarState extends State<TitleBar> {
+class _TitleBarState extends ConsumerState<TitleBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -39,11 +42,7 @@ class _TitleBarState extends State<TitleBar> {
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             onTap: () {
               setState(() {
-                var curTab = widget.controller.getCurrentTab();
-                if(curTab != null) {
-                  curTab.isActive = false;
-                }
-                widget.controller.newTab();
+                ref.read(appEventBusProvider).emit(AppEvent.openSearch);
               });
             },
             child: Container(height: 38, child: Center(

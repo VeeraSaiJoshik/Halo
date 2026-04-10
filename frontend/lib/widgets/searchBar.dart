@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/engine/clients/alpha_advantage_client.dart';
 import 'package:frontend/engine/clients/yahoo_finance_client.dart';
 import 'package:frontend/models/providerModels.dart';
@@ -11,7 +12,8 @@ import 'package:frontend/widgets/SearchWidgets/SearchField.dart';
 import 'package:frontend/widgets/SearchWidgets/StockBar.dart';
 
 class CustomSearchBar extends ConsumerStatefulWidget {
-  const CustomSearchBar({super.key});
+  AppController appController;
+  CustomSearchBar({super.key, required this.appController});
 
   @override
   ConsumerState<CustomSearchBar> createState() => CustomSearchBarState();
@@ -64,6 +66,12 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
         activeIndex = (activeIndex + 1).clamp(0, stockSearchResults.length - 1);
       } else if (event == AppEvent.moveUp) {
         activeIndex = (activeIndex - 1).clamp(0, stockSearchResults.length - 1);
+      } else if (event == AppEvent.select) {
+        if (stockSearchResults.isNotEmpty) {
+          final selectedStock = stockSearchResults[activeIndex];
+          widget.appController.newTab(selectedStock);
+          toggleSearchBarState();
+        }
       }
     });
   }
@@ -75,9 +83,16 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
         searchBarHeight = 55;
         searchBarWidth = 550;
         activeIndex = 0;
+        searchField.value = TextEditingValue.empty;
+        searchField = TextEditingController();
+        stockSearchResults = [];
+        ref.read(appEventBusProvider).emit(AppEvent.searchOpened);
       } else {
         searchBarHeight = 0;
         searchBarWidth = 0;
+        searchField.clear();
+        stockSearchResults = [];
+        ref.read(appEventBusProvider).emit(AppEvent.searchClosed);
       }
     });
   }
@@ -87,9 +102,10 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300), 
       curve: Curves.easeInOutCirc,
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.95), 
-        borderRadius: BorderRadius.circular(10), 
+        color: Colors.black.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside)
       ),
       width: searchBarWidth + 30,
@@ -105,7 +121,6 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
           if(stockSearchResults.isNotEmpty) ...[
             Container(
               height: 1,
-              width: 555, 
               color: Colors.white.withOpacity(0.45),
             ),
             StockBar(stocks: stockSearchResults, activeIndex: activeIndex)

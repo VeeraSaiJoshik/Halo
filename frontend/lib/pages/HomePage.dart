@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/BodyPage.dart';
 import 'package:frontend/pages/TitleBar.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/searchBar.dart';
 import 'package:window_manager/window_manager.dart';
@@ -20,6 +22,28 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   AppController controller = AppController();
   GlobalKey<CustomSearchBarState> searchBarKey = GlobalKey();
+  late StreamSubscription<AppEvent> _sub;
+
+  bool _searchActive = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = ref.read(appEventBusProvider).stream.listen((event) {
+      if (event == AppEvent.searchClosed) {
+        print("the search has been closed");
+        setState(() => _searchActive = false);
+      } else if (event == AppEvent.searchOpened) {
+        setState(() => _searchActive = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,28 +65,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                     )
                   ],
                 ),
+                if (_searchActive)
+                  Positioned.fill(
+                    child: InkWell(
+                      onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
+                      child: Container(width: double.infinity, height: double.infinity, color: Colors.transparent),
+                    ),
+                  ),
                 Positioned(
                   left: 0, right: 0, top: MediaQuery.of(context).size.height * 0.45,
                   child: Center(
                     child: CustomSearchBar(
                       key: searchBarKey,
+                      appController: controller,
                     ),
                   ),
-                ), 
-                Positioned(
-                  bottom: 20, 
-                  right: 20, 
-                  child: InkWell(
-                    onTap: () => {
-                      searchBarKey.currentState?.toggleSearchBarState()
-                    },
-                    child: Container(
-                      height: 20, 
-                      width: 20, 
-                      color: Colors.red,
-                    )
-                  ),
-                )
+                ),
               ],
             )
           ),

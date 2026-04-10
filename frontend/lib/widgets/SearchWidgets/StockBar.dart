@@ -70,14 +70,16 @@ class StockWidget extends StatelessWidget {
               ),
             ),
             SizedBox(width: 7),
-            Text(
-              stock.symbol, 
-              style: TextStyle(
-                color: Colors.white, 
-                fontSize: 15, 
-                fontWeight: FontWeight.w700
+            Expanded(
+              child: Text(
+                stock.symbol,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.fade,
             ),
           ],
         ),

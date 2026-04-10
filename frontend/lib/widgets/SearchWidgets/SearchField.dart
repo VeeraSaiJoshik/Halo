@@ -21,7 +21,7 @@ class _SearchFieldState extends State<SearchField> {
       duration: Duration(milliseconds: 300),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(),
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: widget.width != 0 ? 20 : 0),
       curve: Curves.easeInOutCirc,
       height: widget.height, 
       width: widget.width,
@@ -36,6 +36,7 @@ class _SearchFieldState extends State<SearchField> {
           ),
           Expanded(
             child: Focus(
+              autofocus: true,
               onKeyEvent: (node, event) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
                     event.logicalKey == LogicalKeyboardKey.arrowDown) {

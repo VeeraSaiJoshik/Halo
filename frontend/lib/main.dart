@@ -62,10 +62,11 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
 
     print("Key pressed: ${event.logicalKey.debugName}, meta: $meta");
 
-    if (meta && key == LogicalKeyboardKey.keyT) {
-      bus.emit(AppEvent.newTab);
+    if (key == LogicalKeyboardKey.enter) {
+      bus.emit(AppEvent.select);
       return true;
     }
+
     if (meta && key == LogicalKeyboardKey.keyW) {
       bus.emit(AppEvent.closeTab);
       return true;

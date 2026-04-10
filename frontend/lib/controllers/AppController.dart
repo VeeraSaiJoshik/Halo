@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/models/stocks.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -10,7 +11,7 @@ enum AppPage {
 }
 
 class WindowInfo {
-  final String Stock;
+  final StockName Stock;
   final WebViewController? webController;
   late bool isActive;
   late String uuid;
@@ -24,7 +25,7 @@ class WindowInfo {
 class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
 
-  void newTab() {
+  void newTab(StockName stock) {
     final controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
@@ -48,8 +49,9 @@ class AppController extends ChangeNotifier{
 
     ..loadRequest(Uri.parse('https://www.webull.com/center'));
     tabs.add(
-      WindowInfo(webController: controller, Stock: "GOOG", isActive: true)
+      WindowInfo(webController: controller, Stock: stock, isActive: true)
     );
+    switchTab(tabs.elementAt(tabs.length - 1));
 
     notifyListeners();
   }

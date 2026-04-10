@@ -46,14 +46,6 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                     ],
                   ),
                 ),
-                widget.webController.getCurrentTab() == null ? Container() : Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 8,
-                  child: Center(
-                    child: BottomNavModal(controller: widget.webController,),
-                  ),
-                ),
               ],
             ),
           ),
