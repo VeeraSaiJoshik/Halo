@@ -53,6 +53,19 @@ class StockWidget extends StatelessWidget {
                 child: Image.network(
                   stock.imageUrl,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Color.fromARGB(255, 66, 72, 207),
+                    child: Center(
+                      child: Text(
+                        stock.symbol[0],
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -64,6 +77,7 @@ class StockWidget extends StatelessWidget {
                 fontSize: 15, 
                 fontWeight: FontWeight.w700
               ),
+              overflow: TextOverflow.fade,
             ),
           ],
         ),

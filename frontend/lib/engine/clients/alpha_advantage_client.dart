@@ -4,14 +4,14 @@ import 'package:frontend/models/stocks.dart';
 import 'package:http/http.dart' as http;
 
 class AlphaAdvantageClient {
-  final String apiKey = String.fromEnvironment('ALPHA_VANTAGE_KEY');
+  static const String apiKey = String.fromEnvironment('ALPHA_VANTAGE_KEY');
   static const String route = "https://www.alphavantage.co/query";
 
   Future<List<StockName>> searchStocks(String query) async {
     final url = Uri.parse('$route?function=SYMBOL_SEARCH&keywords=$query&apikey=$apiKey');
     final response = await http.get(url);
 
-    print(apiKey);
+    print(apiKey + " AP{I KEY }" + String.fromEnvironment('ALPHA_VANTAGE_KEY'));
     print(response.body);
 
     if (response.statusCode == 200) {
@@ -21,10 +21,10 @@ class AlphaAdvantageClient {
       List<StockName> stonks = matches.map(
         (match) => StockName.fromJson(match)
       ).toList().where(
-        (stock) => stock.matchScore >= 0.7
+        (stock) => stock.matchScore >= 0.2
       ).toList();
 
-      List<StockName> finalList = stonks.sublist(0, stonks.length < 5 ? stonks.length : 5);
+      List<StockName> finalList = stonks.sublist(0, stonks.length < 3 ? stonks.length : 3);
 
       return finalList;
     } else {

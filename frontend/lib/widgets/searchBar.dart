@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/engine/clients/alpha_advantage_client.dart';
+import 'package:frontend/engine/clients/yahoo_finance_client.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -37,7 +38,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   }
 
   void searchStocks(String query) {
-    alphaAdvantageClient.searchStocks(query).then((results) {
+    yahooFinanceClient.searchStocks(query).then((results) {
       setState(() {
         stockSearchResults = results;
       });

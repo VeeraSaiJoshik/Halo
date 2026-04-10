@@ -3,6 +3,7 @@ class StockName {
   final String name;
   final String region;
   final double matchScore;
+  final String stockType;
   late String imageUrl;
 
   StockName({
@@ -10,6 +11,7 @@ class StockName {
     required this.name,
     required this.region,
     required this.matchScore,
+    this.stockType = "STOCK"
   }) {
     imageUrl = "https://financialmodelingprep.com/image-stock/${symbol}.png";
   }
