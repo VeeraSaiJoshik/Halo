@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:frontend/models/candle.dart';
 import 'candle_aggregator.dart';
-import 'clients/alpaca_client.dart';
-import 'clients/binance_client.dart';
-import 'clients/finnhub_client.dart';
+import '../clients/alpaca_client.dart';
+import '../clients/binance_client.dart';
+import '../clients/finnhub_client.dart';
 import 'ticker_identifier.dart';
 import 'ticker_resolver.dart';
 

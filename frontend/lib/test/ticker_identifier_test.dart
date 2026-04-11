@@ -1,4 +1,4 @@
-import 'package:frontend/engine/ticker_identifier.dart';
+import 'package:frontend/engine/stocks/ticker_identifier.dart';
 import 'package:test/test.dart';
 
 void main() {

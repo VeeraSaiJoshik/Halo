@@ -1,4 +1,4 @@
-import 'package:frontend/engine/candle_aggregator.dart';
+import 'package:frontend/engine/stocks/candle_aggregator.dart';
 import 'package:frontend/models/candle.dart';
 import 'package:test/test.dart';
 

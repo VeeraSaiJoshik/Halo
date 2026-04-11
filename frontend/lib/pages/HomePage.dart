@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
+import 'package:frontend/engine/mouse_detection/MouseRegionEngine.dart';
+import 'package:frontend/engine/mouse_detection/customMouseRegion.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/BodyPage.dart';
@@ -81,6 +83,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                   ),
                 ),
+                MouseRegionEngine(
+                  regions: regions,
+                  debug: false,
+                )
               ],
             )
           ),

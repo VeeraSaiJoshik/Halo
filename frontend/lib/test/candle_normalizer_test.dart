@@ -1,5 +1,5 @@
-import 'package:frontend/engine/candle_normalizer.dart';
-import 'package:frontend/engine/ticker_resolver.dart';
+import 'package:frontend/engine/stocks/candle_normalizer.dart';
+import 'package:frontend/engine/stocks/ticker_resolver.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -7,7 +7,13 @@ enum AppEvent {
   closeTab,
   openSearch,
   moveUp, 
-  moveDown, select, searchClosed, searchOpened
+  moveDown, 
+  select, 
+  searchClosed, 
+  searchOpened,
+
+  leftAdd, 
+  rightAdd,
 }
 
 /// Broadcast stream bus.  One instance lives for the lifetime of the app,

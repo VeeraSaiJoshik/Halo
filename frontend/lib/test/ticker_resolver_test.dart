@@ -1,4 +1,4 @@
-import 'package:frontend/engine/ticker_resolver.dart';
+import 'package:frontend/engine/stocks/ticker_resolver.dart';
 import 'package:test/test.dart';
 
 void main() {
