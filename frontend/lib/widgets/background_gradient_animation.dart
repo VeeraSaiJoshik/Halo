@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class BackgroundGradientAnimation extends StatefulWidget {
-  static const int opacity = 35;
+  static const int opacity = 25;
 
   const BackgroundGradientAnimation({
     super.key,
@@ -123,8 +123,8 @@ class _GradientPainter extends CustomPainter {
     // Each blob travels from just above the top to just below the bottom.
     // A phase offset staggers them so they are spread across the screen at all
     // times — with 9 evenly-phased blobs, at least 3 are always fully visible.
-    final enter  = -blobRadius * 0.3;
-    final travel = size.height + blobRadius * 0.6;
+    final enter  = -blobRadius;
+    final travel = size.height + blobRadius * 2.0;
 
     // Returns a top-to-bottom position for a blob.
     // [t]     : controller value 0→1

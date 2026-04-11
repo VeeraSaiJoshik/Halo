@@ -34,11 +34,23 @@ class _WindowTabState extends State<WindowTab>
       child: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
         child: BackdropFilter(
-          filter: widget.context.isActive ? ImageFilter.blur(sigmaX: 20, sigmaY: 20) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+          filter: widget.context.isActive ? 
+            ImageFilter.blur(sigmaX: 20, sigmaY: 20) : 
+            ImageFilter.blur(sigmaX: 0, sigmaY: 0),
           child: Container(
-            decoration: widget.context.isActive ?  BoxDecoration(
+              decoration: widget.context.isActive ?  BoxDecoration(
                 borderRadius: _borderRadius,
                 color: Colors.black.withOpacity(0.6),
+              ) : isHovering ? BoxDecoration(
+                borderRadius: _borderRadius,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.black.withOpacity(0.15)
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
               ) : BoxDecoration(
                 borderRadius: _borderRadius,
                 color: Colors.transparent 

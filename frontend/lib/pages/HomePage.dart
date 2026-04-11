@@ -69,7 +69,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   Positioned.fill(
                     child: InkWell(
                       onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
-                      child: Container(width: double.infinity, height: double.infinity, color: Colors.transparent),
+                      child: Container(width: double.infinity, height: double.infinity, color: Colors.black.withOpacity(0.5)),
                     ),
                   ),
                 Positioned(

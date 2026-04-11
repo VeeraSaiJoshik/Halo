@@ -24,6 +24,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   double searchBarHeight = 0;
 
   bool active = false;
+  bool animationInProgress = false;
   int activeIndex = 0;
 
   TextEditingController searchField = TextEditingController();
@@ -101,6 +102,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
         stockSearchResults = [];
         ref.read(appEventBusProvider).emit(AppEvent.searchClosed);
       }
+      animationInProgress = true;
     });
   }
   
@@ -108,32 +110,42 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300), 
+      onEnd: () => {
+        setState(() => animationInProgress = false)
+      },
       curve: Curves.easeInOutCirc,
       clipBehavior: Clip.hardEdge,
+      margin: EdgeInsets.only(
+        top: searchBarHeight == 0 ? MediaQuery.of(context).size.height * 0.05 : 0
+      ),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.95),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside)
       ),
       width: searchBarWidth + 30,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SearchField(
-            height: searchBarHeight,
-            width: searchBarWidth,
-            controller: searchField,
-            focusNode: searchFocus,
-            onTextChange: searchStocks,
-          ), 
-          if(stockSearchResults.isNotEmpty) ...[
-            Container(
-              height: 1,
-              color: Colors.white.withOpacity(0.45),
-            ),
-            StockBar(stocks: stockSearchResults, activeIndex: activeIndex)
-          ]
-        ],
+      child: AnimatedOpacity(
+        opacity: animationInProgress ? 0 : 1,
+        duration: Duration(milliseconds: 100),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SearchField(
+              height: searchBarHeight,
+              width: searchBarWidth,
+              controller: searchField,
+              focusNode: searchFocus,
+              onTextChange: searchStocks,
+            ), 
+            if(stockSearchResults.isNotEmpty) ...[
+              Container(
+                height: 1,
+                color: Colors.white.withOpacity(0.45),
+              ),
+              StockBar(stocks: stockSearchResults, activeIndex: activeIndex)
+            ]
+          ],
+        ),
       )
     );
   }

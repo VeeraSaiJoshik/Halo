@@ -19,7 +19,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(11.5, 0, 11.5, 11.5),
+      margin: EdgeInsets.fromLTRB(5, 0, 5, 5),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: BackdropFilter(
