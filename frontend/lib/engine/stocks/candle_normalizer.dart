@@ -1,4 +1,4 @@
-import 'package:frontend/models/candle.dart';
+import '../../models/candle.dart';
 import 'ticker_resolver.dart';
 
 class CandleNormalizer {

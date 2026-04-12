@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:frontend/models/candle.dart';
+import '../../models/candle.dart';
 import 'candle_aggregator.dart';
 import '../clients/alpaca_client.dart';
 import '../clients/binance_client.dart';
@@ -13,6 +13,7 @@ typedef OnCandlesReady = void Function(
   String symbol,
   String timeframe,
   List<Candle> historicalCandles,
+  DataSource source,
 );
 typedef OnNewCandle = void Function(Candle candle);
 
@@ -83,7 +84,7 @@ class IntakeService {
       _lastCandleTimestamp = history.last.timestamp;
     }
 
-    onTickerSwitch?.call(symbol, timeframe, history);
+    onTickerSwitch?.call(symbol, timeframe, history, _currentResolved!.source);
     _startPolling();
   }
 
