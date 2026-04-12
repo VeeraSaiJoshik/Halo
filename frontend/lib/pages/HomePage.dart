@@ -10,6 +10,7 @@ import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/BodyPage.dart';
 import 'package:frontend/pages/TitleBar.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/searchBar.dart';
 import 'package:window_manager/window_manager.dart';
@@ -83,10 +84,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                   ),
                 ),
-                MouseRegionEngine(
-                  regions: regions,
-                  debug: false,
-                )
+                MouseRegionEngine(regions: regions)
               ],
             )
           ),

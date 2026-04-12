@@ -5,6 +5,7 @@ import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/SearchView.dart';
 import 'package:frontend/pages/views/WebView.dart';
+import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 
 class BodyPageDart extends ConsumerStatefulWidget {
@@ -46,6 +47,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                     ],
                   ),
                 ),
+                AddSubSection(),
               ],
             ),
           ),

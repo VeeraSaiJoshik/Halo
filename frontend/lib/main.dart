@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -108,6 +109,9 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.transparent,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: CustomColors.purple,
+        ),
       ),
       home: ClipRRect(
         borderRadius: BorderRadius.circular(windowContext.isFullScreen ? 0 : 15),
