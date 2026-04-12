@@ -8,8 +8,14 @@ import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
 
+enum Side {
+  left, 
+  right
+}
+
 class AddSubSection extends ConsumerStatefulWidget {
-  const AddSubSection({super.key});
+  Side side;
+  AddSubSection({super.key, required this.side});
 
   @override
   ConsumerState<AddSubSection> createState() => _AddSubSectionState();
@@ -24,8 +30,10 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
     super.initState();
 
     ref.read(appEventBusProvider).stream.listen((event) {
-      if(event == AppEvent.leftAdd) {
-        _animController.forward();
+      if((event == AppEvent.leftAdd && widget.side == Side.left) || (event == AppEvent.rightAdd && widget.side == Side.right)) {
+        setState(() {
+          _animController.forward();
+        });
       }
     });
 
@@ -34,7 +42,7 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
       duration: const Duration(milliseconds: 250),
     );
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(-2, 0),
+      begin: Offset(widget.side == Side.left ? -3 : 3, 0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animController,
@@ -48,51 +56,74 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
     super.dispose();
   }
 
+  static const double _iconSize = 43;
+  static const double _iconSpacing = 35;
+
   @override
   Widget build(BuildContext context) {
     final List<String> icons = ["stocks", "icon"];
 
+    final double menuWidth  = _iconSize;
+    final double menuHeight = icons.length * _iconSize + (icons.length - 1) * _iconSpacing;
+
+    const double edgeGap = 35;
+    final double totalWidth = edgeGap + menuWidth;
+
     return Positioned(
-      top: 0, 
-      bottom: 0, 
-      left: 35, 
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Center(
-          child: MouseRegion(
-            onExit: (event) => _animController.reverse(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              // Standard spacing between icons
-              spacing: 35, 
-              children: List.generate(icons.length, (index) {
-                // 1. Calculate a "tilt" and "offset" based on position
-                // This simulates being on the right side of a circle centered to the left
-                final double mid = (icons.length - 1) / 2;
-                final double relativePos = index - mid; // e.g., -1.5, -0.5, 0.5, 1.5
-                
-                // Push the middle icons further right, top/bottom icons further left
-                // or vice versa to create the arc shape manually.
-                final double xOffset = (relativePos.abs() * -10.0); 
-                
-                // Tilt the icons: negative rotation for top, positive for bottom
-                final double initialRotation = relativePos * 0.08; 
-                    
-                return Transform.translate(
-                  offset: Offset(xOffset, 0),
-                  child: Transform.rotate(
-                    angle: initialRotation,
-                    child: SideNavBarIcon(
-                      icon: icons[index],
-                      // Pass the rotation to the hover state to maintain consistency
-                      directionMulti: relativePos > 0 ? 1 : -1,
-                    ),
-                  ),
-                );
-              }),
+      top: 0,
+      bottom: 0,
+      left:  widget.side == Side.left  ? 0 : null,
+      right: widget.side == Side.right ? 0 : null,
+      width: totalWidth,
+      child: Stack(
+        children: [
+          Positioned(
+            left:   widget.side == Side.left  ? edgeGap : null,
+            right:  widget.side == Side.right ? edgeGap : null,
+            top: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: _iconSpacing,
+                  children: List.generate(icons.length, (index) {
+                    final double mid = (icons.length - 1) / 2;
+                    final double relativePos = index - mid;
+                    final double xOffset = relativePos.abs() * -10.0;
+                    final double initialRotation = relativePos * 0.08;
+
+                    return Transform.translate(
+                      offset: Offset(xOffset, 0),
+                      child: Transform.rotate(
+                        angle: initialRotation,
+                        child: SideNavBarIcon(
+                          icon: icons[index],
+                          directionMulti: relativePos > 0 ? 1 : -1,
+                        ),
+                      ),
+                    );
+                  }),
+              ),
             ),
-          )
-        ),
+          ),
+          Center(
+            child: MouseRegion(
+              onExit: (_) {
+                _animController.reverse();
+              },
+              opaque: false,
+              child: Container(
+                width: totalWidth + 40,
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            )
+          ),
+        ],
       )
     );
   }

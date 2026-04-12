@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/engine/clients/alpha_advantage_client.dart';
 import 'package:frontend/engine/clients/yahoo_finance_client.dart';
+import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -121,7 +122,18 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.95),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside)
+        border: Border.all(color: Colors.white.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside),
+        boxShadow: searchBarWidth == 0 ? [] : [
+          BoxShadow(
+            color: CustomColors.purple.withValues(
+              // Make the glow more intense on hover
+              alpha: 0.6, 
+            ),
+            blurRadius: 15,
+            spreadRadius: 2,
+            offset: const Offset(0, 0), // Keeps glow centered
+          ),
+        ],
       ),
       width: searchBarWidth + 30,
       child: AnimatedOpacity(

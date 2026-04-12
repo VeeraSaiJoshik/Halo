@@ -19,6 +19,7 @@ class BodyPageDart extends ConsumerStatefulWidget {
 class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   @override
   Widget build(BuildContext context) {
+    bool tabExists = widget.webController.getCurrentTab() != null;
     return Container(
       margin: EdgeInsets.fromLTRB(5, 0, 5, 5),
       child: ClipRRect(
@@ -30,15 +31,15 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
               color: Colors.black.withOpacity(0.55),
               borderRadius: BorderRadius.circular(10),
             ),
-            padding: EdgeInsets.all(5),
             child: Stack(
               children: [
                 Container(
                   width: double.infinity,
                   height: double.infinity,
+                  padding: EdgeInsets.all(5),
                   child: Row(
                     children: [
-                      widget.webController.getCurrentTab() == null ? Expanded(
+                      !tabExists ? Expanded(
                         child: Container(height: double.infinity),
                       ) :
                       Expanded(
@@ -47,7 +48,8 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                     ],
                   ),
                 ),
-                AddSubSection(),
+                tabExists ? AddSubSection(side: Side.left) : SizedBox(),
+                tabExists ? AddSubSection(side: Side.right) : SizedBox(),
               ],
             ),
           ),
