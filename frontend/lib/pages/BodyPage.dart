@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
-import 'package:frontend/pages/views/SearchView.dart';
 import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
@@ -20,6 +19,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   @override
   Widget build(BuildContext context) {
     bool tabExists = widget.webController.getCurrentTab() != null;
+    WindowInfo? currentTab = widget.webController.getCurrentTab();
     return Container(
       margin: EdgeInsets.fromLTRB(5, 0, 5, 5),
       child: ClipRRect(
@@ -38,18 +38,22 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                   height: double.infinity,
                   padding: EdgeInsets.all(5),
                   child: Row(
-                    children: [
-                      !tabExists ? Expanded(
-                        child: Container(height: double.infinity),
-                      ) :
-                      Expanded(
-                        child:CustomWebView(controller: widget.webController.getCurrentTab()!.webController!)
-                      )
-                    ],
+                    spacing: 5,
+                    children: tabExists ? currentTab!.pages.map((AppPage page) {
+                      switch(page) {
+                        case AppPage.PORTAL:
+                          return Expanded(child: CustomWebView(controller: currentTab.portalController!));
+                        case AppPage.GRAPH_VIEWER:
+                          return Expanded(child: CustomWebView(controller: currentTab.chartController!));
+                        case AppPage.NOTIFICATIONS:
+                          return Expanded(child: AISummaryView());
+                      }
+                    }).toList() : []
                   ),
                 ),
-                tabExists ? AddSubSection(side: Side.left) : SizedBox(),
-                tabExists ? AddSubSection(side: Side.right) : SizedBox(),
+                tabExists ? 
+                  AddSubSection(side: Side.left, controller: widget.webController) : SizedBox(),
+                tabExists ? AddSubSection(side: Side.right, controller: widget.webController) : SizedBox(),
               ],
             ),
           ),

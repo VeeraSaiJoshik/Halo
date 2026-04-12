@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/stocks.dart';
+import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -12,12 +13,18 @@ enum AppPage {
 
 class WindowInfo {
   final StockName Stock;
-  final WebViewController? webController;
+  final WebViewController? portalController;
+  final WebViewController? chartController;
   late bool isActive;
   late String uuid;
   late List<AppPage> pages;
 
-  WindowInfo({required this.Stock, required this.webController, required this.isActive, this.pages = const [AppPage.PORTAL]}){
+  WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, pages}){
+    if(pages == null) {
+      this.pages = [AppPage.PORTAL];
+    } else {
+      this.pages = pages;
+    }
     uuid = const Uuid().v4();
   }
 }
@@ -26,7 +33,7 @@ class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
 
   void newTab(StockName stock) {
-    final controller = WebViewController()
+    final portalController = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     ..setNavigationDelegate(
@@ -46,10 +53,33 @@ class AppController extends ChangeNotifier{
         },
       ),
     )
-
     ..loadRequest(Uri.parse('https://www.webull.com/center'));
+
+    final chartingController = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          // Update loading bar.
+        },
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) {},
+        onHttpError: (HttpResponseError error) {},
+        onWebResourceError: (WebResourceError error) {},
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('https://www.youtube.com/')) {
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
+      ),
+    )
+    ..loadRequest(Uri.parse('https://www.tradingview.com/chart/d3IIUEuI/'));
+
+
     tabs.add(
-      WindowInfo(webController: controller, Stock: stock, isActive: true)
+      WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true)
     );
     switchTab(tabs.elementAt(tabs.length - 1));
 
@@ -78,6 +108,13 @@ class AppController extends ChangeNotifier{
 
   void switchTabSubPage(AppPage page) {
     //getCurrentTab()!.currentPage = page;
+    notifyListeners();
+  }
+
+  void addNewSubPage(AppPage page, Side side) {
+    if(side == Side.right) getCurrentTab()!.pages.add(page);
+    else getCurrentTab()!.pages.insert(0, page);
+    
     notifyListeners();
   }
 

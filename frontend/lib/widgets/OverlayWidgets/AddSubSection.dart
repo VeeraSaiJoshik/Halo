@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -15,7 +16,8 @@ enum Side {
 
 class AddSubSection extends ConsumerStatefulWidget {
   Side side;
-  AddSubSection({super.key, required this.side});
+  AppController controller;
+  AddSubSection({super.key, required this.side, required this.controller});
 
   @override
   ConsumerState<AddSubSection> createState() => _AddSubSectionState();
@@ -61,7 +63,17 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final List<String> icons = ["stocks", "icon"];
+    final List<String> icons = [];
+    WindowInfo currentTab = widget.controller.getCurrentTab()!;
+    if(!currentTab.pages.contains(AppPage.GRAPH_VIEWER)) {
+      icons.add("graph");
+    }
+    if(!currentTab.pages.contains(AppPage.PORTAL)) {
+      icons.add("search");
+    }
+    if(!currentTab.pages.contains(AppPage.NOTIFICATIONS)) {
+      icons.add("icon");
+    }
 
     final double menuWidth  = _iconSize;
     final double menuHeight = icons.length * _iconSize + (icons.length - 1) * _iconSpacing;
@@ -101,6 +113,8 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
                         child: SideNavBarIcon(
                           icon: icons[index],
                           directionMulti: relativePos > 0 ? 1 : -1,
+                          controller: widget.controller,
+                          side: widget.side,
                         ),
                       ),
                     );
@@ -133,10 +147,14 @@ class SideNavBarIcon extends StatefulWidget {
   final String icon;
   final int directionMulti;
   final bool showFrost;
+  AppController controller;
+  Side side;
 
-  const SideNavBarIcon({
+  SideNavBarIcon({
     super.key,
     required this.icon,
+    required this.controller,
+    required this.side,
     this.directionMulti = 0,
     this.showFrost = false,
   });
@@ -150,10 +168,14 @@ class _SideNavBarIconState extends State<SideNavBarIcon> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
+    return InkWell(
+      onTap: () {
+        widget.controller.addNewSubPage(
+          widget.icon == "graph" ? AppPage.GRAPH_VIEWER : widget.icon == "search" ? AppPage.PORTAL : AppPage.NOTIFICATIONS, 
+          widget.side
+        );
+      },
+      onHover: (value) => setState(() => _hovered = value),
       child: AnimatedScale(
         scale: _hovered ? 1.1 : 1.0,
         duration: const Duration(milliseconds: 200),
