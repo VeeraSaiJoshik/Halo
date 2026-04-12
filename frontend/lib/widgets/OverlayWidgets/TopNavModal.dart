@@ -4,14 +4,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
 
 class TopNavModel extends StatelessWidget {
-  final Function goBack;
-  final Function goForward;
+  final Function closeTab;
+  final Function reload;
   final String url;
 
   const TopNavModel({
     super.key,
-    required this.goBack,
-    required this.goForward,
+    required this.closeTab,
+    required this.reload,
     required this.url,
   });
 
@@ -40,9 +40,9 @@ class TopNavModel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 5,
         children: [
-          _NavButton(icon: FontAwesomeIcons.arrowLeft, onTap: () => goBack()),
+          _NavButton(icon: FontAwesomeIcons.x, onTap: () => closeTab()),
           _UrlPill(url: url),
-          _NavButton(icon: FontAwesomeIcons.arrowRight, onTap: () => goForward(), reverse: true),
+          _NavButton(icon: FontAwesomeIcons.arrowRotateRight, onTap: () => reload(), reverse: true),
         ],
       ),
     );

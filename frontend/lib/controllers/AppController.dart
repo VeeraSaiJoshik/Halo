@@ -118,4 +118,9 @@ class AppController extends ChangeNotifier{
     notifyListeners();
   }
 
+  void closeSubPage(AppPage page) {
+    getCurrentTab()!.pages.remove(page);
+    notifyListeners();
+  }
+
 }

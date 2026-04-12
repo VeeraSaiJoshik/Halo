@@ -28,9 +28,9 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   Widget _buildPanel(AppPage page, WindowInfo tab) {
     switch (page) {
       case AppPage.PORTAL:
-        return CustomWebView(controller: tab.portalController!);
+        return CustomWebView(controller: tab.portalController!, appController: widget.webController, pageType: AppPage.PORTAL);
       case AppPage.GRAPH_VIEWER:
-        return CustomWebView(controller: tab.chartController!);
+        return CustomWebView(controller: tab.chartController!, appController: widget.webController, pageType: AppPage.GRAPH_VIEWER);
       case AppPage.NOTIFICATIONS:
         return AISummaryView();
     }
