@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/widgets/OverlayWidgets/TopNavModal.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class CustomWebView extends StatefulWidget {
+class CustomWebView extends ConsumerStatefulWidget {
   WebViewController controller;
-  AppController appController;
   AppPage pageType;
-  CustomWebView({super.key, required this.controller, required this.pageType, required this.appController});
+  CustomWebView({super.key, required this.controller, required this.pageType});
 
   @override
-  State<CustomWebView> createState() => _WebViewState();
+  ConsumerState<CustomWebView> createState() => _WebViewState();
 }
 
-class _WebViewState extends State<CustomWebView>
+class _WebViewState extends ConsumerState<CustomWebView>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
@@ -75,7 +76,7 @@ class _WebViewState extends State<CustomWebView>
                           child: Center(
                             child: TopNavModel(
                               reload: widget.controller.reload, 
-                              closeTab: () => widget.appController.closeSubPage(widget.pageType), 
+                              closeTab: () => ref.read(appControllerProvider).closeSubPage(widget.pageType),
                               url: "https://www.google.com"
                             )
                           ),

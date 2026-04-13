@@ -16,8 +16,7 @@ enum Side {
 
 class AddSubSection extends ConsumerStatefulWidget {
   Side side;
-  AppController controller;
-  AddSubSection({super.key, required this.side, required this.controller});
+  AddSubSection({super.key, required this.side});
 
   @override
   ConsumerState<AddSubSection> createState() => _AddSubSectionState();
@@ -63,8 +62,9 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final appController = ref.watch(appControllerProvider);
     final List<String> icons = [];
-    WindowInfo currentTab = widget.controller.getCurrentTab()!;
+    WindowInfo currentTab = appController.getCurrentTab()!;
     if(!currentTab.pages.contains(AppPage.GRAPH_VIEWER)) {
       icons.add("graph");
     }
@@ -113,8 +113,7 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
                         child: SideNavBarIcon(
                           icon: icons[index],
                           directionMulti: relativePos > 0 ? 1 : -1,
-                          controller: widget.controller,
-                          side: widget.side,
+                          onTap: (page) => appController.addNewSubPage(page, widget.side),
                         ),
                       ),
                     );
@@ -147,14 +146,12 @@ class SideNavBarIcon extends StatefulWidget {
   final String icon;
   final int directionMulti;
   final bool showFrost;
-  AppController controller;
-  Side side;
+  final void Function(AppPage page) onTap;
 
   SideNavBarIcon({
     super.key,
     required this.icon,
-    required this.controller,
-    required this.side,
+    required this.onTap,
     this.directionMulti = 0,
     this.showFrost = false,
   });
@@ -170,9 +167,8 @@ class _SideNavBarIconState extends State<SideNavBarIcon> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        widget.controller.addNewSubPage(
-          widget.icon == "graph" ? AppPage.GRAPH_VIEWER : widget.icon == "search" ? AppPage.PORTAL : AppPage.NOTIFICATIONS, 
-          widget.side
+        widget.onTap(
+          widget.icon == "graph" ? AppPage.GRAPH_VIEWER : widget.icon == "search" ? AppPage.PORTAL : AppPage.NOTIFICATIONS,
         );
       },
       onHover: (value) => setState(() => _hovered = value),

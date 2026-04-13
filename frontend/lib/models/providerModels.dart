@@ -1,5 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:frontend/controllers/AppController.dart';
+import 'package:frontend/controllers/DataIntakeController.dart';
+import 'package:frontend/engine/clients/alpaca_client.dart';
+import 'package:frontend/engine/clients/binance_client.dart';
+import 'package:frontend/engine/clients/finnhub_client.dart';
 import 'package:frontend/services/app_event_bus.dart';
 
 class WindowParams {
@@ -27,3 +32,34 @@ final appEventBusProvider = Provider<AppEventBus>((ref) {
   ref.onDispose(bus.dispose);
   return bus;
 });
+
+final intakeServiceProvider = Provider<IntakeService>((ref) {
+  final eventBus = ref.read(appEventBusProvider);
+
+  final alpacaClient = AlpacaClient(
+    apiKey: String.fromEnvironment("ALPACA_API_KEY"), 
+    secretKey: String.fromEnvironment("ALPACA_API_SECRET")
+  );
+  print("Alpaca Client initialized with key: " + String.fromEnvironment("ALPACA_API_KEY"));
+  final binanceClient = BinanceClient();
+  final finnhubClient = FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY"));
+
+  final intakeService = IntakeService(
+    eventBus: eventBus, 
+    alpacaClient: alpacaClient, 
+    binanceClient: binanceClient, 
+    finnhubClient: finnhubClient
+  );
+
+  ref.onDispose(() => intakeService.dispose());
+
+  return intakeService;
+});
+
+final appControllerProvider = ChangeNotifierProvider<AppController>(
+  (ref) {
+    final intakeService = ref.read(intakeServiceProvider);
+    return AppController(intakeEngine: intakeService);
+  }
+);
+

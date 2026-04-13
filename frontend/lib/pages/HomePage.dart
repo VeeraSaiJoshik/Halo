@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/engine/mouse_detection/MouseRegionEngine.dart';
 import 'package:frontend/engine/mouse_detection/customMouseRegion.dart';
 import 'package:frontend/models/customColors.dart';
@@ -23,7 +22,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  AppController controller = AppController();
   GlobalKey<CustomSearchBarState> searchBarKey = GlobalKey();
   late StreamSubscription<AppEvent> _sub;
 
@@ -50,46 +48,42 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller, builder: (context, _) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade900
-          ),
-          width: double.infinity,
-          child: BackgroundGradientAnimation(
-            child: Stack(
+    ref.watch(appControllerProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade900
+      ),
+      width: double.infinity,
+      child: BackgroundGradientAnimation(
+        child: Stack(
+          children: [
+            Column(
               children: [
-                Column(
-                  children: [
-                    TitleBar(controller: controller),
-                    Expanded(
-                      child: BodyPageDart(webController: controller,)
-                    )
-                  ],
-                ),
-                if (_searchActive)
-                  Positioned.fill(
-                    child: InkWell(
-                      onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
-                      child: Container(width: double.infinity, height: double.infinity, color: Colors.black.withOpacity(0.5)),
-                    ),
-                  ),
-                Positioned(
-                  left: 0, right: 0, top: MediaQuery.of(context).size.height * 0.45,
-                  child: Center(
-                    child: CustomSearchBar(
-                      key: searchBarKey,
-                      appController: controller,
-                    ),
-                  ),
-                ),
-                MouseRegionEngine(regions: regions, debug: false,)
+                TitleBar(),
+                Expanded(
+                  child: BodyPageDart()
+                )
               ],
-            )
-          ),
-        );
-      }
+            ),
+            if (_searchActive)
+              Positioned.fill(
+                child: InkWell(
+                  onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
+                  child: Container(width: double.infinity, height: double.infinity, color: Colors.black.withOpacity(0.5)),
+                ),
+              ),
+            Positioned(
+              left: 0, right: 0, top: MediaQuery.of(context).size.height * 0.45,
+              child: Center(
+                child: CustomSearchBar(
+                  key: searchBarKey,
+                ),
+              ),
+            ),
+            MouseRegionEngine(regions: regions, debug: false,)
+          ],
+        )
+      ),
     );
   }
 }

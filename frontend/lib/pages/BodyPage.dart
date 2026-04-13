@@ -2,14 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 
 class BodyPageDart extends ConsumerStatefulWidget {
-  final AppController webController;
-  const BodyPageDart({super.key, required this.webController});
+  const BodyPageDart({super.key});
 
   @override
   ConsumerState<BodyPageDart> createState() => _BodyPageDartState();
@@ -28,9 +28,9 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   Widget _buildPanel(AppPage page, WindowInfo tab) {
     switch (page) {
       case AppPage.PORTAL:
-        return CustomWebView(controller: tab.portalController!, appController: widget.webController, pageType: AppPage.PORTAL);
+        return CustomWebView(controller: tab.portalController!, pageType: AppPage.PORTAL);
       case AppPage.GRAPH_VIEWER:
-        return CustomWebView(controller: tab.chartController!, appController: widget.webController, pageType: AppPage.GRAPH_VIEWER);
+        return CustomWebView(controller: tab.chartController!, pageType: AppPage.GRAPH_VIEWER);
       case AppPage.NOTIFICATIONS:
         return AISummaryView();
     }
@@ -38,8 +38,9 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
 
   @override
   Widget build(BuildContext context) {
-    final bool tabExists = widget.webController.getCurrentTab() != null;
-    final WindowInfo? currentTab = widget.webController.getCurrentTab();
+    final appController = ref.watch(appControllerProvider);
+    final bool tabExists = appController.getCurrentTab() != null;
+    final WindowInfo? currentTab = appController.getCurrentTab();
     final List<AppPage> pages = tabExists ? currentTab!.pages : [];
 
     _syncFractions(pages.length);
@@ -101,10 +102,10 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                         ),
                 ),
                 tabExists
-                    ? AddSubSection(side: Side.left, controller: widget.webController)
+                    ? AddSubSection(side: Side.left)
                     : const SizedBox(),
                 tabExists
-                    ? AddSubSection(side: Side.right, controller: widget.webController)
+                    ? AddSubSection(side: Side.right)
                     : const SizedBox(),
               ],
             ),
