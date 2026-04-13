@@ -14,6 +14,8 @@ enum AppEvent {
 
   leftAdd, 
   rightAdd,
+
+  newNotifcation,
 }
 
 /// Broadcast stream bus.  One instance lives for the lifetime of the app,

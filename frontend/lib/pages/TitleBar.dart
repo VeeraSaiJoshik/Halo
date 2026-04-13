@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -11,8 +10,7 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:window_manager/window_manager.dart';
 
 class TitleBar extends ConsumerStatefulWidget {
-  final AppController controller;
-  const TitleBar({super.key, required this.controller});
+  const TitleBar({super.key});
 
   @override
   ConsumerState<TitleBar> createState() => _TitleBarState();
@@ -21,20 +19,21 @@ class TitleBar extends ConsumerStatefulWidget {
 class _TitleBarState extends ConsumerState<TitleBar> {
   @override
   Widget build(BuildContext context) {
+    final controller = ref.watch(appControllerProvider);
     return Container(
       width: double.infinity,
       height: 40,
       padding: EdgeInsets.symmetric(horizontal: 17),
-      
+
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Container(
             height: 48,
             child: CommandButtons()
-          ), 
+          ),
           Container(width: 10),
-          ...widget.controller.tabs.map((tab) => WindowTab(context: tab, switchTab: widget.controller.switchTab,)),
+          ...controller.tabs.map((tab) => WindowTab(context: tab, switchTab: controller.switchTab,)),
           Container(width: 10),
           InkWell(
             splashColor: Colors.transparent,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/controllers/DataIntakeController.dart';
+import 'package:frontend/engine/stocks/ticker_identifier.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/window_tab.dart';
@@ -18,6 +20,7 @@ class WindowInfo {
   late bool isActive;
   late String uuid;
   late List<AppPage> pages;
+  bool aiListenerReady = false;
 
   WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, pages}){
     if(pages == null) {
@@ -31,6 +34,9 @@ class WindowInfo {
 
 class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
+  IntakeService intakeEngine;
+
+  AppController({required this.intakeEngine});
 
   void newTab(StockName stock) {
     final portalController = WebViewController()
@@ -77,13 +83,11 @@ class AppController extends ChangeNotifier{
     )
     ..loadRequest(Uri.parse('https://www.tradingview.com/chart/d3IIUEuI/'));
 
-
     tabs.add(
       WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true)
     );
-    switchTab(tabs.elementAt(tabs.length - 1));
 
-    notifyListeners();
+    switchTab(tabs.elementAt(tabs.length - 1));
   }
 
   WindowInfo? getCurrentTab() {
@@ -95,14 +99,22 @@ class AppController extends ChangeNotifier{
   }
 
   void switchTab(WindowInfo tab) {
+    late WindowInfo currentTab;
     for(WindowInfo window in tabs) {
       if(window.uuid == tab.uuid) {
+        currentTab = window;
         window.isActive = true;
       } else {
         window.isActive = false;
       }
     }
 
+    intakeEngine.onTabTitleChanged(tab.Stock.symbol, "5m").then((TickerInfo? info) {
+      if(currentTab.isActive! && currentTab.isActive) {
+        currentTab.aiListenerReady = true;
+        notifyListeners();
+      }
+    });
     notifyListeners();
   }
 

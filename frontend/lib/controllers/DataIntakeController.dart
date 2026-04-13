@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:frontend/controllers/DetectionController.dart';
+import 'package:frontend/controllers/NotificationController.dart';
+import 'package:frontend/services/app_event_bus.dart';
 
 import '../models/candle.dart';
 import '../engine/stocks/candle_aggregator.dart';
@@ -25,6 +28,8 @@ class IntakeService {
   final AlpacaClient? alpacaClient;
   final BinanceClient binanceClient;
   final FinnhubClient? finnhubClient;
+  final NotificationController notificationController = NotificationController();
+  final AppEventBus eventBus;
 
   OnCandlesReady? onTickerSwitch;
 
@@ -40,6 +45,7 @@ class IntakeService {
     this.alpacaClient,
     BinanceClient? binanceClient,
     this.finnhubClient,
+    required this.eventBus
   }) : binanceClient = binanceClient ?? BinanceClient( baseUrl: Platform.environment['BINANCE_BASE_URL'] ?? 'https://api.binance.com', ) {
     detectionEngine = DetectionEngine();
   }
@@ -167,10 +173,12 @@ class IntakeService {
       }
 
       for (final candle in recent) {
-        if (_lastCandleTimestamp == null ||
-            candle.timestamp.isAfter(_lastCandleTimestamp!)) {
+        if (_lastCandleTimestamp == null || candle.timestamp.isAfter(_lastCandleTimestamp!)) {
           _lastCandleTimestamp = candle.timestamp;
           detectionEngine!.onCandle(candle);
+
+          bool emitNotification = notificationController.postNotification();
+          if(emitNotification) eventBus.emit(AppEvent.newNotifcation);
         }
       }
     } catch (e) {

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:frontend/controllers/AppController.dart';
+import 'package:frontend/controllers/DataIntakeController.dart';
 import 'package:frontend/services/app_event_bus.dart';
 
 class WindowParams {
@@ -27,3 +29,20 @@ final appEventBusProvider = Provider<AppEventBus>((ref) {
   ref.onDispose(bus.dispose);
   return bus;
 });
+
+final intakeServiceProvider = Provider<IntakeService>((ref) {
+  final eventBus = ref.read(appEventBusProvider);
+  final intakeService = IntakeService(eventBus: eventBus);
+
+  ref.onDispose(() => intakeService.dispose());
+
+  return intakeService;
+});
+
+final appControllerProvider = ChangeNotifierProvider<AppController>(
+  (ref) {
+    final intakeService = ref.read(intakeServiceProvider);
+    return AppController(intakeEngine: intakeService);
+  }
+);
+

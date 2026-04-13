@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/engine/clients/alpha_advantage_client.dart';
 import 'package:frontend/engine/clients/yahoo_finance_client.dart';
 import 'package:frontend/models/customColors.dart';
@@ -13,8 +12,7 @@ import 'package:frontend/widgets/SearchWidgets/SearchField.dart';
 import 'package:frontend/widgets/SearchWidgets/StockBar.dart';
 
 class CustomSearchBar extends ConsumerStatefulWidget {
-  AppController appController;
-  CustomSearchBar({super.key, required this.appController});
+  CustomSearchBar({super.key});
 
   @override
   ConsumerState<CustomSearchBar> createState() => CustomSearchBarState();
@@ -74,7 +72,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
       } else if (event == AppEvent.select) {
         if (stockSearchResults.isNotEmpty) {
           final selectedStock = stockSearchResults[activeIndex];
-          widget.appController.newTab(selectedStock);
+          ref.read(appControllerProvider).newTab(selectedStock);
           toggleSearchBarState();
         }
       }
