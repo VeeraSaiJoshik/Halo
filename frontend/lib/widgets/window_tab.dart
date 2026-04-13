@@ -1,20 +1,22 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class WindowTab extends StatefulWidget {
+class WindowTab extends ConsumerStatefulWidget {
   final WindowInfo context;
   final Function switchTab;
   const WindowTab({super.key, required this.context, required this.switchTab});
 
   @override
-  State<WindowTab> createState() => _WindowTabState();
+  ConsumerState<WindowTab> createState() => _WindowTabState();
 }
 
-class _WindowTabState extends State<WindowTab>
+class _WindowTabState extends ConsumerState<WindowTab>
     with SingleTickerProviderStateMixin {
   static const _borderRadius = BorderRadius.only(
     topLeft: Radius.circular(5),
@@ -128,12 +130,26 @@ class _WindowTabState extends State<WindowTab>
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Center(
-                    child: Text(
+                    child: widget.context.aiListenerReady ? 
+                    ref.read(intakeServiceProvider).notificationController.notifications.length == 0 ? 
+                    FaIcon(
+                      FontAwesomeIcons.solidEye, 
+                      color: Colors.white.withOpacity(0.5),
+                      size: 14,
+                    ) :
+                    Text(
                       '9+',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
+                      ),
+                    ) : SizedBox(
+                      height: 14,
+                      width: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
                     ),
                   ),

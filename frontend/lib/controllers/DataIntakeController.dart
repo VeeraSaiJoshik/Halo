@@ -51,6 +51,7 @@ class IntakeService {
   }
 
   Future<TickerInfo?> onTabTitleChanged(String symbol, String timeframe) async {
+    print("[IntakeService] Tab title changed: $symbol - $timeframe");
     if (symbol == _currentSymbol && timeframe == _currentTimeframe) {
       return TickerInfo(symbol: symbol, timeframe: timeframe);
     }
@@ -82,6 +83,7 @@ class IntakeService {
     _lastCandleTimestamp = null;
 
     final history = await _fetchHistorical(_currentResolved!);
+    print("Intake Source " + _currentResolved!.source.toString() + " returned " + history.length.toString() + " candles");
     if (history.isNotEmpty) {
       _lastCandleTimestamp = history.last.timestamp;
     }
@@ -95,13 +97,13 @@ class IntakeService {
       switch (resolved.source) {
         case DataSource.alpaca:
           if (alpacaClient == null) return <Candle>[];
-          return alpacaClient!.getHistoricalBars(
+          return await alpacaClient!.getHistoricalBars(
             resolved.apiSymbol,
             timeframe: resolved.apiTimeframe,
             limit: 200,
           );
         case DataSource.binance:
-          return binanceClient.getKlines(
+          return await binanceClient.getKlines(
             resolved.apiSymbol,
             interval: resolved.apiTimeframe,
             limit: 200,

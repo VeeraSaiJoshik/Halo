@@ -111,6 +111,7 @@ class AppController extends ChangeNotifier{
 
     intakeEngine.onTabTitleChanged(tab.Stock.symbol, "5m").then((TickerInfo? info) {
       if(currentTab.isActive! && currentTab.isActive) {
+        print("Current Tab AI Engine is finished");
         currentTab.aiListenerReady = true;
         notifyListeners();
       }
