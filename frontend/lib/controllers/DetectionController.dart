@@ -1,21 +1,21 @@
 import '../models/candle.dart';
 import '../engine/stocks/ticker_resolver.dart';
 
-import 'asset_profile.dart';
-import 'candle_buffer.dart';
-import 'swing_points.dart';
-import 'fvg.dart';
-import 'liquidity_sweep.dart';
-import 'bos.dart';
-import 'confluence.dart';
+import '../detection/asset_profile.dart';
+import '../detection/candle_buffer.dart';
+import '../detection/swing_points.dart';
+import '../detection/fvg.dart';
+import '../detection/liquidity_sweep.dart';
+import '../detection/bos.dart';
+import '../detection/confluence.dart';
 
-export 'asset_profile.dart';
-export 'candle_buffer.dart';
-export 'swing_points.dart';
-export 'fvg.dart';
-export 'liquidity_sweep.dart';
-export 'bos.dart';
-export 'confluence.dart';
+export '../detection/asset_profile.dart';
+export '../detection/candle_buffer.dart';
+export '../detection/swing_points.dart';
+export '../detection/fvg.dart';
+export '../detection/liquidity_sweep.dart';
+export '../detection/bos.dart';
+export '../detection/confluence.dart';
 
 /// The top-level detection engine.
 ///

@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../models/candle.dart';
-import 'candle_aggregator.dart';
-import '../clients/alpaca_client.dart';
-import '../clients/binance_client.dart';
-import '../clients/finnhub_client.dart';
-import 'ticker_identifier.dart';
-import 'ticker_resolver.dart';
+import 'package:frontend/controllers/DetectionController.dart';
+
+import '../models/candle.dart';
+import '../engine/stocks/candle_aggregator.dart';
+import '../engine/clients/alpaca_client.dart';
+import '../engine/clients/binance_client.dart';
+import '../engine/clients/finnhub_client.dart';
+import '../engine/stocks/ticker_identifier.dart';
+import '../engine/stocks/ticker_resolver.dart';
 
 typedef OnCandlesReady = void Function(
   String symbol,
@@ -15,7 +17,6 @@ typedef OnCandlesReady = void Function(
   List<Candle> historicalCandles,
   DataSource source,
 );
-typedef OnNewCandle = void Function(Candle candle);
 
 class IntakeService {
   final TickerIdentifier _identifier = TickerIdentifier();
@@ -26,7 +27,6 @@ class IntakeService {
   final FinnhubClient? finnhubClient;
 
   OnCandlesReady? onTickerSwitch;
-  OnNewCandle? onNewCandle;
 
   String? _currentSymbol;
   String? _currentTimeframe;
@@ -34,27 +34,23 @@ class IntakeService {
   Timer? _pollTimer;
   CandleAggregator? _aggregator;
   DateTime? _lastCandleTimestamp;
+  DetectionEngine? detectionEngine;
 
   IntakeService({
     this.alpacaClient,
     BinanceClient? binanceClient,
     this.finnhubClient,
-  }) : binanceClient = binanceClient ??
-            BinanceClient(
-              baseUrl: Platform.environment['BINANCE_BASE_URL'] ??
-                  'https://api.binance.com',
-            );
+  }) : binanceClient = binanceClient ?? BinanceClient( baseUrl: Platform.environment['BINANCE_BASE_URL'] ?? 'https://api.binance.com', ) {
+    detectionEngine = DetectionEngine();
+  }
 
-  Future<TickerInfo?> onTabTitleChanged(String tabTitle) async {
-    final info = _identifier.identify(tabTitle);
-    if (info == null) return null;
-
-    if (info.symbol == _currentSymbol && info.timeframe == _currentTimeframe) {
-      return info;
+  Future<TickerInfo?> onTabTitleChanged(String symbol, String timeframe) async {
+    if (symbol == _currentSymbol && timeframe == _currentTimeframe) {
+      return TickerInfo(symbol: symbol, timeframe: timeframe);
     }
 
-    await _switchTo(info.symbol, info.timeframe);
-    return info;
+    await _switchTo(symbol, timeframe);
+    return TickerInfo(symbol: symbol, timeframe: timeframe);
   }
 
   Future<void> manualOverride(String symbol, String timeframe) async {
@@ -84,7 +80,7 @@ class IntakeService {
       _lastCandleTimestamp = history.last.timestamp;
     }
 
-    onTickerSwitch?.call(symbol, timeframe, history, _currentResolved!.source);
+    detectionEngine!.switchTicker(symbol, timeframe, history, source: _currentResolved!.source);
     _startPolling();
   }
 
@@ -174,7 +170,7 @@ class IntakeService {
         if (_lastCandleTimestamp == null ||
             candle.timestamp.isAfter(_lastCandleTimestamp!)) {
           _lastCandleTimestamp = candle.timestamp;
-          onNewCandle?.call(candle);
+          detectionEngine!.onCandle(candle);
         }
       }
     } catch (e) {
