@@ -5,6 +5,7 @@ import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/WebView.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 
@@ -23,6 +24,22 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
     if (_fractions.length != count) {
       _fractions = List.filled(count, 1.0 / count);
     }
+  }
+
+  void initState() {
+    super.initState();
+    ref.read(appEventBusProvider).stream.listen((event) {
+      if (event == AppEvent.portalView) {
+        final controller = ref.read(appControllerProvider);
+        controller.switchTabSubPage(AppPage.PORTAL);
+      } else if (event == AppEvent.graphView) {
+        final controller = ref.read(appControllerProvider);
+        controller.switchTabSubPage(AppPage.GRAPH_VIEWER);
+      } else if (event == AppEvent.toggleNotificaitonView) {
+        final controller = ref.read(appControllerProvider);
+        controller.toggleNotifications();
+      }
+    });
   }
 
   Widget _buildPanel(AppPage page, WindowInfo tab) {

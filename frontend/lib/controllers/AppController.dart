@@ -120,7 +120,7 @@ class AppController extends ChangeNotifier{
   }
 
   void switchTabSubPage(AppPage page) {
-    //getCurrentTab()!.currentPage = page;
+    getCurrentTab()!.pages = [page];
     notifyListeners();
   }
 
@@ -134,6 +134,14 @@ class AppController extends ChangeNotifier{
   void closeSubPage(AppPage page) {
     getCurrentTab()!.pages.remove(page);
     notifyListeners();
+  }
+
+  void toggleNotifications() {
+    if(getCurrentTab()!.pages.contains(AppPage.NOTIFICATIONS)) {
+      closeSubPage(AppPage.NOTIFICATIONS);
+    } else {
+      addNewSubPage(AppPage.NOTIFICATIONS, Side.right);
+    }
   }
 
 }

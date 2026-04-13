@@ -68,8 +68,17 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       return true;
     }
 
-    if (meta && key == LogicalKeyboardKey.keyW) {
-      bus.emit(AppEvent.closeTab);
+    if (meta && key == LogicalKeyboardKey.keyG) {
+      bus.emit(AppEvent.graphView);
+      print("Graph View event emitted");
+      return true;
+    }
+    if (meta && key == LogicalKeyboardKey.keyB) {
+      bus.emit(AppEvent.portalView);
+      return true;
+    }
+    if (meta && key == LogicalKeyboardKey.keyN) {
+      bus.emit(AppEvent.toggleNotificaitonView);
       return true;
     }
     if (meta && key == LogicalKeyboardKey.keyT) {

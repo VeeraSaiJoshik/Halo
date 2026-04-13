@@ -48,7 +48,8 @@ class _WebViewState extends ConsumerState<CustomWebView>
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
         height: double.infinity,
         decoration: BoxDecoration(
           color: CustomColors.primary,

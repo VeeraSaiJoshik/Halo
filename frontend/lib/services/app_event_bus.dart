@@ -15,7 +15,7 @@ enum AppEvent {
   leftAdd, 
   rightAdd,
 
-  newNotifcation,
+  newNotifcation, graphView, portalView, toggleNotificaitonView,
 }
 
 /// Broadcast stream bus.  One instance lives for the lifetime of the app,
