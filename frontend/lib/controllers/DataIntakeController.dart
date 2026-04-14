@@ -41,16 +41,18 @@ class IntakeService {
   DateTime? _lastCandleTimestamp;
   DetectionEngine? detectionEngine;
 
+  late Function updateNotifications;
+
   IntakeService({
     this.alpacaClient,
     BinanceClient? binanceClient,
     this.finnhubClient,
-    required this.eventBus
+    required this.eventBus,
   }) : binanceClient = binanceClient ?? BinanceClient( baseUrl: Platform.environment['BINANCE_BASE_URL'] ?? 'https://api.binance.com', ) {
     detectionEngine = DetectionEngine();
   }
 
-  Future<TickerInfo?> onTabTitleChanged(String symbol, String timeframe) async {
+  Future<TickerInfo?> initializeInput(String symbol, String timeframe) async {
     print("[IntakeService] Tab title changed: $symbol - $timeframe");
     if (symbol == _currentSymbol && timeframe == _currentTimeframe) {
       return TickerInfo(symbol: symbol, timeframe: timeframe);

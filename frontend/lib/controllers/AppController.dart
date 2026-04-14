@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/DataIntakeController.dart';
+import 'package:frontend/engine/clients/alpaca_client.dart';
+import 'package:frontend/engine/clients/binance_client.dart';
+import 'package:frontend/engine/clients/finnhub_client.dart';
 import 'package:frontend/engine/stocks/ticker_identifier.dart';
 import 'package:frontend/models/stocks.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:uuid/uuid.dart';
@@ -22,13 +26,117 @@ class WindowInfo {
   late List<AppPage> pages;
   bool aiListenerReady = false;
 
-  WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, pages}){
+  List<String> notifications = [];
+
+  IntakeService intakeService;
+
+  void portalDomListener(String DOM) {}
+  void chartDomListener(String DOM) {}
+
+  void updateNotification(String notification) {
+    notifications.add(notification);
+  }
+  
+  Future<bool> initializeChartDomListener() async {
+    try{
+      await chartController!.runJavaScript('''
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            // Send data back to Flutter
+            window.flutter_inappwebview.callHandler('onDOMChange', {
+              type: mutation.type,
+              target: mutation.target.id || mutation.target.className
+            });
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true
+        });
+      ''');
+
+      chartController!.addJavaScriptChannel(
+        'onDOMChange',
+        onMessageReceived: (message) {
+          chartDomListener(message.message);
+        },
+      );
+
+      return true;
+    } catch (e) {
+      print("Error initializing chart DOM listener: $e");
+      return false;
+    }
+  }
+
+  Future<bool> initializePortalDomListener() async {
+    try {
+      await portalController!.runJavaScript('''
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            // Send data back to Flutter
+            window.flutter_inappwebview.callHandler('onDOMChange', {
+              type: mutation.type,
+              target: mutation.target.id || mutation.target.className
+            });
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true
+        });
+      ''');
+
+      portalController!.addJavaScriptChannel(
+        'onDOMChange',
+        onMessageReceived: (message) {
+          portalDomListener(message.message);
+        },
+      );
+
+      return true;
+    } catch (e) {
+      print("Error initializing portal DOM listener: $e");
+      return false;
+    }
+  }
+
+  WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
+    alpacaClient: AlpacaClient(
+      apiKey: String.fromEnvironment("ALPACA_API_KEY"), 
+      secretKey: String.fromEnvironment("ALPACA_API_SECRET")
+    ),
+    binanceClient: BinanceClient(),
+    finnhubClient: FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY")),
+    eventBus: eventBus,
+  ){
+    intakeService.updateNotifications = updateNotification;
+    
     if(pages == null) {
       this.pages = [AppPage.PORTAL];
     } else {
       this.pages = pages;
     }
     uuid = const Uuid().v4();
+    
+    initializeChartDomListener();
+    initializePortalDomListener();
+  }
+
+  Future<bool> initializeIntakeService() async {
+    TickerInfo? info = await intakeService.initializeInput(
+      Stock.symbol,
+      "5m"
+    );
+    aiListenerReady = true;
+
+    return false;
   }
 }
 
@@ -38,7 +146,7 @@ class AppController extends ChangeNotifier{
 
   AppController({required this.intakeEngine});
 
-  void newTab(StockName stock) {
+  void newTab(StockName stock, AppEventBus eventBus) {
     final portalController = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
@@ -83,8 +191,11 @@ class AppController extends ChangeNotifier{
     )
     ..loadRequest(Uri.parse('https://www.tradingview.com/chart/d3IIUEuI/'));
 
+    WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
+    newTab.initializeIntakeService().then((_) => notifyListeners());
+
     tabs.add(
-      WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true)
+      newTab
     );
 
     switchTab(tabs.elementAt(tabs.length - 1));
@@ -109,13 +220,6 @@ class AppController extends ChangeNotifier{
       }
     }
 
-    intakeEngine.onTabTitleChanged(tab.Stock.symbol, "5m").then((TickerInfo? info) {
-      if(currentTab.isActive! && currentTab.isActive) {
-        print("Current Tab AI Engine is finished");
-        currentTab.aiListenerReady = true;
-        notifyListeners();
-      }
-    });
     notifyListeners();
   }
 
