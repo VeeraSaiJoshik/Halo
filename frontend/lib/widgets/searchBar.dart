@@ -72,7 +72,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
       } else if (event == AppEvent.select) {
         if (stockSearchResults.isNotEmpty) {
           final selectedStock = stockSearchResults[activeIndex];
-          ref.read(appControllerProvider).newTab(selectedStock);
+          ref.read(appControllerProvider).newTab(selectedStock, ref.read(appEventBusProvider));
           toggleSearchBarState();
         }
       }

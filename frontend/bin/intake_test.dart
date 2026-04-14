@@ -1,9 +1,10 @@
 import 'dart:io';
 
+import 'package:frontend/controllers/DataIntakeController.dart';
+import 'package:frontend/engine/stocks/ticker_identifier.dart';
+
 import '../lib/engine/clients/alpaca_client.dart';
 import '../lib/engine/clients/binance_client.dart';
-import '../lib/engine/intake_service.dart';
-import '../lib/engine/ticker_identifier.dart';
 
 Future<void> main(List<String> args) async {
   final binanceBaseUrl =

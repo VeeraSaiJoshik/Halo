@@ -24,6 +24,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
   );
 
   bool isHovering = false;
+  bool closeButtonIsHovering = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,27 +37,31 @@ class _WindowTabState extends ConsumerState<WindowTab>
       child: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
         child: BackdropFilter(
-          filter: widget.context.isActive ? 
-            ImageFilter.blur(sigmaX: 20, sigmaY: 20) : 
-            ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+          filter: widget.context.isActive
+              ? ImageFilter.blur(sigmaX: 20, sigmaY: 20)
+              : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
           child: Container(
-              decoration: widget.context.isActive ?  BoxDecoration(
-                borderRadius: _borderRadius,
-                color: Colors.black.withOpacity(0.6),
-              ) : isHovering ? BoxDecoration(
-                borderRadius: _borderRadius,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.6),
-                    Colors.black.withOpacity(0.15)
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ) : BoxDecoration(
-                borderRadius: _borderRadius,
-                color: Colors.transparent 
-              ),
+            decoration: widget.context.isActive
+                ? BoxDecoration(
+                    borderRadius: _borderRadius,
+                    color: Colors.black.withOpacity(0.6),
+                  )
+                : isHovering
+                ? BoxDecoration(
+                    borderRadius: _borderRadius,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.6),
+                        Colors.black.withOpacity(0.15),
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  )
+                : BoxDecoration(
+                    borderRadius: _borderRadius,
+                    color: Colors.transparent,
+                  ),
             height: 34,
             width: 240,
             padding: EdgeInsets.symmetric(horizontal: 10),
@@ -64,11 +69,11 @@ class _WindowTabState extends ConsumerState<WindowTab>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 17, 
-                  width: 17, 
+                  height: 17,
+                  width: 17,
                   child: Image.network(
                     widget.context.Stock.imageUrl,
-                    fit: BoxFit.contain
+                    fit: BoxFit.contain,
                   ),
                 ),
                 SizedBox(width: 8),
@@ -76,13 +81,13 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   spacing: 8,
                   children: [
                     Text(
-                      widget.context.Stock.symbol, 
+                      widget.context.Stock.symbol,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
-                    ) 
+                    ),
                   ],
                 ),
                 Expanded(child: SizedBox()),
@@ -96,13 +101,13 @@ class _WindowTabState extends ConsumerState<WindowTab>
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center, 
-                    mainAxisAlignment: MainAxisAlignment.center, 
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     spacing: 3,
                     children: [
                       FaIcon(
-                        FontAwesomeIcons.arrowDown, 
+                        FontAwesomeIcons.arrowDown,
                         color: Colors.white,
                         size: 12,
                       ),
@@ -114,42 +119,68 @@ class _WindowTabState extends ConsumerState<WindowTab>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ]
-                  )
-                ),
-                Container(
-                  width: 5
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6),
-                  height: 25,
-                  decoration: BoxDecoration(
-                    color: widget.context.isActive
-                        ? Colors.blue.withOpacity(0.4)
-                        : Colors.grey.withAlpha(50),
-                    borderRadius: BorderRadius.circular(5),
+                    ],
                   ),
-                  child: Center(
-                    child: widget.context.aiListenerReady ? 
-                    widget.context.notifications.isEmpty ? 
-                    FaIcon(
-                      FontAwesomeIcons.solidEye, 
-                      color: Colors.white.withOpacity(0.5),
-                      size: 14,
-                    ) :
-                    Text(
-                      '${widget.context.notifications.length > 9 ? '9+' : widget.context.notifications.length}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ) : SizedBox(
-                      height: 14,
-                      width: 14,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                ),
+                Container(width: 5),
+                InkWell(
+                  onHover: (value) => setState(() {
+                    closeButtonIsHovering = value;
+                  }),
+                  onTap: () async {
+                    await ref.read(appControllerProvider).removeTab(widget.context);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    curve: Curves.easeInOut,
+                    width: 35,
+                    height: 25,
+                    decoration: BoxDecoration(
+                      color: closeButtonIsHovering
+                          ? Colors.red.withOpacity(0.5)
+                          : widget.context.isActive
+                          ? Colors.blue.withOpacity(0.4)
+                          : Colors.grey.withAlpha(50),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 150),
+                        switchInCurve: Curves.easeIn,
+                        switchOutCurve: Curves.easeOut,
+                        child: closeButtonIsHovering
+                            ? FaIcon(
+                                key: const ValueKey('x'),
+                                FontAwesomeIcons.xmark,
+                                color: Colors.white.withOpacity(0.5),
+                                size: 14,
+                              )
+                            : widget.context.aiListenerReady
+                            ? widget.context.notifications.isEmpty
+                                  ? FaIcon(
+                                      key: const ValueKey('eye'),
+                                      FontAwesomeIcons.solidEye,
+                                      color: Colors.white.withOpacity(0.5),
+                                      size: 14,
+                                    )
+                                  : Text(
+                                      key: ValueKey('notif_${widget.context.notifications.length}'),
+                                      '${widget.context.notifications.length > 9 ? '9+' : widget.context.notifications.length}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    )
+                            : SizedBox(
+                                key: const ValueKey('loading'),
+                                height: 14,
+                                width: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),

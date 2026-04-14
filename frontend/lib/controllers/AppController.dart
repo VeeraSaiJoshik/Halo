@@ -106,7 +106,6 @@ class WindowInfo {
           portalDomListener(message.message);
         },
       );
-
       return true;
     } catch (e) {
       print("Error initializing portal DOM listener: $e");
@@ -137,16 +136,16 @@ class WindowInfo {
     await initializeChartDomListener();
     await initializePortalDomListener();
 
-    await portalController!.setUserAgent(
-      'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
-    );
-    await chartController!.setUserAgent(
-      'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
-    );
-
     browserControllerReady = true;
+    print("Browser services initialized for ${Stock.symbol}");
 
     return true;
+  }
+
+  Future<void> dispose() async {
+    await portalController!.removeJavaScriptChannel('onDOMChange');
+    await chartController!.removeJavaScriptChannel('onDOMChange');
+    intakeService.dispose();
   }
 
   Future<bool> initializeIntakeService() async {
@@ -267,6 +266,15 @@ class AppController extends ChangeNotifier{
     } else {
       addNewSubPage(AppPage.NOTIFICATIONS, Side.right);
     }
+  }
+
+  Future<void> removeTab(WindowInfo tab) async {
+    WindowInfo currentTab = tabs.firstWhere((WindowInfo element) => element.uuid == tab.uuid);
+    await currentTab.dispose();
+
+    tabs.removeWhere((window) => window.uuid == tab.uuid);
+    if(tabs.isNotEmpty) switchTab(tabs.first);
+    notifyListeners();
   }
 
 }
