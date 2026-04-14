@@ -17,6 +17,19 @@ class TitleBar extends ConsumerStatefulWidget {
 }
 
 class _TitleBarState extends ConsumerState<TitleBar> {
+  void initState() {
+    super.initState();
+
+    ref.read(appEventBusProvider).stream.listen((event) {
+      if(event == AppEvent.newNotifcation) {
+        setState(() {});
+      }
+    });
+  }
+
+  double newTabTilt = 0;
+  bool _newTabPressed = false;
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(appControllerProvider);
@@ -35,18 +48,32 @@ class _TitleBarState extends ConsumerState<TitleBar> {
           Container(width: 10),
           ...controller.tabs.map((tab) => WindowTab(context: tab, switchTab: controller.switchTab,)),
           Container(width: 10),
-          InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            onTap: () {
-              setState(() {
-                ref.read(appEventBusProvider).emit(AppEvent.openSearch);
-              });
-            },
-            child: Container(height: 38, child: Center(
-              child: FaIcon(FontAwesomeIcons.plus, size: 15, color: CustomColors.background)
-            ))
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => newTabTilt = 0.05),
+            onExit:  (_) => setState(() => newTabTilt = 0),
+            child: GestureDetector(
+              onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
+              onTapDown:   (_) => setState(() => _newTabPressed = true),
+              onTapUp:     (_) => setState(() => _newTabPressed = false),
+              onTapCancel: ()  => setState(() => _newTabPressed = false),
+              child: SizedBox(
+                height: 38,
+                child: Center(
+                  child: AnimatedScale(
+                    scale: _newTabPressed ? 0.75 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeOut,
+                    child: AnimatedRotation(
+                      turns: newTabTilt,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      child: FaIcon(FontAwesomeIcons.plus, size: 15, color: CustomColors.background),
+                    ),
+                  ),
+                )
+              ),
+            ),
           )
         ],
       ),

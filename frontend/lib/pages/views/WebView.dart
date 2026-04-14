@@ -6,12 +6,14 @@ import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/widgets/OverlayWidgets/TopNavModal.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class CustomWebView extends ConsumerStatefulWidget {
   WebViewController controller;
+  WindowInfo context;
   AppPage pageType;
-  CustomWebView({super.key, required this.controller, required this.pageType});
+  CustomWebView({super.key, required this.controller, required this.pageType, required this.context});
 
   @override
   ConsumerState<CustomWebView> createState() => _WebViewState();
@@ -48,7 +50,8 @@ class _WebViewState extends ConsumerState<CustomWebView>
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
         height: double.infinity,
         decoration: BoxDecoration(
           color: CustomColors.primary,
@@ -56,7 +59,10 @@ class _WebViewState extends ConsumerState<CustomWebView>
         ),
         child: Stack(
           children: [ 
-            WebViewWidget(controller: widget.controller),
+            widget.context.browserControllerReady ?  
+              WebViewWidget(controller: widget.controller) : 
+              Center(child: GlassProgressIndicator.circular(),)
+            ,
             Positioned(
               left: 0,
               right: 0,

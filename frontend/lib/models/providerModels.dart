@@ -37,10 +37,9 @@ final intakeServiceProvider = Provider<IntakeService>((ref) {
   final eventBus = ref.read(appEventBusProvider);
 
   final alpacaClient = AlpacaClient(
-    apiKey: String.fromEnvironment("ALPACA_API_KEY"), 
-    secretKey: String.fromEnvironment("ALPACA_API_SECRET")
+    apiKey: "PKFCQXJE4YYVCSGROTEEVKF2QS",//String.fromEnvironment("ALPACA_API_KEY"), 
+    secretKey: "28my4BXE513XCqGMbXfQdXrgFZpNZYiSHgUeDHq6Bhra"//String.fromEnvironment("ALPACA_API_SECRET")
   );
-  print("Alpaca Client initialized with key: " + String.fromEnvironment("ALPACA_API_KEY"));
   final binanceClient = BinanceClient();
   final finnhubClient = FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY"));
 

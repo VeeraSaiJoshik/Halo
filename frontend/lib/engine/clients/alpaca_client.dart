@@ -50,6 +50,7 @@ class AlpacaClient {
     }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
+    print("Here is the data from Alpaca API: " + data.toString());
     final bars = data['bars'] as List<dynamic>?;
     if (bars == null || bars.isEmpty) return <Candle>[];
 
