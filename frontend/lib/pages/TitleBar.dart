@@ -17,6 +17,16 @@ class TitleBar extends ConsumerStatefulWidget {
 }
 
 class _TitleBarState extends ConsumerState<TitleBar> {
+  void initState() {
+    super.initState();
+
+    ref.read(appEventBusProvider).stream.listen((event) {
+      if(event == AppEvent.newNotifcation) {
+        setState(() {});
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(appControllerProvider);

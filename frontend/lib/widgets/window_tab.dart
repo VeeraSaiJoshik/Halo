@@ -131,14 +131,14 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   ),
                   child: Center(
                     child: widget.context.aiListenerReady ? 
-                    ref.read(intakeServiceProvider).notificationController.notifications.length == 0 ? 
+                    widget.context.notifications.isEmpty ? 
                     FaIcon(
                       FontAwesomeIcons.solidEye, 
                       color: Colors.white.withOpacity(0.5),
                       size: 14,
                     ) :
                     Text(
-                      '9+',
+                      '${widget.context.notifications.length > 9 ? '9+' : widget.context.notifications.length}',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
