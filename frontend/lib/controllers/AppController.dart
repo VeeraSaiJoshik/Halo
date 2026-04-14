@@ -25,6 +25,7 @@ class WindowInfo {
   late String uuid;
   late List<AppPage> pages;
   bool aiListenerReady = false;
+  bool browserControllerReady = false;
 
   List<String> notifications = [];
 
@@ -40,6 +41,9 @@ class WindowInfo {
   Future<bool> initializeChartDomListener() async {
     try{
       await chartController!.runJavaScript('''
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
+        
         const observer = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
             // Send data back to Flutter
@@ -75,6 +79,9 @@ class WindowInfo {
   Future<bool> initializePortalDomListener() async {
     try {
       await portalController!.runJavaScript('''
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
+
         const observer = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
             // Send data back to Flutter
@@ -117,16 +124,29 @@ class WindowInfo {
     eventBus: eventBus,
   ){
     intakeService.updateNotifications = updateNotification;
-    
+
     if(pages == null) {
       this.pages = [AppPage.PORTAL];
     } else {
       this.pages = pages;
     }
     uuid = const Uuid().v4();
-    
-    initializeChartDomListener();
-    initializePortalDomListener();
+  }
+
+  Future<bool> initializeBrowserServices() async {
+    await initializeChartDomListener();
+    await initializePortalDomListener();
+
+    await portalController!.setUserAgent(
+      'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+    );
+    await chartController!.setUserAgent(
+      'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+    );
+
+    browserControllerReady = true;
+
+    return true;
   }
 
   Future<bool> initializeIntakeService() async {
@@ -192,6 +212,7 @@ class AppController extends ChangeNotifier{
     ..loadRequest(Uri.parse('https://www.tradingview.com/chart/d3IIUEuI/'));
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
+    newTab.initializeBrowserServices().then((_) => notifyListeners());
     newTab.initializeIntakeService().then((_) => notifyListeners());
 
     tabs.add(
