@@ -8,6 +8,7 @@ import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/widgets/Buttons/StandardButton.dart';
 
 enum Side {
   left, 
@@ -142,101 +143,35 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
   }
 }
 
-class SideNavBarIcon extends StatefulWidget {
+class SideNavBarIcon extends StatelessWidget {
   final String icon;
   final int directionMulti;
-  final bool showFrost;
   final void Function(AppPage page) onTap;
 
-  SideNavBarIcon({
+  const SideNavBarIcon({
     super.key,
     required this.icon,
     required this.onTap,
     this.directionMulti = 0,
-    this.showFrost = false,
   });
 
   @override
-  State<SideNavBarIcon> createState() => _SideNavBarIconState();
-}
-
-class _SideNavBarIconState extends State<SideNavBarIcon> {
-  bool _hovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        widget.onTap(
-          widget.icon == "graph" ? AppPage.GRAPH_VIEWER : widget.icon == "search" ? AppPage.PORTAL : AppPage.NOTIFICATIONS,
-        );
-      },
-      onHover: (value) => setState(() => _hovered = value),
-      child: AnimatedScale(
-        scale: _hovered ? 1.1 : 1.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutBack,
-        child: AnimatedRotation(
-          turns: _hovered ? 0.025 * widget.directionMulti : 0.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutBack,
-          child: Stack(
-            children: [
-              // Use AnimatedContainer to make the glow transition smoothly
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 43,
-                height: 43,
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: CustomColors.darkPurple,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: CustomColors.purple,
-                    width: 2,
-                  ),
-                  // This creates the glow effect
-                  boxShadow: [
-                    BoxShadow(
-                      color: CustomColors.purple.withValues(
-                        // Make the glow more intense on hover
-                        alpha: _hovered ? 0.6 : 0.3, 
-                      ),
-                      blurRadius: _hovered ? 15 : 8,
-                      spreadRadius: _hovered ? 2 : 0,
-                      offset: const Offset(0, 0), // Keeps glow centered
-                    ),
-                  ],
-                ),
-                child: Image.asset(
-                  "assets/images/${widget.icon}.png",
-                  fit: BoxFit.cover,
-                ),
-              ),
-              
-              // Your existing Frost Layer
-              AnimatedOpacity(
-                opacity: _hovered || widget.showFrost ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  width: 43,
-                  height: 43,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.18),
-                        Colors.white.withValues(alpha: 0.05),
-                        Colors.white.withValues(alpha: 0.00),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return StandardButton(
+      directionMulti: directionMulti,
+      onTap: () => onTap(
+        icon == "graph"
+            ? AppPage.GRAPH_VIEWER
+            : icon == "search"
+                ? AppPage.PORTAL
+                : AppPage.NOTIFICATIONS,
+      ),
+      child: SizedBox(
+        width: 33,
+        height: 33,
+        child: Image.asset(
+          "assets/images/$icon.png",
+          fit: BoxFit.cover,
         ),
       ),
     );

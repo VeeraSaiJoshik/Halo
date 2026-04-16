@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
+import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -125,7 +126,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       home: ClipRRect(
         borderRadius: BorderRadius.circular(windowContext.isFullScreen ? 0 : 15),
         child: Scaffold(
-          body: HomePage(),
+          body: OnboardingPage(),
         ),
       ),
     );

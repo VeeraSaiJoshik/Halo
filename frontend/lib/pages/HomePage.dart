@@ -50,8 +50,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     ref.watch(appControllerProvider);
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade900
+      decoration: const BoxDecoration(
+        color: CustomColors.primary,
       ),
       width: double.infinity,
       child: BackgroundGradientAnimation(
