@@ -87,7 +87,6 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
       bottom: 0,
       left:  widget.side == Side.left  ? 0 : null,
       right: widget.side == Side.right ? 0 : null,
-      width: totalWidth,
       child: Stack(
         children: [
           Positioned(

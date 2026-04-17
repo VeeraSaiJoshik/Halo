@@ -89,9 +89,7 @@ class _NavButtonState extends State<_NavButton> {
                     width: 30,
                     height: 30,
                     decoration: BoxDecoration(
-                      color: _hovered
-                          ? CustomColors.background.withValues(alpha: 0.1)
-                          : CustomColors.accent,
+                      color:  CustomColors.background.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(
                         color: CustomColors.background
@@ -181,9 +179,7 @@ class _UrlPillState extends State<_UrlPill> {
             decoration: BoxDecoration(
               color: _copied
                   ? Colors.green.withValues(alpha: 0.2)
-                  : _hovered
-                      ? CustomColors.background.withValues(alpha: 0.1)
-                      : CustomColors.accent,
+                  : CustomColors.background.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: _copied

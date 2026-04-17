@@ -154,7 +154,7 @@ class _EmptyState extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: theme.textAccent.withOpacity(0.4)),
             ),
-            child: Text('⌘K to search', style: theme.titleMedium.copyWith(color: theme.textAccent)),
+            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: theme.textAccent)),
           ),
         ],
       ),
