@@ -18,7 +18,7 @@ class MeridianTheme implements HaloThemeData {
   Color get textPrimary => const Color(0xFFF1F5F9);
 
   @override
-  Color get textSecondary => const Color(0xFF94A3B8);
+  Color get textSecondary => const Color.fromARGB(255, 184, 176, 148);
 
   @override
   Color get textMuted => const Color(0xFF475569);
@@ -47,9 +47,9 @@ class MeridianTheme implements HaloThemeData {
       );
 
   @override
-  TextStyle get displayMedium => GoogleFonts.spaceGrotesk(
+  TextStyle get displayMedium => GoogleFonts.archivoBlack(
         fontSize: 40,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w400,
         letterSpacing: -1.0,
         height: 1.1,
         color: textPrimary,
@@ -168,9 +168,9 @@ class MeridianTheme implements HaloThemeData {
   // ─── Background color system (UI/UX Pro Max: banking/finance navy + blue precision) ─
 
   @override
-  List<Color> get backgroundGradient => const [
-        Color(0xFF0D1F4A), // rich deep navy — clearly not black
-        Color(0xFF091430), // deep indigo anchor with strong hue
+  List<Color> get backgroundGradient => [
+        Colors.amber.shade700,//Color(0xFF0D1F4A), // rich deep navy — clearly not black
+        Colors.amber.shade900, // deep indigo anchor with strong hue
       ];
 
   @override

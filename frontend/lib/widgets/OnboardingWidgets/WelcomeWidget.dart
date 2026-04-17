@@ -27,16 +27,12 @@ class _WelcomewidgetState extends State<Welcomewidget> {
       mainAxisSize: MainAxisSize.max,
       children: [
 
-        Image.asset('assets/images/icon.png', width: 88, height: 88),
-
-        const SizedBox(height: 24),
-
         Consumer(
           builder: (context, ref, _) {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               "Welcome to Halo!",
-              style: theme.displayMedium.copyWith(color: theme.textPrimary),
+              style: theme.displayMedium.copyWith(color: theme.textPrimary).copyWith(fontSize: 45, color: Colors.white.withOpacity(0.7)),
             );
           },
         ),
@@ -48,12 +44,12 @@ class _WelcomewidgetState extends State<Welcomewidget> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               "Lorem ipsum dolor sit amet, consectetur adispiscing elit.",
-              style: theme.bodyLarge,
+              style: theme.bodyLarge.copyWith(color: Colors.white.withOpacity(0.5)),
             );
           },
         ),
 
-        const SizedBox(height: 36),
+        const SizedBox(height: 56),
 
         PlushyButton(
           onPressed: widget.formController.next,

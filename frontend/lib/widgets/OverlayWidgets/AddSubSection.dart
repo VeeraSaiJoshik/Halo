@@ -44,7 +44,7 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
       duration: const Duration(milliseconds: 250),
     );
     _slideAnimation = Tween<Offset>(
-      begin: Offset(widget.side == Side.left ? -3 : 3, 0),
+      begin: Offset(widget.side == Side.left ? -2 : 2, 0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animController,
