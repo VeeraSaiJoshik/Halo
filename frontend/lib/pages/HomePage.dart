@@ -68,6 +68,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             if (_searchActive)
               Positioned.fill(
                 child: InkWell(
+                  mouseCursor: SystemMouseCursors.click,
                   onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSearch),
                   child: Container(width: double.infinity, height: double.infinity, color: Colors.black.withOpacity(0.5)),
                 ),

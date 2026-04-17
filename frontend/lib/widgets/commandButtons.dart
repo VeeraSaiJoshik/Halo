@@ -60,6 +60,7 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             InkWell(
+              mouseCursor: SystemMouseCursors.click,
               splashColor: Colors.transparent, 
               onTap: () => {
                 windowManager.close()
@@ -74,6 +75,7 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
               ),
             ),
             InkWell(
+              mouseCursor: SystemMouseCursors.click,
               splashColor: Colors.transparent, 
               onTap: () => {
                 windowManager.minimize()
@@ -88,6 +90,7 @@ class _CommandButtonsState extends State<CommandButtons> with TickerProviderStat
               ),
             ),
             InkWell(
+              mouseCursor: SystemMouseCursors.click,
               splashColor: Colors.transparent, 
               onTap: () => {
                 windowManager.setFullScreen(true)

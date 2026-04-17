@@ -32,6 +32,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
     return InkWell(
+      mouseCursor: SystemMouseCursors.click,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -116,6 +117,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                 ),
                 Container(width: 5),
                 InkWell(
+                  mouseCursor: SystemMouseCursors.click,
                   onHover: (value) => setState(() {
                     closeButtonIsHovering = value;
                   }),

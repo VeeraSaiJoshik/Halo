@@ -24,6 +24,7 @@ class BottomNavModal extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
+            mouseCursor: SystemMouseCursors.click,
             splashColor: Colors.transparent,
             onTap: () => {
               controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
@@ -31,6 +32,7 @@ class BottomNavModal extends StatelessWidget {
             child: BototmNavBarIcons(icon: "stocks", directionMulti: 1, showFrost: controller.getCurrentTab()!.pages[0] == AppPage.GRAPH_VIEWER ,),
           ),
           InkWell(
+            mouseCursor: SystemMouseCursors.click,
             splashColor: Colors.transparent,
             onTap: () => {
               controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
@@ -38,6 +40,7 @@ class BottomNavModal extends StatelessWidget {
             child: BototmNavBarIcons(icon: "search", showFrost: controller.getCurrentTab()!.pages[0] == AppPage.GRAPH_VIEWER),
           ),
           InkWell(
+            mouseCursor: SystemMouseCursors.click,
             splashColor: Colors.transparent,
             onTap: () => {
               controller.switchTabSubPage(AppPage.GRAPH_VIEWER)
