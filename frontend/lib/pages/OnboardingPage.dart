@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/widgets/OnboardingWidgets/FormWidget.dart';
 import 'package:frontend/widgets/OnboardingWidgets/WelcomeWidget.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/commandButtons.dart';
+
+class FormController {
+  int currentIndex = -1;
+  VoidCallback? onChanged;
+
+  void next() {
+    currentIndex++;
+    onChanged?.call();
+  }
+  void back() {
+    currentIndex--;
+    onChanged?.call();
+  }
+}
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -11,6 +26,16 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
+  bool showWelcome = true;
+  FormController formController = FormController();
+
+  void initState() {
+    super.initState();
+    formController.onChanged = () {
+      setState(() {});
+    };
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,13 +45,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
       width: double.infinity,
       child: BackgroundGradientAnimation(
         child: Container(
-          color: Colors.black.withOpacity(0.35),
           child: Padding(
             padding: EdgeInsets.all(12),
             child: Column(
               children: [
                 CommandButtons(), 
-                Expanded(child: Welcomewidget())
+                Expanded(
+                  child: formController.currentIndex == -1 ? 
+                    Welcomewidget(formController: formController) :
+                    FormWidget(formController: formController)
+                )
               ],
             ),
           ),

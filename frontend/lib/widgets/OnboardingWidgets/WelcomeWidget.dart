@@ -3,11 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 
 class Welcomewidget extends StatefulWidget {
-  const Welcomewidget({super.key});
+  FormController formController;
+  Welcomewidget({super.key, required this.formController});
 
   @override
   State<Welcomewidget> createState() => _WelcomewidgetState();
@@ -53,7 +55,29 @@ class _WelcomewidgetState extends State<Welcomewidget> {
         // Enough room to visually separate the CTA without pushing it away
         const SizedBox(height: 60),
 
-        PlushyButton(),
+        PlushyButton(
+          onPressed: widget.formController.next,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 12,
+            children: [
+              Text(
+                "Get Started",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: CustomColors.background,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              FaIcon(
+                FontAwesomeIcons.arrowRight,
+                color: CustomColors.background,
+                size: 15,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
