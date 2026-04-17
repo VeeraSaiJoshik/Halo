@@ -6,6 +6,7 @@ import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/BottomNavModal.dart';
 
@@ -72,6 +73,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.55),
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white.withOpacity(0.10)),
             ),
             child: Stack(
               children: [
@@ -80,7 +82,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                   height: double.infinity,
                   padding: EdgeInsets.all(5),
                   child: pages.isEmpty
-                      ? const SizedBox.expand()
+                      ? _EmptyState()
                       : LayoutBuilder(
                           builder: (context, constraints) {
                             const double dividerWidth = 6;
@@ -128,6 +130,33 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Empty state ─────────────────────────────────────────────────────────────
+
+class _EmptyState extends ConsumerWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(haloThemeProvider);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            decoration: BoxDecoration(
+              color: theme.textAccent.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: theme.textAccent.withOpacity(0.4)),
+            ),
+            child: Text('⌘K to search', style: theme.titleMedium.copyWith(color: theme.textAccent)),
+          ),
+        ],
       ),
     );
   }

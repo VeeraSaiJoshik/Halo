@@ -6,6 +6,7 @@ import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/widgets/DevMenu.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -40,6 +41,8 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> with WindowListener {
+  bool _showDevMenu = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +66,16 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
     final bus  = ref.read(appEventBusProvider);
 
     print("Key pressed: ${event.logicalKey.debugName}, meta: $meta");
+
+    if (key == LogicalKeyboardKey.escape && _showDevMenu) {
+      setState(() => _showDevMenu = false);
+      return true;
+    }
+
+    if (meta && key == LogicalKeyboardKey.keyD) {
+      setState(() => _showDevMenu = !_showDevMenu);
+      return true;
+    }
 
     if (key == LogicalKeyboardKey.enter) {
       bus.emit(AppEvent.select);
@@ -126,7 +139,15 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       home: ClipRRect(
         borderRadius: BorderRadius.circular(windowContext.isFullScreen ? 0 : 15),
         child: Scaffold(
-          body: OnboardingPage(),
+          body: Stack(
+            children: [
+              HomePage(),
+              if (_showDevMenu)
+                DevMenu(
+                  onClose: () => setState(() => _showDevMenu = false),
+                ),
+            ],
+          ),
         ),
       ),
     );

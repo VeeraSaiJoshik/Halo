@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 class SearchField extends StatefulWidget {
   final double height;
@@ -36,28 +39,33 @@ class _SearchFieldState extends State<SearchField> {
             size: 14,
           ),
           Expanded(
-            child: Focus(
-              autofocus: true,
-              onKeyEvent: (node, event) {
-                if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
-                    event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                  return KeyEventResult.handled; // swallows the event
-                }
-                return KeyEventResult.ignored; // lets everything else through
+            child: Consumer(
+              builder: (context, ref, _) {
+                final theme = ref.watch(haloThemeProvider);
+                return Focus(
+                  autofocus: true,
+                  onKeyEvent: (node, event) {
+                    if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                        event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                      return KeyEventResult.handled; // swallows the event
+                    }
+                    return KeyEventResult.ignored; // lets everything else through
+                  },
+                  child: TextField(
+                    controller: widget.controller,
+                    focusNode: widget.focusNode,
+                    style: theme.titleMedium,
+                    onChanged: (value) => widget.onTextChange(value),
+                    decoration: InputDecoration(
+                      hintText: "Search for stock or browse...",
+                      hintStyle: theme.bodyMedium,
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                );
               },
-              child: TextField(
-                controller: widget.controller,
-                focusNode: widget.focusNode,
-                style: TextStyle(color: Colors.white, fontSize: 16),
-                onChanged: (value) => widget.onTextChange(value),
-                decoration: InputDecoration(
-                  hintText: "Search for stock or browse...",
-                  hintStyle: TextStyle(color: Colors.white, fontSize: 16),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
             ),
           ),
         ],

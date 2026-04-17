@@ -76,7 +76,7 @@ class _AddSubSectionState extends ConsumerState<AddSubSection> with SingleTicker
       icons.add("icon");
     }
 
-    final double menuWidth  = _iconSize;
+    final double menuWidth  = _iconSize + 40;
     final double menuHeight = icons.length * _iconSize + (icons.length - 1) * _iconSpacing;
 
     const double edgeGap = 35;

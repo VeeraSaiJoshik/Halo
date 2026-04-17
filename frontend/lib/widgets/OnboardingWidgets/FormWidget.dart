@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/Pages.dart';
 
@@ -47,8 +50,16 @@ class FormWidget extends StatelessWidget {
                 child: Row(
                   spacing: 8,
                   children: [
-                    FaIcon(FontAwesomeIcons.arrowLeft,  size: 12, color: Colors.white),
-                    const Text('Back', style: TextStyle(color: Colors.white, fontSize: 15)),
+                    FaIcon(FontAwesomeIcons.arrowLeft, size: 12, color: Colors.white),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final theme = ref.watch(haloThemeProvider);
+                        return Text(
+                          'Back',
+                          style: theme.titleLarge.copyWith(color: Colors.white),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -58,9 +69,14 @@ class FormWidget extends StatelessWidget {
                 child: Row(
                   spacing: 8,
                   children: [
-                    Text(
-                      isLast ? 'Finish' : 'Next',
-                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final theme = ref.watch(haloThemeProvider);
+                        return Text(
+                          isLast ? 'Finish' : 'Next',
+                          style: theme.titleLarge.copyWith(color: Colors.white),
+                        );
+                      },
                     ),
                     FaIcon(
                       isLast ? FontAwesomeIcons.check : FontAwesomeIcons.arrowRight,

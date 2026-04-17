@@ -5,6 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WindowTab extends ConsumerStatefulWidget {
@@ -28,6 +30,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -44,18 +47,21 @@ class _WindowTabState extends ConsumerState<WindowTab>
             decoration: widget.context.isActive
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.white.withOpacity(0.10),
+                    border: Border(
+                      top: BorderSide(color: theme.textAccent.withOpacity(0.55), width: 1.5),
+                      left: BorderSide(color: Colors.white.withOpacity(0.10)),
+                      right: BorderSide(color: Colors.white.withOpacity(0.10)),
+                    ),
                   )
                 : isHovering
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.6),
-                        Colors.black.withOpacity(0.15),
-                      ],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
+                    color: Colors.white.withOpacity(0.06),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      left: BorderSide(color: Colors.white.withOpacity(0.08)),
+                      right: BorderSide(color: Colors.white.withOpacity(0.08)),
                     ),
                   )
                 : BoxDecoration(
@@ -82,11 +88,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   children: [
                     Text(
                       widget.context.Stock.symbol,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: theme.ticker,
                     ),
                   ],
                 ),
@@ -113,11 +115,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                       ),
                       Text(
                         '-0.42%',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: theme.titleMedium,
                       ),
                     ],
                   ),
@@ -139,8 +137,8 @@ class _WindowTabState extends ConsumerState<WindowTab>
                       color: closeButtonIsHovering
                           ? Colors.red.withOpacity(0.5)
                           : widget.context.isActive
-                          ? Colors.blue.withOpacity(0.4)
-                          : Colors.grey.withAlpha(50),
+                          ? theme.textAccent.withOpacity(0.25)
+                          : Colors.white.withAlpha(30),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Center(
@@ -166,11 +164,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                                   : Text(
                                       key: ValueKey('notif_${widget.context.notifications.length}'),
                                       '${widget.context.notifications.length > 9 ? '9+' : widget.context.notifications.length}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: theme.labelLarge,
                                     )
                             : SizedBox(
                                 key: const ValueKey('loading'),

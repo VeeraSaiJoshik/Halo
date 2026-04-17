@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
 // ─── Data ──────────────────────────────────────────────────────────────────
@@ -66,18 +69,24 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'Where do you trade?',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
+        Consumer(
+          builder: (context, ref, _) {
+            final theme = ref.watch(haloThemeProvider);
+            return Text(
+              'Where do you trade?',
+              style: theme.headlineMedium,
+            );
+          },
         ),
         const SizedBox(height: 8),
-        Text(
-          'Select your buying platform',
-          style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+        Consumer(
+          builder: (context, ref, _) {
+            final theme = ref.watch(haloThemeProvider);
+            return Text(
+              'Select your buying platform',
+              style: theme.bodyMedium,
+            );
+          },
         ),
         const SizedBox(height: 48),
         Row(
@@ -119,18 +128,24 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'Where do you chart?',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
+        Consumer(
+          builder: (context, ref, _) {
+            final theme = ref.watch(haloThemeProvider);
+            return Text(
+              'Where do you chart?',
+              style: theme.headlineMedium,
+            );
+          },
         ),
         const SizedBox(height: 8),
-        Text(
-          'Select your charting platform',
-          style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 14),
+        Consumer(
+          builder: (context, ref, _) {
+            final theme = ref.watch(haloThemeProvider);
+            return Text(
+              'Select your charting platform',
+              style: theme.bodyMedium,
+            );
+          },
         ),
         const SizedBox(height: 48),
         Row(

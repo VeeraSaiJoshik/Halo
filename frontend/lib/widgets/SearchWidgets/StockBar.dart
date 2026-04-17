@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/flag_service.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 class StockBar extends StatelessWidget {
   final List<StockName> stocks;
@@ -56,13 +59,14 @@ class StockWidget extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Color.fromARGB(255, 66, 72, 207),
                     child: Center(
-                      child: Text(
-                        stock.symbol[0],
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final theme = ref.watch(haloThemeProvider);
+                          return Text(
+                            stock.symbol[0],
+                            style: theme.ticker,
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -71,14 +75,15 @@ class StockWidget extends StatelessWidget {
             ),
             SizedBox(width: 7),
             Expanded(
-              child: Text(
-                stock.symbol,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700
-                ),
-                overflow: TextOverflow.ellipsis,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final theme = ref.watch(haloThemeProvider);
+                  return Text(
+                    stock.symbol,
+                    style: theme.ticker,
+                    overflow: TextOverflow.ellipsis,
+                  );
+                },
               ),
             ),
           ],

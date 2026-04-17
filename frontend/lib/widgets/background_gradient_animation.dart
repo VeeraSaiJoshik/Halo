@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:frontend/models/customColors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
-class BackgroundGradientAnimation extends StatefulWidget {
+class BackgroundGradientAnimation extends ConsumerStatefulWidget {
   final Widget? child;
+  // Optional color override — when null, colors come from haloThemeProvider.
   final List<Color>? colors;
   final double blurSigma;
 
@@ -16,17 +18,18 @@ class BackgroundGradientAnimation extends StatefulWidget {
   });
 
   @override
-  State<BackgroundGradientAnimation> createState() => _BackgroundGradientAnimationState();
+  ConsumerState<BackgroundGradientAnimation> createState() =>
+      _BackgroundGradientAnimationState();
 }
 
-class _BackgroundGradientAnimationState extends State<BackgroundGradientAnimation>
+class _BackgroundGradientAnimationState
+    extends ConsumerState<BackgroundGradientAnimation>
     with TickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    // A single controller is more performant; we use math to stagger movements
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 20),
@@ -41,49 +44,43 @@ class _BackgroundGradientAnimationState extends State<BackgroundGradientAnimatio
 
   @override
   Widget build(BuildContext context) {
-    // Default colors matching the React component logic
-    final List<Color> themeColors = widget.colors ?? [
-    const Color(0xFFF72585), // Hot Pink
-    const Color(0xFF7209B7), // Deep Violet
-    const Color(0xFF4CC9F0), // Soft Blue
-    const Color(0xFF480CA8), // Grape Purple
-    const Color(0xFFB5179E), // Magenta
-    const Color(0xFF4361EE), // Royal Blue
-  ];
+    final theme = ref.watch(haloThemeProvider);
+    final List<Color> blobColors = widget.colors ?? theme.blobColors;
 
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Static Background Gradient
+          // 1. Static background gradient — theme-driven, replaces generic purple→navy
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF6C00A2), // gradientBackgroundStart
-                  Color(0xFF001152), // gradientBackgroundEnd
-                ],
+                colors: theme.backgroundGradient,
               ),
             ),
           ),
-          // 2. Animated Blobs
+          // 2. Animated ambient blobs — theme colors, low opacity per UI/UX Pro Max
           AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
               return CustomPaint(
                 painter: GradientBlobsPainter(
                   progress: _controller.value,
-                  colors: themeColors,
+                  colors: blobColors,
+                  blobOpacity: theme.blobOpacity,
                 ),
                 size: Size.infinite,
               );
             },
           ),
-          // 3. The "Gooey" / Blur Layer
+          // 3. Glass blur layer — dark overlay, theme-tinted
           BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: widget.blurSigma, sigmaY: widget.blurSigma),
-            child: Container(color: CustomColors.primary.withOpacity(0.7)),
+            filter: ui.ImageFilter.blur(
+              sigmaX: widget.blurSigma,
+              sigmaY: widget.blurSigma,
+            ),
+            child: Container(color: theme.glassOverlay),
           ),
           // 4. Content
           if (widget.child != null) widget.child!,
@@ -96,16 +93,18 @@ class _BackgroundGradientAnimationState extends State<BackgroundGradientAnimatio
 class GradientBlobsPainter extends CustomPainter {
   final double progress;
   final List<Color> colors;
+  final double blobOpacity;
 
-  GradientBlobsPainter({required this.progress, required this.colors});
+  GradientBlobsPainter({
+    required this.progress,
+    required this.colors,
+    this.blobOpacity = 0.12,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    
-    // We simulate the CSS animations (moveInCircle, moveVertical, moveHorizontal)
-    // using trigonometric functions based on the single 'progress' value.
-    
+
     for (int i = 0; i < colors.length; i++) {
       final color = colors[i];
       final double t = (progress + (i / colors.length)) % 1.0;
@@ -113,16 +112,15 @@ class GradientBlobsPainter extends CustomPainter {
 
       double dx = 0;
       double dy = 0;
-      double radius = size.shortestSide * 0.6;
+      final double radius = size.shortestSide * 0.6;
 
-      // Logic mapping to the React Keyframes
-      if (i == 0) { // Vertical move
+      if (i == 0) {
         dy = math.sin(angle) * (size.height * 0.2);
         dx = 0;
-      } else if (i == 1 || i == 2 || i == 4) { // Circular move
+      } else if (i == 1 || i == 2 || i == 4) {
         dx = math.cos(angle) * (size.width * 0.3);
         dy = math.sin(angle) * (size.height * 0.3);
-      } else { // Horizontal move
+      } else {
         dx = math.sin(angle) * (size.width * 0.4);
         dy = 0;
       }
@@ -135,7 +133,7 @@ class GradientBlobsPainter extends CustomPainter {
       paint.shader = ui.Gradient.radial(
         center,
         radius,
-        [color.withOpacity(0.3), color.withOpacity(0.0)],
+        [color.withValues(alpha: blobOpacity), color.withValues(alpha: 0.0)],
       );
 
       canvas.drawCircle(center, radius, paint);
@@ -143,6 +141,7 @@ class GradientBlobsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant GradientBlobsPainter oldDelegate) => 
-      oldDelegate.progress != progress;
+  bool shouldRepaint(covariant GradientBlobsPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.blobOpacity != blobOpacity;
 }
