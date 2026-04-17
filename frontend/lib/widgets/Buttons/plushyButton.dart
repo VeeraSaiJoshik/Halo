@@ -49,7 +49,7 @@ class _PlushyButtonState extends State<PlushyButton> {
           hoverColor: Colors.transparent,
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
-          onHover: (value) => setState(() => _hovering = value),
+          onHover: (value) => setState(() { _hovering = value; if (!value) _pressed = false; }),
           onTapDown: (_) => setState(() => _pressed = true),
           onTapUp: (_) => setState(() => _pressed = false),
           onTapCancel: () => setState(() => _pressed = false),

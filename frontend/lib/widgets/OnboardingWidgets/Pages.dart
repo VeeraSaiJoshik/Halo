@@ -7,11 +7,13 @@ class _LogoButton extends StatelessWidget {
   final Platform platform;
   final bool selected;
   final VoidCallback onTap;
+  final bool reverse;
 
   const _LogoButton({
     required this.platform,
     required this.selected,
     required this.onTap,
+    this.reverse = false,
   });
 
   @override
@@ -34,11 +36,12 @@ class _LogoButton extends StatelessWidget {
       child: PlushyButton(
         glowColor: platform.brandColor,
         padding: const EdgeInsets.all(22),
+        reverse: reverse,
         onPressed: onTap,
         child: Image.asset(
           platform.logoUrl,
-          width: 110,
-          height: 110,
+          width: 90,
+          height: 90,
           fit: BoxFit.contain,
         ),
       ),
@@ -67,7 +70,7 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
           'Where do you trade?',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -87,9 +90,10 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
               final btn = _LogoButton(
                 platform: p,
                 selected: _selected == p.id,
+                reverse: flip,
                 onTap: () => setState(() => _selected = p.id),
               );
-              return flip ? Transform.scale(scaleX: -1, child: btn) : btn;
+              return btn;
             }),
           ],
         ),
@@ -119,7 +123,7 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
           'Where do you chart?',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -139,9 +143,10 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
               final btn = _LogoButton(
                 platform: p,
                 selected: _selected == p.id,
+                reverse: flip,
                 onTap: () => setState(() => _selected = p.id),
               );
-              return flip ? Transform.scale(scaleX: -1, child: btn) : btn;
+              return btn;
             }),
           ],
         ),
