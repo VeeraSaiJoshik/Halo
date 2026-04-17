@@ -49,20 +49,15 @@ class _WindowTabState extends ConsumerState<WindowTab>
                     borderRadius: _borderRadius,
                     color: Colors.white.withOpacity(0.10),
                     border: Border(
-                      top: BorderSide(color: theme.textAccent.withOpacity(0.55), width: 1.5),
-                      left: BorderSide(color: Colors.white.withOpacity(0.10)),
-                      right: BorderSide(color: Colors.white.withOpacity(0.10)),
+                      top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1.5),
+                      left: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      right: BorderSide(color: Colors.white.withOpacity(0.15)),
                     ),
                   )
                 : isHovering
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
-                    color: Colors.white.withOpacity(0.06),
-                    border: Border(
-                      top: BorderSide(color: Colors.white.withOpacity(0.15)),
-                      left: BorderSide(color: Colors.white.withOpacity(0.08)),
-                      right: BorderSide(color: Colors.white.withOpacity(0.08)),
-                    ),
+                    color: Colors.white.withOpacity(0.15),
                   )
                 : BoxDecoration(
                     borderRadius: _borderRadius,
@@ -70,7 +65,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   ),
             height: 34,
             width: 240,
-            padding: EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: 5),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -94,8 +89,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                 ),
                 Expanded(child: SizedBox()),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 5),
-                  height: 25,
+                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                   decoration: BoxDecoration(
                     color: widget.context.isActive
                         ? Colors.red.withOpacity(0.4)
@@ -111,11 +105,11 @@ class _WindowTabState extends ConsumerState<WindowTab>
                       FaIcon(
                         FontAwesomeIcons.arrowDown,
                         color: Colors.white,
-                        size: 12,
+                        size: 11,
                       ),
                       Text(
                         '-0.42%',
-                        style: theme.titleMedium,
+                        style: theme.ticker,
                       ),
                     ],
                   ),
@@ -128,11 +122,12 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   onTap: () async {
                     await ref.read(appControllerProvider).removeTab(widget.context);
                   },
+                  mouseCursor: SystemMouseCursors.click,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeInOut,
                     width: 35,
-                    height: 25,
+                    margin: EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
                       color: closeButtonIsHovering
                           ? Colors.red.withOpacity(0.5)
@@ -151,7 +146,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                                 key: const ValueKey('x'),
                                 FontAwesomeIcons.xmark,
                                 color: Colors.white.withOpacity(0.5),
-                                size: 14,
+                                size: 13,
                               )
                             : widget.context.aiListenerReady
                             ? widget.context.notifications.isEmpty
@@ -159,12 +154,12 @@ class _WindowTabState extends ConsumerState<WindowTab>
                                       key: const ValueKey('eye'),
                                       FontAwesomeIcons.solidEye,
                                       color: Colors.white.withOpacity(0.5),
-                                      size: 14,
+                                      size: 13,
                                     )
                                   : Text(
                                       key: ValueKey('notif_${widget.context.notifications.length}'),
                                       '${widget.context.notifications.length > 9 ? '9+' : widget.context.notifications.length}',
-                                      style: theme.labelLarge,
+                                      style: theme.ticker,
                                     )
                             : SizedBox(
                                 key: const ValueKey('loading'),
