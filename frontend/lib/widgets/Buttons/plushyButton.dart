@@ -12,6 +12,7 @@ class PlushyButton extends StatefulWidget {
   final bool reverse;
   final Color? glowColor;
   final EdgeInsets padding;
+  final bool selected;
 
   PlushyButton({
     super.key,
@@ -19,6 +20,7 @@ class PlushyButton extends StatefulWidget {
     required this.child,
     this.reverse = false,
     this.glowColor,
+    this.selected = false,
     EdgeInsets? padding,
   }) : padding = padding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15);
 
@@ -62,7 +64,13 @@ class _PlushyButtonState extends State<PlushyButton> {
                 width: 0.5,
                 strokeAlign: BorderSide.strokeAlignOutside,
               ),
-              boxShadow: [
+              boxShadow: widget.selected ? [
+                BoxShadow(
+                  color: shadow.withOpacity(0.5),
+                  blurRadius: 28,
+                  spreadRadius: 5,
+                ),
+              ] : [
                 BoxShadow(
                   color: shadow.withOpacity(isActive ? 0.55 : 0),
                   blurRadius: isActive ? 24 : 8,
@@ -75,7 +83,7 @@ class _PlushyButtonState extends State<PlushyButton> {
               borderRadius: BorderRadius.circular(10),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                color: CustomColors.primary.withOpacity(isActive ? 1 : 0.4),
+                color: widget.selected ? CustomColors.primary.withOpacity(1) : CustomColors.primary.withOpacity(isActive ? 1 : 0.4),
                 child: Container(
                   padding: widget.padding,
                   decoration: BoxDecoration(

@@ -32,7 +32,7 @@ class _WelcomewidgetState extends State<Welcomewidget> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               "Welcome to Halo!",
-              style: theme.displayMedium.copyWith(color: theme.textPrimary).copyWith(fontSize: 45, color: Colors.white.withOpacity(0.7)),
+              style: theme.displayMedium.copyWith(fontSize: 45, color: Colors.white),
             );
           },
         ),
