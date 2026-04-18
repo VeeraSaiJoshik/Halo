@@ -29,7 +29,8 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
 
   void initState() {
     super.initState();
-    ref.read(appEventBusProvider).stream.listen((event) {
+    final bus = ref.read(appEventBusProvider);
+    bus.stream.listen((event) {
       if (event == AppEvent.portalView) {
         final controller = ref.read(appControllerProvider);
         controller.switchTabSubPage(AppPage.PORTAL);
@@ -39,6 +40,12 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
       } else if (event == AppEvent.toggleNotificaitonView) {
         final controller = ref.read(appControllerProvider);
         controller.toggleNotifications();
+      }
+    });
+    bus.tabSwitchStream.listen((index) {
+      final controller = ref.read(appControllerProvider);
+      if (index < controller.tabs.length) {
+        controller.switchTab(controller.tabs[index]);
       }
     });
   }

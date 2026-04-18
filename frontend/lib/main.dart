@@ -100,6 +100,21 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       return true;
     }
 
+    const tabKeys = [
+      LogicalKeyboardKey.digit1, LogicalKeyboardKey.digit2,
+      LogicalKeyboardKey.digit3, LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5, LogicalKeyboardKey.digit6,
+      LogicalKeyboardKey.digit7, LogicalKeyboardKey.digit8,
+      LogicalKeyboardKey.digit9,
+    ];
+    if (meta) {
+      final tabIndex = tabKeys.indexOf(key);
+      if (tabIndex != -1) {
+        bus.emitTabSwitch(tabIndex);
+        return true;
+      }
+    }
+
     if (key == LogicalKeyboardKey.arrowDown) {
       bus.emit(AppEvent.moveDown);
       return true;
@@ -141,7 +156,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
         child: Scaffold(
           body: Stack(
             children: [
-              OnboardingPage(),
+              HomePage(),
               if (_showDevMenu)
                 DevMenu(
                   onClose: () => setState(() => _showDevMenu = false),
