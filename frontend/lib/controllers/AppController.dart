@@ -166,6 +166,13 @@ class AppController extends ChangeNotifier{
   AppController({required this.intakeEngine});
 
   void newTab(StockName stock, AppEventBus eventBus) {
+    final tabExists = tabs.indexWhere((tab) => tab.Stock.symbol == stock.symbol);
+
+    if(tabExists != -1) {
+      switchTab(tabs.elementAt(tabExists));
+      return;
+    }
+
     final portalController = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
