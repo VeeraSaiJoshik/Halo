@@ -117,7 +117,6 @@ class _WindowTabState extends ConsumerState<WindowTab>
                 ),
                 Container(width: 5),
                 InkWell(
-                  mouseCursor: SystemMouseCursors.click,
                   onHover: (value) => setState(() {
                     closeButtonIsHovering = value;
                   }),

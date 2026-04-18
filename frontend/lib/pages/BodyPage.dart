@@ -150,11 +150,11 @@ class _EmptyState extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             decoration: BoxDecoration(
-              color: theme.textAccent.withOpacity(0.12),
+              color: Colors.grey.shade700.withOpacity(0.12),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.textAccent.withOpacity(0.4)),
+              border: Border.all(color: Colors.grey.shade700.withOpacity(0.5)),
             ),
-            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: theme.textAccent)),
+            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: Colors.white)),
           ),
         ],
       ),

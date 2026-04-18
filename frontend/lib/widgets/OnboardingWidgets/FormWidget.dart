@@ -13,14 +13,16 @@ import 'package:frontend/pages/OnboardingPage.dart';
 class FormWidget extends StatelessWidget {
   final FormController formController;
 
-  static const int _totalSteps = 2;
+  static const int _totalSteps = 4;
 
   const FormWidget({super.key, required this.formController});
 
   Widget _pageForIndex(int index) {
     switch (index) {
-      case 0:  return const BuyingPortalPage();
-      case 1:  return const ChartingPlatformPage();
+      case 0:  return BuyingPortalPage(formController: formController);
+      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!);
+      case 2:  return ChartingPlatformPage(formController: formController);
+      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!);
       default: return const SizedBox.shrink();
     }
   }

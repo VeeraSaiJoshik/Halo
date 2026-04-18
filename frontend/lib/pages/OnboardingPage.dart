@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/OnboardingWidgets/FormWidget.dart';
+import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
 import 'package:frontend/widgets/OnboardingWidgets/WelcomeWidget.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/commandButtons.dart';
@@ -7,11 +8,22 @@ import 'package:frontend/widgets/commandButtons.dart';
 class FormController {
   int currentIndex = -1;
   VoidCallback? onChanged;
+  Platform? selectedBuyingPlatform;
+  Platform? selectedChartingPlatform;
 
+  void setSelectedBuyingPlatform(Platform platform) {
+    selectedBuyingPlatform = platform;
+  }
+
+  void setSelectedChartingPlatform(Platform platform) {
+    selectedChartingPlatform = platform;
+  }
+  
   void next() {
     currentIndex++;
     onChanged?.call();
   }
+
   void back() {
     currentIndex--;
     onChanged?.call();
