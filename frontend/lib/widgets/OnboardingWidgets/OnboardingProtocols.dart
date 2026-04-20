@@ -10,6 +10,14 @@ abstract class AuthMethods {
   void launchSignupMethod();
 }
 
+abstract class EmailAuth implements AuthMethods {
+  @override
+  String get authName => 'Email';
+
+  @override
+  Widget get authLogo => FaIcon(FontAwesomeIcons.envelope, size: 18, color: Colors.white);
+}
+
 class GoogleAuth implements AuthMethods {
   @override
   String get authName => 'Google';
@@ -18,9 +26,14 @@ class GoogleAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.white);
 
   @override
+  void launchSignupMethod() {}
+}
+
+// Webull Specific Auth Methods
+
+class WebullEmailAuth extends EmailAuth {
+  @override
   void launchSignupMethod() {
-    // Implement Google authentication flow here
-    print('Launching Google authentication...');
   }
 }
 
@@ -32,23 +45,7 @@ class WebullPhoneAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.phone, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod() {
-    // Implement Google authentication flow here
-    print('Launching Google authentication...');
-  }
-}
-
-class WebullEmailAuth implements AuthMethods {
-  @override
-  String get authName => 'Email';
-
-  @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.envelope, size: 18, color: Colors.white);
-
-  @override
-  void launchSignupMethod() {
-    print('Launching email authentication...');
-  }
+  void launchSignupMethod() {}
 }
 
 class WebullQRCodeAuth implements AuthMethods {
@@ -60,9 +57,37 @@ class WebullQRCodeAuth implements AuthMethods {
 
   @override
   void launchSignupMethod() {
-    // Implement Google authentication flow here
-    print('Launching Google authentication...');
   }
+}
+
+// Robinhood Specific Auth Methods
+class RobinhoodEmailAuth extends EmailAuth {
+  @override
+  void launchSignupMethod() {}
+}
+
+// TradeView Auth Methods
+class TradingViewEmailAuth extends EmailAuth {
+  @override
+  void launchSignupMethod() {}
+}
+
+//Finiz Auth Methods
+class FinizEmailAuth extends EmailAuth {
+  @override
+  void launchSignupMethod() {}
+}
+
+//Think or Swim Auth Methods
+class ThinkOrSwimIDAuth implements AuthMethods {
+  @override
+  String get authName => 'Think or Swim ID';
+
+  @override
+  Widget get authLogo => FaIcon(FontAwesomeIcons.idBadge, size: 18, color: Colors.white);
+
+  @override
+  void launchSignupMethod() {}
 }
 
 class Platform {
@@ -90,31 +115,32 @@ List<Platform> buyingPlatforms = [
     'Robinhood',
     Color(0xFF00C805),
     authMethods: [
-      GoogleAuth(),
+      RobinhoodEmailAuth()
     ],
   ),
 ];
 
 List<Platform> chartingPlatforms = [
   Platform(
-    'OpenTrader',
+    'TradingView',
     Colors.blue,
     authMethods: [
       GoogleAuth(),
+      TradingViewEmailAuth(),
     ],
   ),
   Platform(
     'Finiz',
     Color(0xFF5FAAF4),
     authMethods: [
-      GoogleAuth(),
+      FinizEmailAuth(),
     ],
   ),
   Platform(
     'Think or Swim',
     Color(0xFF00A651),
     authMethods: [
-      GoogleAuth(),
+      ThinkOrSwimIDAuth(),
     ],
   ),
 ];
