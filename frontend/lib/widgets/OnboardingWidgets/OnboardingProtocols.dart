@@ -193,6 +193,7 @@ class Platform {
   final String logoUrl;
   final Color  brandColor;
   String link = "";
+  bool authenticated = false;
   List<AuthMethods> authMethods;
 
   Platform(this.id, this.brandColor, {required this.authMethods}): logoUrl = 'assets/images/icons/${id}.png';

@@ -69,6 +69,7 @@ class FormWidget extends StatelessWidget {
               ),
               PlushyButton(
                 onPressed: formController.next,
+                disabled: !formController.nextAvailable(),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Row(
                   spacing: 8,

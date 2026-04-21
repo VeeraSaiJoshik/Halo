@@ -13,6 +13,7 @@ class PlushyButton extends StatefulWidget {
   final Color? glowColor;
   final EdgeInsets padding;
   final bool selected;
+  final bool disabled;
 
   PlushyButton({
     super.key,
@@ -21,6 +22,7 @@ class PlushyButton extends StatefulWidget {
     this.reverse = false,
     this.glowColor,
     this.selected = false,
+    this.disabled = false,
     EdgeInsets? padding,
   }) : padding = padding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15);
 
@@ -37,7 +39,9 @@ class _PlushyButtonState extends State<PlushyButton> {
     final shadow = widget.glowColor ?? CustomColors.accent;
     final isActive = _hovering || _pressed;
 
-    return AnimatedScale(
+    return Opacity(
+      opacity: widget.disabled ? 0.35 : 1.0,
+      child: AnimatedScale(
       scale: _pressed ? 1.08 : (_hovering ? 1.05 : 1.0),
       duration: const Duration(milliseconds: 200),
       curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
@@ -46,15 +50,15 @@ class _PlushyButtonState extends State<PlushyButton> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutBack,
         child: InkWell(
-          onTap: () => widget.onPressed(),
-          mouseCursor: SystemMouseCursors.click,
+          onTap: widget.disabled ? null : () => widget.onPressed(),
+          mouseCursor: widget.disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
           hoverColor: Colors.transparent,
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
-          onHover: (value) => setState(() { _hovering = value; if (!value) _pressed = false; }),
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTapCancel: () => setState(() => _pressed = false),
+          onHover: widget.disabled ? null : (value) => setState(() { _hovering = value; if (!value) _pressed = false; }),
+          onTapDown: widget.disabled ? null : (_) => setState(() => _pressed = true),
+          onTapUp: widget.disabled ? null : (_) => setState(() => _pressed = false),
+          onTapCancel: widget.disabled ? null : () => setState(() => _pressed = false),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
@@ -111,6 +115,7 @@ class _PlushyButtonState extends State<PlushyButton> {
           ),
         ),
       ),
+    ),
     );
   }
 }

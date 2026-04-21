@@ -1,3 +1,4 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -23,6 +24,20 @@ class FormController {
     selectedBuyingPlatform = platform;
   }
 
+  void setBuyingPlatformAuthState(bool state) {
+    if(selectedBuyingPlatform == null) return;
+
+    selectedBuyingPlatform!.authenticated = state;
+    onChanged.call();
+  }
+
+  void setChartingPlatformAuthState(bool state) {
+    if(selectedChartingPlatform == null) return;
+
+    selectedBuyingPlatform!.authenticated = state;
+    onChanged.call();
+  }
+
   void setSelectedChartingPlatform(Platform platform) {
     selectedChartingPlatform = platform;
   }
@@ -30,6 +45,17 @@ class FormController {
   void next() {
     currentIndex++;
     onChanged?.call();
+  }
+
+  bool nextAvailable() {
+    List<bool> params = [
+      selectedBuyingPlatform != null,
+      selectedBuyingPlatform!.authenticated,
+      selectedChartingPlatform != null,
+      selectedChartingPlatform!.authenticated, 
+    ];
+
+    return params[currentIndex];
   }
 
   void back() {
