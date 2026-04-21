@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/controllers/AppController.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 abstract class AuthMethods {
   String get authName;
@@ -34,7 +36,7 @@ class GoogleAuth implements AuthMethods {
 class WebullEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod() {
-    
+
   }
 }
 
@@ -46,7 +48,12 @@ class WebullPhoneAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.phone, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {
+    const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
+    WebViewController controller = createWebViewController(authUrl);
+
+    return controller;
+  }
 }
 
 class WebullQRCodeAuth implements AuthMethods {
