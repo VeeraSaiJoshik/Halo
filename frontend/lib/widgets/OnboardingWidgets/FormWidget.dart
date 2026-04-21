@@ -14,17 +14,18 @@ class FormWidget extends StatelessWidget {
   final FormController formController;
   final Function launchAuth;
   final void Function() launchLoad;
+  final void Function() exitAuth;
   static const int _totalSteps = 4;
 
 
-  const FormWidget({super.key, required this.formController, required this.launchAuth, required this.launchLoad});
+  const FormWidget({super.key, required this.formController, required this.launchAuth, required this.launchLoad, required this.exitAuth});
 
   Widget _pageForIndex(int index) {
     switch (index) {
       case 0:  return BuyingPortalPage(formController: formController);
-      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad);
+      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
       case 2:  return ChartingPlatformPage(formController: formController);
-      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad,);
+      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
       default: return const SizedBox.shrink();
     }
   }
@@ -69,7 +70,7 @@ class FormWidget extends StatelessWidget {
               ),
               PlushyButton(
                 onPressed: formController.next,
-                disabled: !formController.nextAvailable(),
+                disabled: false,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Row(
                   spacing: 8,

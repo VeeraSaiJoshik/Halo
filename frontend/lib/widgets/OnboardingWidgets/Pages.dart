@@ -13,7 +13,8 @@ class PlatformAuthPage extends StatefulWidget {
   final Platform authPlatform;
   Function launchAuthWebView;
   void Function() getReady;
-  PlatformAuthPage({super.key, required this.authPlatform, required this.launchAuthWebView, required this.getReady});
+  void Function() exitAuth;
+  PlatformAuthPage({super.key, required this.authPlatform, required this.launchAuthWebView, required this.getReady, required this.exitAuth});
 
   @override
   State<PlatformAuthPage> createState() => _PlatformAuthPageState();
@@ -22,14 +23,14 @@ class PlatformAuthPage extends StatefulWidget {
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
   void _handleAuthTap(AuthMethods method) {
     if (method is GoogleAuth) {
-      method.launchSignupMethod(null, null);
+      method.launchSignupMethod(null, null, null);
       return;
     }
 
     method.launchSignupMethod((controller) {
       if (!mounted) return;
       widget.launchAuthWebView(controller);
-    }, widget.getReady);
+    }, widget.getReady, widget.exitAuth);
   }
 
   @override

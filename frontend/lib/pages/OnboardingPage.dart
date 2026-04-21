@@ -1,4 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -28,14 +27,14 @@ class FormController {
     if(selectedBuyingPlatform == null) return;
 
     selectedBuyingPlatform!.authenticated = state;
-    onChanged.call();
+    onChanged!.call();
   }
 
   void setChartingPlatformAuthState(bool state) {
     if(selectedChartingPlatform == null) return;
 
-    selectedBuyingPlatform!.authenticated = state;
-    onChanged.call();
+    selectedChartingPlatform!.authenticated = state;
+    onChanged!.call();
   }
 
   void setSelectedChartingPlatform(Platform platform) {
@@ -96,6 +95,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     });
   }
 
+  void authSuccesfull() {
+    loadWebView = false;
+    controller = null;
+    
+    if(formController.currentIndex == 1) {
+      formController.setBuyingPlatformAuthState(true);
+    } else {
+      formController.setChartingPlatformAuthState(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
@@ -150,7 +160,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     ) : 
                       formController.currentIndex == -1 ? 
                         Welcomewidget(formController: formController) :
-                        FormWidget(formController: formController, launchAuth: launchAuthWebView, launchLoad: getReady,)
+                        FormWidget(formController: formController, launchAuth: launchAuthWebView, launchLoad: getReady, exitAuth: authSuccesfull )
                   )
                 ],
               ),

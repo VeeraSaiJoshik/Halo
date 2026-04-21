@@ -1,6 +1,6 @@
 import 'package:webview_flutter/webview_flutter.dart';
 
-WebViewController createWebViewController(String url, {String injectionScript = "", void Function(WebViewController)? onReady, void Function()? getReady}) {
+WebViewController createWebViewController(String url, {String domain = "", String injectionScript = "", void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit}) {
   WebViewController controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
@@ -32,9 +32,8 @@ WebViewController createWebViewController(String url, {String injectionScript = 
       onWebResourceError: (e) => print("WEB ERROR: ${e.description}"),
       onHttpError: (HttpResponseError error) {},
       onNavigationRequest: (NavigationRequest request) {
-        if (request.url.startsWith('https://www.youtube.com/')) {
-          return NavigationDecision.prevent;
-        }
+        print(request.url + " " + url.split("/")[2]);
+        if(exit != null && request.url != url && request.url.contains(domain)) exit!.call();
         return NavigationDecision.navigate;
       },
     ),
