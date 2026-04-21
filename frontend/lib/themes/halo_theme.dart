@@ -82,4 +82,5 @@ abstract class HaloThemeData {
   double get blobOpacity;             // Radial gradient center opacity (0.0–1.0)
   Color get accentColor;
   Color get whiteColor;
+  Color get backgroundColor;
 }

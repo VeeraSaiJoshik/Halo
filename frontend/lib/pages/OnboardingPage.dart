@@ -1,9 +1,14 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/halo_theme.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/OnboardingWidgets/FormWidget.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
 import 'package:frontend/widgets/OnboardingWidgets/WelcomeWidget.dart';
-import 'package:frontend/widgets/OverlayWidgets/TopNavModal.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/commandButtons.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -33,14 +38,14 @@ class FormController {
   }
 }
 
-class OnboardingPage extends StatefulWidget {
+class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
 
   @override
-  State<OnboardingPage> createState() => _OnboardingPageState();
+  ConsumerState<OnboardingPage> createState() => _OnboardingPageState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   bool showWelcome = true;
   bool loadWebView = false;
   FormController formController = FormController();
@@ -61,16 +66,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void getReady() {
     setState(() {
-      load
+      loadWebView = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
+
     return Container(
-      decoration: BoxDecoration(
-        color:const Color(0xFF0D0818)
-      ),
+      decoration: BoxDecoration(color: theme.backgroundColor),
       width: double.infinity,
       child: BackgroundGradientAnimation(
         child: Stack(
@@ -84,26 +89,42 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     child: controller != null ? Container(
                       height: double.infinity, 
                       width: double.infinity,
+                      color: theme.backgroundColor,
                       margin: EdgeInsets.only(top: 15),
                       child: Stack(
                         children: [
+                          !loadWebView ? Center(
+                            child: CircularProgressIndicator(color: theme.whiteColor,),
+                          ) : Container(),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: WebViewWidget(controller: controller!)
+                            child: AnimatedOpacity(
+                              opacity: loadWebView ? 1 : 0, 
+                              duration: Duration(milliseconds: 250),
+                              child: WebViewWidget(controller: controller!)
+                            )
                           ), 
                           Positioned(
                             top: 15,
                             left: 15,
-                            child: NavButton(icon: FontAwesomeIcons.x, width: 45, height: 45, isAccented: true ,onTap: () => setState(() {
-                              controller = null;
-                            }))
+                            child: AnimatedOpacity(
+                              opacity: loadWebView ? 1 : 0,
+                              duration: const Duration(milliseconds: 250),
+                              child: _WebViewCloseButton(
+                                theme: theme,
+                                onTap: () => setState(() {
+                                  controller = null;
+                                  loadWebView = false;
+                                }),
+                              ),
+                            ),
                           )
                         ],
                       ),
                     ) : 
                       formController.currentIndex == -1 ? 
                         Welcomewidget(formController: formController) :
-                        FormWidget(formController: formController, launchAuth: launchAuthWebView)
+                        FormWidget(formController: formController, launchAuth: launchAuthWebView, launchLoad: getReady,)
                   )
                 ],
               ),
@@ -111,6 +132,113 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ]
         )
       )
+    );
+  }
+}
+
+class _WebViewCloseButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final HaloThemeData theme;
+  const _WebViewCloseButton({required this.onTap, required this.theme});
+
+  @override
+  State<_WebViewCloseButton> createState() => _WebViewCloseButtonState();
+}
+
+class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
+  bool _hovered = false;
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown:   (_) => setState(() => _pressed = true),
+        onTapUp:     (_) => setState(() => _pressed = false),
+        onTapCancel: ()  => setState(() => _pressed = false),
+        child: AnimatedScale(
+          scale: _pressed ? 0.92 : _hovered ? 1.08 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOutBack,
+          child: AnimatedRotation(
+            turns: _hovered ? -0.02 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutBack,
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Stack(
+                children: [
+                  // Glassmorphic base with accent fill
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: CustomColors.darkPurple.withValues(alpha: _hovered ? 1.0 : 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: widget.theme.whiteColor.withValues(alpha: 0.18),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: CustomColors.darkPurple.withValues(alpha: _hovered ? 0.45 : 0.25),
+                              blurRadius: _hovered ? 22 : 14,
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: widget.theme.whiteColor.withValues(alpha: 0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Inner highlight (top-left frost sheen)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.22),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 0.55],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // X icon
+                  Center(
+                    child: FaIcon(
+                      FontAwesomeIcons.x,
+                      size: 13,
+                      color: widget.theme.whiteColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

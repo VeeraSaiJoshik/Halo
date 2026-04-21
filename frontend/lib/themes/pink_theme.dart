@@ -173,4 +173,7 @@ class PinkTheme implements HaloThemeData {
 
   @override
   Color get whiteColor => const Color(0xFFFCE7F3);
+
+  @override
+  Color get backgroundColor => const Color(0xFF0D0009);
 }

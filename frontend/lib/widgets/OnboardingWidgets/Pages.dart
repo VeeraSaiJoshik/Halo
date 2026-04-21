@@ -244,6 +244,7 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
                 reverse: flip,
                 onPressed: () => setState(() {
                   widget.formController.setSelectedBuyingPlatform(p);
+                  widget.formController.next();
                 }),
                 selected: widget.formController.selectedBuyingPlatform != null && widget.formController.selectedBuyingPlatform!.id == p.id,
                 child: Image.asset(
@@ -311,6 +312,7 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
                 reverse: flip,
                 onPressed: () => setState(() {
                   widget.formController.setSelectedChartingPlatform(p);
+                  widget.formController.next();
                 }),
                 selected: widget.formController.selectedChartingPlatform != null && widget.formController.selectedChartingPlatform!.id == p.id,
                 child: Image.asset(

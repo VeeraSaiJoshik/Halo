@@ -173,4 +173,7 @@ class RedTheme implements HaloThemeData {
 
   @override
   Color get whiteColor => const Color(0xFFFEE2E2);
+
+  @override
+  Color get backgroundColor => const Color(0xFF0C0000);
 }

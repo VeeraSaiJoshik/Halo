@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/DataIntakeController.dart';
+import 'package:frontend/controllers/createWebViewController.dart';
 import 'package:frontend/engine/clients/alpaca_client.dart';
 import 'package:frontend/engine/clients/binance_client.dart';
 import 'package:frontend/engine/clients/finnhub_client.dart';
@@ -157,43 +158,6 @@ class WindowInfo {
 
     return false;
   }
-}
-
-WebViewController createWebViewController(String url, {String injectionScript = "", void Function(WebViewController)? onReady, void Function()? getReady}) {
-  if (getReady != null) getReady.call();
-
-  WebViewController controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-  
-  controller.addJavaScriptChannel(
-    'HaloAuthReady',
-    onMessageReceived: (_) => onReady?.call(controller),
-  );
-
-  controller..setNavigationDelegate(
-    NavigationDelegate(
-      onProgress: (int progress) {},
-      onPageStarted: (String url) {},
-      onPageFinished: (String url) async {
-        if (injectionScript != "") {
-          await controller.runJavaScript(injectionScript);
-        } else {
-          onReady?.call(controller);
-        }
-      },
-      onHttpError: (HttpResponseError error) {},
-      onWebResourceError: (WebResourceError error) {},
-      onNavigationRequest: (NavigationRequest request) {
-        if (request.url.startsWith('https://www.youtube.com/')) {
-          return NavigationDecision.prevent;
-        }
-        return NavigationDecision.navigate;
-      },
-    ),
-  )..loadRequest(Uri.parse(url));
-
-  return controller;
 }
 
 class AppController extends ChangeNotifier{
