@@ -64,7 +64,17 @@ class WebullQRCodeAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.qrcode, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod() {
+  WebViewController? launchSignupMethod() {
+    const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
+    const script = """
+      const span = [...document.querySelectorAll('span')]
+        .find(s => s.textContent.trim() === 'Email Login');
+
+      if (span) span.click();
+    """;
+    WebViewController controller = createWebViewController(authUrl, injectionScript: script);
+
+    return controller;
   }
 }
 

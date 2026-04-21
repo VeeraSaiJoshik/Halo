@@ -159,16 +159,19 @@ class WindowInfo {
   }
 }
 
-WebViewController createWebViewController(String url) {
-  return WebViewController()
+WebViewController createWebViewController(String url, {String injectionScript = ""}) {
+  WebViewController controller =  WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
-    ..setNavigationDelegate(
+    
+    controller..setNavigationDelegate(
       NavigationDelegate(
         onProgress: (int progress) {
           // Update loading bar.
         },
-        onPageStarted: (String url) {},
+        onPageStarted: (String url) {
+          if(injectionScript == "") controller.runJavaScript(injectionScript);
+        },
         onPageFinished: (String url) {},
         onHttpError: (HttpResponseError error) {},
         onWebResourceError: (WebResourceError error) {},
@@ -179,8 +182,9 @@ WebViewController createWebViewController(String url) {
           return NavigationDecision.navigate;
         },
       ),
-    )
-    ..loadRequest(Uri.parse(url));
+    )..loadRequest(Uri.parse(url));
+
+    return controller;
 }
 
 class AppController extends ChangeNotifier{
