@@ -3,10 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:gradient_borders/gradient_borders.dart';
 
-class PlushyButton extends StatefulWidget {
+class PlushyButton extends ConsumerStatefulWidget {
   final Function onPressed;
   final Widget child;
   final bool reverse;
@@ -27,15 +29,16 @@ class PlushyButton extends StatefulWidget {
   }) : padding = padding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15);
 
   @override
-  State<PlushyButton> createState() => _PlushyButtonState();
+  ConsumerState<PlushyButton> createState() => _PlushyButtonState();
 }
 
-class _PlushyButtonState extends State<PlushyButton> {
+class _PlushyButtonState extends ConsumerState<PlushyButton> {
   bool _hovering = false;
   bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     final shadow = widget.glowColor ?? CustomColors.accent;
     final isActive = _hovering || _pressed;
 
@@ -64,7 +67,7 @@ class _PlushyButtonState extends State<PlushyButton> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: theme.whiteColor.withOpacity(0.2),
                 width: 0.5,
                 strokeAlign: BorderSide.strokeAlignOutside,
               ),
@@ -98,8 +101,8 @@ class _PlushyButtonState extends State<PlushyButton> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.white.withOpacity(0.8),
-                          Colors.white.withOpacity(0.3),
+                          theme.whiteColor.withOpacity(0.8),
+                          theme.whiteColor.withOpacity(0.3),
                         ],
                       ),
                       width: 0.5,

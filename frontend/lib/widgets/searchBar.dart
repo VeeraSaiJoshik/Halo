@@ -8,6 +8,7 @@ import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/SearchWidgets/SearchField.dart';
 import 'package:frontend/widgets/SearchWidgets/StockBar.dart';
 
@@ -107,6 +108,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return AnimatedContainer(
       duration: Duration(milliseconds: 300), 
       onEnd: () => {
@@ -120,7 +122,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.95),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside),
+        border: Border.all(color: theme.whiteColor.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside),
         boxShadow: searchBarWidth == 0 ? [] : [
           BoxShadow(
             color: CustomColors.purple.withValues(
@@ -150,7 +152,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
             if(stockSearchResults.isNotEmpty) ...[
               Container(
                 height: 1,
-                color: Colors.white.withOpacity(0.45),
+                color: theme.whiteColor.withOpacity(0.45),
               ),
               StockBar(stocks: stockSearchResults, activeIndex: activeIndex)
             ]

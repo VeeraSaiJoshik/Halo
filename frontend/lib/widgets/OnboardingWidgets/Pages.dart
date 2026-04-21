@@ -108,7 +108,7 @@ class _ConnectedPill extends StatelessWidget {
   }
 }
 
-class _AuthMethodButton extends StatefulWidget {
+class _AuthMethodButton extends ConsumerStatefulWidget {
   final AuthMethods method;
   final Color brandColor;
   final bool selected;
@@ -122,15 +122,16 @@ class _AuthMethodButton extends StatefulWidget {
   });
 
   @override
-  State<_AuthMethodButton> createState() => _AuthMethodButtonState();
+  ConsumerState<_AuthMethodButton> createState() => _AuthMethodButtonState();
 }
 
-class _AuthMethodButtonState extends State<_AuthMethodButton> {
+class _AuthMethodButtonState extends ConsumerState<_AuthMethodButton> {
   bool _hovered = false;
   bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -174,7 +175,7 @@ class _AuthMethodButtonState extends State<_AuthMethodButton> {
                     border: Border.all(
                       color: widget.selected
                           ? widget.brandColor.withOpacity(0.85)
-                          : Colors.white.withOpacity(_hovered ? 0.40 : 0.24),
+                          : theme.whiteColor.withOpacity(_hovered ? 0.40 : 0.24),
                       width: widget.selected ? 1.5 : 1.5,
                     ),
                     gradient: LinearGradient(
@@ -184,11 +185,11 @@ class _AuthMethodButtonState extends State<_AuthMethodButton> {
                           ? [
                               widget.brandColor.withOpacity(0.32),
                               widget.brandColor.withOpacity(0.10),
-                              Colors.white.withOpacity(0.04),
+                              theme.whiteColor.withOpacity(0.04),
                             ]
                           : [
-                              Colors.white.withOpacity(_hovered ? 0.22 : 0.14),
-                              Colors.white.withOpacity(0.04),
+                              theme.whiteColor.withOpacity(_hovered ? 0.22 : 0.14),
+                              theme.whiteColor.withOpacity(0.04),
                             ],
                     ),
                   ),
@@ -197,14 +198,9 @@ class _AuthMethodButtonState extends State<_AuthMethodButton> {
                     spacing: 12,
                     children: [
                       SizedBox(width: 18, height: 18, child: FittedBox(child: widget.method.authLogo)),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final theme = ref.watch(haloThemeProvider);
-                          return Text(
-                            widget.method.authName,
-                            style: theme.titleMedium.copyWith(color: Colors.white),
-                          );
-                        },
+                      Text(
+                        widget.method.authName,
+                        style: theme.titleMedium.copyWith(color: theme.whiteColor),
                       ),
                     ],
                   ),
@@ -250,7 +246,7 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               'Select your buying platform',
-              style: theme.bodyMedium.copyWith(color: Colors.white.withOpacity(0.8)),
+              style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
             );
           },
         ),
@@ -318,7 +314,7 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               'Select your charting platform',
-              style: theme.bodyMedium.copyWith(color: Colors.white.withOpacity(0.8)),
+              style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
             );
           },
         ),

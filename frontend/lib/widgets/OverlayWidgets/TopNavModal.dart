@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 class TopNavModel extends StatelessWidget {
   final Function closeTab;
@@ -49,7 +51,7 @@ class TopNavModel extends StatelessWidget {
   }
 }
 
-class NavButton extends StatefulWidget {
+class NavButton extends ConsumerStatefulWidget {
   final FaIconData icon;
   final VoidCallback onTap;
   final bool reverse;
@@ -60,14 +62,15 @@ class NavButton extends StatefulWidget {
   const NavButton({required this.icon, required this.onTap, this.reverse = false, this.isAccented = false, this.width = 30, this.height = 30});
 
   @override
-  State<NavButton> createState() => _NavButtonState();
+  ConsumerState<NavButton> createState() => _NavButtonState();
 }
 
-class _NavButtonState extends State<NavButton> {
+class _NavButtonState extends ConsumerState<NavButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -116,8 +119,8 @@ class _NavButtonState extends State<NavButton> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withValues(alpha: 0.18),
-                            Colors.white.withValues(alpha: 0.02),
+                            theme.whiteColor.withValues(alpha: 0.18),
+                            theme.whiteColor.withValues(alpha: 0.02),
                           ],
                         ),
                       ),

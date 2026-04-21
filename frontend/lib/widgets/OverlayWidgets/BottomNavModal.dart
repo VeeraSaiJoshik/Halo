@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 class BottomNavModal extends StatelessWidget {
   AppController controller;
@@ -53,7 +55,7 @@ class BottomNavModal extends StatelessWidget {
   }
 }
 
-class BototmNavBarIcons extends StatefulWidget {
+class BototmNavBarIcons extends ConsumerStatefulWidget {
   final String icon;
   final int directionMulti;
   bool showFrost;
@@ -61,14 +63,15 @@ class BototmNavBarIcons extends StatefulWidget {
   BototmNavBarIcons({super.key, required this.icon, this.directionMulti = 0, this.showFrost = false, this.isAccented = false});
 
   @override
-  State<BototmNavBarIcons> createState() => _BototmNavBarIconsState();
+  ConsumerState<BototmNavBarIcons> createState() => _BototmNavBarIconsState();
 }
 
-class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
+class _BototmNavBarIconsState extends ConsumerState<BototmNavBarIcons> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -130,9 +133,9 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
                               CustomColors.accent.withValues(alpha: 0.00),
                             ]
                           : [
-                              Colors.white.withValues(alpha: 0.18),
-                              Colors.white.withValues(alpha: 0.05),
-                              Colors.white.withValues(alpha: 0.00),
+                              theme.whiteColor.withValues(alpha: 0.18),
+                              theme.whiteColor.withValues(alpha: 0.05),
+                              theme.whiteColor.withValues(alpha: 0.00),
                             ],
                     ),
                   ),

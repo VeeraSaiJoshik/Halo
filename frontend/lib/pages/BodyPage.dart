@@ -64,6 +64,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   @override
   Widget build(BuildContext context) {
     final appController = ref.watch(appControllerProvider);
+    final theme = ref.watch(haloThemeProvider);
     final bool tabExists = appController.getCurrentTab() != null;
     final WindowInfo? currentTab = appController.getCurrentTab();
     final List<AppPage> pages = tabExists ? currentTab!.pages : [];
@@ -80,7 +81,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.55),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withOpacity(0.10)),
+              border: Border.all(color: theme.whiteColor.withOpacity(0.10)),
             ),
             child: Stack(
               children: [
@@ -161,7 +162,7 @@ class _EmptyState extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade700.withOpacity(0.5)),
             ),
-            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: Colors.white)),
+            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: theme.whiteColor)),
           ),
         ],
       ),
@@ -171,17 +172,17 @@ class _EmptyState extends ConsumerWidget {
 
 // ─── Draggable divider between panels ────────────────────────────────────────
 
-class _PanelDivider extends StatefulWidget {
+class _PanelDivider extends ConsumerStatefulWidget {
   final double width;
   final void Function(double delta) onDrag;
 
   const _PanelDivider({required this.width, required this.onDrag});
 
   @override
-  State<_PanelDivider> createState() => _PanelDividerState();
+  ConsumerState<_PanelDivider> createState() => _PanelDividerState();
 }
 
-class _PanelDividerState extends State<_PanelDivider> {
+class _PanelDividerState extends ConsumerState<_PanelDivider> {
   bool _hovered  = false;
   bool _dragging = false;
 
@@ -189,6 +190,7 @@ class _PanelDividerState extends State<_PanelDivider> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return MouseRegion(
       cursor: SystemMouseCursors.resizeColumn,
       onEnter: (_) => setState(() => _hovered = true),
@@ -204,7 +206,7 @@ class _PanelDividerState extends State<_PanelDivider> {
               duration: const Duration(milliseconds: 150),
               width: _active ? 2 : 1,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(_active ? 0.55 : 0.15),
+                color: theme.whiteColor.withOpacity(_active ? 0.55 : 0.15),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

@@ -27,13 +27,14 @@ class StockBar extends StatelessWidget {
   }
 }
 
-class StockWidget extends StatelessWidget {
+class StockWidget extends ConsumerWidget {
   final StockName stock;
   final bool isActive;
   StockWidget({super.key, required this.stock, required this.isActive});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(haloThemeProvider);
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
       child: Container(
@@ -48,7 +49,7 @@ class StockWidget extends StatelessWidget {
               height: 24, 
               width: 24, 
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.whiteColor,
                 borderRadius: BorderRadius.circular(5),
               ),
               padding: EdgeInsets.all(1.5),

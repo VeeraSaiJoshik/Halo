@@ -98,7 +98,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   void authSuccesfull() {
     loadWebView = false;
     controller = null;
-    
+
     if(formController.currentIndex == 1) {
       formController.setBuyingPlatformAuthState(true);
     } else {
@@ -211,7 +211,7 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                 children: [
                   // Glassmorphic base with accent fill
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                       child: AnimatedContainer(
@@ -220,7 +220,7 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                         height: 44,
                         decoration: BoxDecoration(
                           color: CustomColors.darkPurple.withValues(alpha: _hovered ? 1.0 : 0.9),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(5),
                           border: Border.all(
                             color: widget.theme.whiteColor.withValues(alpha: 0.18),
                             width: 1,
@@ -253,8 +253,8 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withValues(alpha: 0.22),
-                            Colors.white.withValues(alpha: 0.0),
+                            widget.theme.whiteColor.withValues(alpha: 0.22),
+                            widget.theme.whiteColor.withValues(alpha: 0.0),
                           ],
                           stops: const [0.0, 0.55],
                         ),

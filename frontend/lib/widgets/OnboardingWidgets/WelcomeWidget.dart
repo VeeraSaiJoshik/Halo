@@ -58,7 +58,7 @@ class _WelcomewidgetState extends State<Welcomewidget> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               "Lorem ipsum dolor sit amet, consectetur adispiscing elit.",
-              style: theme.bodyLarge.copyWith(color: theme.whiteColor.withOpacity(0.5)),
+              style: theme.bodyLarge.copyWith(color: theme.whiteColor.withOpacity(0.7)),
             );
           },
         ),

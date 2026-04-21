@@ -48,17 +48,17 @@ class _WindowTabState extends ConsumerState<WindowTab>
             decoration: widget.context.isActive
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
-                    color: Colors.white.withOpacity(0.10),
+                    color: theme.whiteColor.withOpacity(0.10),
                     border: Border(
-                      top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1.5),
-                      left: BorderSide(color: Colors.white.withOpacity(0.15)),
-                      right: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      top: BorderSide(color: theme.whiteColor.withOpacity(0.15), width: 1.5),
+                      left: BorderSide(color: theme.whiteColor.withOpacity(0.15)),
+                      right: BorderSide(color: theme.whiteColor.withOpacity(0.15)),
                     ),
                   )
                 : isHovering
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
-                    color: Colors.white.withOpacity(0.15),
+                    color: theme.whiteColor.withOpacity(0.15),
                   )
                 : BoxDecoration(
                     borderRadius: _borderRadius,
@@ -105,7 +105,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                     children: [
                       FaIcon(
                         FontAwesomeIcons.arrowDown,
-                        color: Colors.white,
+                        color: theme.whiteColor,
                         size: 11,
                       ),
                       Text(
@@ -134,7 +134,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                           ? Colors.red.withOpacity(0.5)
                           : widget.context.isActive
                           ? theme.textAccent.withOpacity(0.25)
-                          : Colors.white.withAlpha(30),
+                          : theme.whiteColor.withAlpha(30),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Center(
@@ -146,7 +146,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                             ? FaIcon(
                                 key: const ValueKey('x'),
                                 FontAwesomeIcons.xmark,
-                                color: Colors.white.withOpacity(0.5),
+                                color: theme.whiteColor.withOpacity(0.5),
                                 size: 13,
                               )
                             : widget.context.aiListenerReady
@@ -154,7 +154,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                                   ? FaIcon(
                                       key: const ValueKey('eye'),
                                       FontAwesomeIcons.solidEye,
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: theme.whiteColor.withOpacity(0.5),
                                       size: 13,
                                     )
                                   : Text(
@@ -168,7 +168,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                                 width: 14,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: theme.whiteColor,
                                 ),
                               ),
                       ),

@@ -1,9 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 abstract class AuthMethods {
@@ -18,7 +20,12 @@ abstract class EmailAuth implements AuthMethods {
   String get authName => 'Email';
 
   @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.envelope, size: 18, color: Colors.white);
+  Widget get authLogo => Consumer(
+    builder: (context, ref, _) {
+      final theme = ref.watch(haloThemeProvider);
+      return FaIcon(FontAwesomeIcons.envelope, size: 18, color: theme.whiteColor);
+    },
+  );
 }
 
 class GoogleAuth implements AuthMethods {
@@ -26,7 +33,12 @@ class GoogleAuth implements AuthMethods {
   String get authName => 'Google';
 
   @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.white);
+  Widget get authLogo => Consumer(
+    builder: (context, ref, _) {
+      final theme = ref.watch(haloThemeProvider);
+      return FaIcon(FontAwesomeIcons.google, size: 18, color: theme.whiteColor);
+    },
+  );
 
   @override
   void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getRead, void Function()? exity) {}
@@ -66,7 +78,12 @@ class WebullPhoneAuth implements AuthMethods {
   String get authName => 'Phone Number';
 
   @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.phone, size: 18, color: Colors.white);
+  Widget get authLogo => Consumer(
+    builder: (context, ref, _) {
+      final theme = ref.watch(haloThemeProvider);
+      return FaIcon(FontAwesomeIcons.phone, size: 18, color: theme.whiteColor);
+    },
+  );
 
   @override
   void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
@@ -80,7 +97,12 @@ class WebullQRCodeAuth implements AuthMethods {
   String get authName => 'QR Code';
 
   @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.qrcode, size: 18, color: Colors.white);
+  Widget get authLogo => Consumer(
+    builder: (context, ref, _) {
+      final theme = ref.watch(haloThemeProvider);
+      return FaIcon(FontAwesomeIcons.qrcode, size: 18, color: theme.whiteColor);
+    },
+  );
 
   @override
   void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
@@ -179,7 +201,12 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   String get authName => 'Think or Swim ID';
 
   @override
-  Widget get authLogo => FaIcon(FontAwesomeIcons.idBadge, size: 18, color: Colors.white);
+  Widget get authLogo => Consumer(
+    builder: (context, ref, _) {
+      final theme = ref.watch(haloThemeProvider);
+      return FaIcon(FontAwesomeIcons.idBadge, size: 18, color: theme.whiteColor);
+    },
+  );
 
   @override
   void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {

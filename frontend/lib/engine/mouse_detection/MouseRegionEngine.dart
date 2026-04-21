@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/engine/mouse_detection/customMouseRegion.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 class MouseRegionEngine extends ConsumerStatefulWidget {
   List<CustomMouseRegion> regions;
@@ -16,6 +17,7 @@ class MouseRegionEngine extends ConsumerStatefulWidget {
 class _MouseRegionEngineState extends ConsumerState<MouseRegionEngine> {
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
@@ -34,7 +36,7 @@ class _MouseRegionEngineState extends ConsumerState<MouseRegionEngine> {
                               child: widget.debug ?  Center(
                                   child: Text(
                                       region.event.toString(), 
-                                      style: TextStyle(color: Colors.white, fontSize: 10), 
+                                      style: TextStyle(color: theme.whiteColor, fontSize: 10),
                                       textAlign: TextAlign.center,
                                   )
                                ) : null,

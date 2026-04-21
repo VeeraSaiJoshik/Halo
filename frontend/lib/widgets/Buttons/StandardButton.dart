@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/themes/theme_provider.dart';
 
 /// A styled button whose size is entirely determined by [child].
 ///
@@ -8,7 +10,7 @@ import 'package:frontend/models/customColors.dart';
 /// - Slight rotation on hover (direction controlled by [directionMulti])
 /// - Purple glow that intensifies on hover
 /// - Frosted-glass sheen that fades in on hover
-class StandardButton extends StatefulWidget {
+class StandardButton extends ConsumerStatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
 
@@ -23,14 +25,15 @@ class StandardButton extends StatefulWidget {
   });
 
   @override
-  State<StandardButton> createState() => _StandardButtonState();
+  ConsumerState<StandardButton> createState() => _StandardButtonState();
 }
 
-class _StandardButtonState extends State<StandardButton> {
+class _StandardButtonState extends ConsumerState<StandardButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -83,9 +86,9 @@ class _StandardButtonState extends State<StandardButton> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.white.withValues(alpha: 0.18),
-                          Colors.white.withValues(alpha: 0.05),
-                          Colors.white.withValues(alpha: 0.00),
+                          theme.whiteColor.withValues(alpha: 0.18),
+                          theme.whiteColor.withValues(alpha: 0.05),
+                          theme.whiteColor.withValues(alpha: 0.00),
                         ],
                       ),
                     ),

@@ -11,6 +11,7 @@ class DevMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentType = ref.watch(haloThemeTypeProvider);
+    final theme = ref.watch(haloThemeProvider);
 
     return GestureDetector(
       onTap: onClose,
@@ -27,10 +28,10 @@ class DevMenu extends ConsumerWidget {
                   width: 420,
                   padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.07),
+                    color: theme.whiteColor.withOpacity(0.07),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.12),
+                      color: theme.whiteColor.withOpacity(0.12),
                       width: 1,
                     ),
                   ),
@@ -40,13 +41,13 @@ class DevMenu extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'DESIGN LANGUAGE',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 2.5,
-                              color: Colors.white54,
+                              color: theme.whiteColor.withOpacity(0.54),
                             ),
                           ),
                           const Spacer(),
@@ -56,18 +57,18 @@ class DevMenu extends ConsumerWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.06),
+                              color: theme.whiteColor.withOpacity(0.06),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
+                                color: theme.whiteColor.withOpacity(0.1),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               '⌘ D',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white38,
+                                color: theme.whiteColor.withOpacity(0.38),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -91,7 +92,7 @@ class DevMenu extends ConsumerWidget {
                           'Press Esc or ⌘D to close',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.white24,
+                            color: theme.whiteColor.withOpacity(0.24),
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -108,7 +109,7 @@ class DevMenu extends ConsumerWidget {
   }
 }
 
-class _ThemeCard extends StatefulWidget {
+class _ThemeCard extends ConsumerStatefulWidget {
   final HaloThemeType type;
   final bool isSelected;
   final VoidCallback onTap;
@@ -120,10 +121,10 @@ class _ThemeCard extends StatefulWidget {
   });
 
   @override
-  State<_ThemeCard> createState() => _ThemeCardState();
+  ConsumerState<_ThemeCard> createState() => _ThemeCardState();
 }
 
-class _ThemeCardState extends State<_ThemeCard> {
+class _ThemeCardState extends ConsumerState<_ThemeCard> {
   bool _hovering = false;
 
   Color get _accent {
@@ -162,6 +163,7 @@ class _ThemeCardState extends State<_ThemeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: MouseRegion(
@@ -176,13 +178,13 @@ class _ThemeCardState extends State<_ThemeCard> {
               color: widget.isSelected
                   ? _accent.withOpacity(0.1)
                   : _hovering
-                      ? Colors.white.withOpacity(0.05)
+                      ? theme.whiteColor.withOpacity(0.05)
                       : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: widget.isSelected
                     ? _accent.withOpacity(0.45)
-                    : Colors.white.withOpacity(widget.isSelected ? 0.15 : 0.07),
+                    : theme.whiteColor.withOpacity(widget.isSelected ? 0.15 : 0.07),
                 width: 1,
               ),
             ),
@@ -193,7 +195,7 @@ class _ThemeCardState extends State<_ThemeCard> {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: widget.isSelected ? _accent : Colors.white24,
+                    color: widget.isSelected ? _accent : theme.whiteColor.withOpacity(0.24),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -208,8 +210,8 @@ class _ThemeCardState extends State<_ThemeCard> {
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: widget.isSelected
-                              ? Colors.white
-                              : Colors.white70,
+                              ? theme.whiteColor
+                              : theme.whiteColor.withOpacity(0.70),
                           letterSpacing: 0.1,
                         ),
                       ),
@@ -221,17 +223,17 @@ class _ThemeCardState extends State<_ThemeCard> {
                           fontWeight: FontWeight.w400,
                           color: widget.isSelected
                               ? _accent.withOpacity(0.8)
-                              : Colors.white38,
+                              : theme.whiteColor.withOpacity(0.38),
                           letterSpacing: 0.2,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         _fontPreview,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white24,
+                          color: theme.whiteColor.withOpacity(0.24),
                           letterSpacing: 0.3,
                         ),
                       ),

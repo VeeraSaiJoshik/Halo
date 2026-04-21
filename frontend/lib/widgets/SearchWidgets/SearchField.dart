@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 
-class SearchField extends StatefulWidget {
+class SearchField extends ConsumerStatefulWidget {
   final double height;
   final double width;
   final TextEditingController controller;
@@ -15,12 +15,13 @@ class SearchField extends StatefulWidget {
   const SearchField({super.key, this.height = 0, this.width = 0, required this.controller, required this.focusNode, required this.onTextChange});
 
   @override
-  State<SearchField> createState() => _SearchFieldState();
+  ConsumerState<SearchField> createState() => _SearchFieldState();
 }
 
-class _SearchFieldState extends State<SearchField> {
+class _SearchFieldState extends ConsumerState<SearchField> {
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       clipBehavior: Clip.hardEdge,
@@ -35,7 +36,7 @@ class _SearchFieldState extends State<SearchField> {
         children: [
           FaIcon(
             FontAwesomeIcons.magnifyingGlass,
-            color: Colors.white,
+            color: theme.whiteColor,
             size: 14,
           ),
           Expanded(

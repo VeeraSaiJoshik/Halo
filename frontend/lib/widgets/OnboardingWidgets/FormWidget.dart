@@ -49,48 +49,45 @@ class FormWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 15,
             children: [
-              PlushyButton(
-                onPressed: formController.back,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    FaIcon(FontAwesomeIcons.arrowLeft, size: 12, color: Colors.white),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final theme = ref.watch(haloThemeProvider);
-                        return Text(
-                          'Back',
-                          style: theme.titleLarge.copyWith(color: Colors.white),
-                        );
-                      },
+              Consumer(
+                builder: (context, ref, _) {
+                  final theme = ref.watch(haloThemeProvider);
+                  return PlushyButton(
+                    onPressed: formController.back,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        FaIcon(FontAwesomeIcons.arrowLeft, size: 12, color: theme.whiteColor),
+                        Text('Back', style: theme.titleLarge.copyWith(color: theme.whiteColor)),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-              PlushyButton(
-                onPressed: formController.next,
-                disabled: false,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final theme = ref.watch(haloThemeProvider);
-                        return Text(
+              Consumer(
+                builder: (context, ref, _) {
+                  final theme = ref.watch(haloThemeProvider);
+                  return PlushyButton(
+                    onPressed: formController.next,
+                    disabled: false,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Text(
                           isLast ? 'Finish' : 'Next',
-                          style: theme.titleLarge.copyWith(color: Colors.white),
-                        );
-                      },
+                          style: theme.titleLarge.copyWith(color: theme.whiteColor),
+                        ),
+                        FaIcon(
+                          isLast ? FontAwesomeIcons.check : FontAwesomeIcons.arrowRight,
+                          size: 12,
+                          color: theme.whiteColor,
+                        ),
+                      ],
                     ),
-                    FaIcon(
-                      isLast ? FontAwesomeIcons.check : FontAwesomeIcons.arrowRight,
-                      size: 12,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),
@@ -100,20 +97,21 @@ class FormWidget extends StatelessWidget {
   }
 }
 
-class ProgressBar extends StatelessWidget {
+class ProgressBar extends ConsumerWidget {
   final double progress;
-  final double width; 
+  final double width;
 
   const ProgressBar({super.key, this.progress = 0.4, required this.width});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(haloThemeProvider);
     return Container(
       width: width,
       height: 4,
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: theme.whiteColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(2),
       ),
       child: AnimatedContainer(
