@@ -77,11 +77,13 @@ flutter:
     - assets/images/graph.png
 
     - assets/images/icons/Finiz.png
-    - assets/images/icons/OpenTrader.png
+    - assets/images/icons/TradingView.png
     - assets/images/icons/Think or Swim.png
 
     - assets/images/icons/Webull.png
     - assets/images/icons/Robinhood.png
+
+    - assets/images/stock_image.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -64,4 +64,6 @@ abstract class HaloThemeData {
   List<Color> get blobColors;         // 4-6 ambient blob colors
   Color get glassOverlay;             // BackdropFilter container color (pre-opacity)
   double get blobOpacity;             // Radial gradient center opacity (0.0–1.0)
+  Color get accentColor;
+  Color get whiteColor;
 }

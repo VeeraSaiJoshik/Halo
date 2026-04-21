@@ -32,8 +32,8 @@ class AurumTheme implements HaloThemeData {
   // ─── Display ─────────────────────────────────────────────────────────────
 
   @override
-  TextStyle get displayLarge => GoogleFonts.playfairDisplay(
-        fontSize: 56,
+  TextStyle get displayLarge => GoogleFonts.instrumentSerif(
+        fontSize: 66,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
         height: 1.1,
@@ -41,7 +41,7 @@ class AurumTheme implements HaloThemeData {
       );
 
   @override
-  TextStyle get displayMedium => GoogleFonts.playfairDisplay(
+  TextStyle get displayMedium => GoogleFonts.instrumentSerif(
         fontSize: 45,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.3,
@@ -164,13 +164,13 @@ class AurumTheme implements HaloThemeData {
 
   @override
   List<Color> get blobColors => const [
-        Color(0xFFF59E0B), // amber-500  — bright gold  (UI/UX Pro Max luxury primary)
-        Color(0xFFF97316), // orange-500 — vivid orange (warm spectrum expansion)
-        Color(0xFFEAB308), // yellow-500 — bright yellow highlight
-        Color(0xFFD97706), // amber-600  — rich amber anchor
-        Color(0xFFFBBF24), // amber-400  — light gold shimmer
-        Color(0xFFEA580C), // orange-600 — deep orange depth
-      ];
+    Color(0xFFF59E0B), // amber-500  — bright gold  (UI/UX Pro Max luxury primary)
+    Color(0xFFF97316), // orange-500 — vivid orange (warm spectrum expansion)
+    Color(0xFFEAB308), // yellow-500 — bright yellow highlight
+    Color(0xFFD97706), // amber-600  — rich amber anchor
+    Color(0xFFFBBF24), // amber-400  — light gold shimmer
+    Color(0xFFEA580C), // orange-600 — deep orange depth
+  ];
 
   // Overlay drops to 0.48 — Liquid Glass / Glassmorphism require a light translucent
   // layer so the vibrant blobs bleed through and become the visual centerpiece.
@@ -181,4 +181,10 @@ class AurumTheme implements HaloThemeData {
   // Higher than the atmospheric 0.08–0.12 used for subtle hints; here color IS the design.
   @override
   double get blobOpacity => 0.50;
+
+  @override
+  Color get accentColor => Color.fromARGB(255, 242, 163, 64);
+
+  @override 
+  Color get whiteColor => Color.fromARGB(255, 244, 233, 216);
 }

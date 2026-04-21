@@ -30,9 +30,23 @@ class _WelcomewidgetState extends State<Welcomewidget> {
         Consumer(
           builder: (context, ref, _) {
             final theme = ref.watch(haloThemeProvider);
-            return Text(
-              "Welcome to Halo!",
-              style: theme.displayMedium.copyWith(fontSize: 45, color: Colors.white),
+            return Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Welcome to ",
+                    style: theme.displayMedium.copyWith(fontSize: 55, color: theme.whiteColor),
+                  ),
+                  TextSpan(
+                    text: "Halo",
+                    style: theme.displayMedium.copyWith(fontSize: 55, color: theme.whiteColor),
+                  ),
+                  TextSpan(
+                    text: "!",
+                    style: theme.displayMedium.copyWith(fontSize: 55, color: theme.whiteColor),
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -44,7 +58,7 @@ class _WelcomewidgetState extends State<Welcomewidget> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               "Lorem ipsum dolor sit amet, consectetur adispiscing elit.",
-              style: theme.bodyLarge.copyWith(color: Colors.white.withOpacity(0.5)),
+              style: theme.bodyLarge.copyWith(color: theme.whiteColor.withOpacity(0.5)),
             );
           },
         ),

@@ -186,4 +186,10 @@ class MeridianTheme implements HaloThemeData {
 
   @override
   double get blobOpacity => 0.25;
+
+  @override
+  Color get accentColor => Color.fromARGB(255, 242, 163, 64);
+
+  @override 
+  Color get whiteColor => Color.fromARGB(255, 244, 233, 216);
 }

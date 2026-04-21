@@ -34,6 +34,7 @@ class GoogleAuth implements AuthMethods {
 class WebullEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod() {
+    
   }
 }
 

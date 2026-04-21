@@ -34,7 +34,7 @@ class _PlushyButtonState extends State<PlushyButton> {
 
   @override
   Widget build(BuildContext context) {
-    final shadow = widget.glowColor ?? CustomColors.purple;
+    final shadow = widget.glowColor ?? CustomColors.accent;
     final isActive = _hovering || _pressed;
 
     return AnimatedScale(

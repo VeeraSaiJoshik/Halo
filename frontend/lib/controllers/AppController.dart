@@ -159,6 +159,30 @@ class WindowInfo {
   }
 }
 
+WebViewController createWebViewController(String url) {
+  return WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          // Update loading bar.
+        },
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) {},
+        onHttpError: (HttpResponseError error) {},
+        onWebResourceError: (WebResourceError error) {},
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('https://www.youtube.com/')) {
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
+      ),
+    )
+    ..loadRequest(Uri.parse(url));
+}
+
 class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
   IntakeService intakeEngine;
@@ -173,49 +197,8 @@ class AppController extends ChangeNotifier{
       return;
     }
 
-    final portalController = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) {},
-        onHttpError: (HttpResponseError error) {},
-        onWebResourceError: (WebResourceError error) {},
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ),
-    )
-    ..loadRequest(Uri.parse('https://www.webull.com/center'));
-
-    final chartingController = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) {},
-        onHttpError: (HttpResponseError error) {},
-        onWebResourceError: (WebResourceError error) {},
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ),
-    )
-    ..loadRequest(Uri.parse('https://www.tradingview.com/chart/d3IIUEuI/'));
+    final portalController = createWebViewController('https://www.webull.com/center');
+    final chartingController = createWebViewController('https://www.tradingview.com/chart/d3IIUEuI/');
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
     newTab.initializeBrowserServices().then((_) => notifyListeners());
