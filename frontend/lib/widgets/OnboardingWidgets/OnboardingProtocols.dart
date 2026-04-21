@@ -38,14 +38,12 @@ class WebullEmailAuth extends EmailAuth {
   WebViewController launchSignupMethod() {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
-      const span = [...document.querySelectorAll('span')]
-        .find(s => s.textContent.trim() === 'Email Login');
-
-      if (span) span.click();
+      (async () => {
+        const span = [...document.querySelectorAll('span')].find(s => s.textContent.trim() === 'Email Login');
+        if (span) span.click();
+      })();
     """;
-    WebViewController controller = createWebViewController(authUrl, injectionScript: script);
-
-    return controller;
+    return createWebViewController(authUrl, injectionScript: script);
   }
 }
 
@@ -59,9 +57,7 @@ class WebullPhoneAuth implements AuthMethods {
   @override
   WebViewController? launchSignupMethod() {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    WebViewController controller = createWebViewController(authUrl);
-
-    return controller;
+    return createWebViewController(authUrl);
   }
 }
 
@@ -76,25 +72,74 @@ class WebullQRCodeAuth implements AuthMethods {
   WebViewController? launchSignupMethod() {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
-      const span = document.querySelector('div.csr30 span');
-      if (span) span.click();
+      (async () => {
+        const span = document.querySelector('div.csr30 span');
+        if (span) span.click();
+      })();
     """;
-    WebViewController controller = createWebViewController(authUrl, injectionScript: script);
-
-    return controller;
+    return createWebViewController(authUrl, injectionScript: script);
   }
 }
 
 // Robinhood Specific Auth Methods
 class RobinhoodEmailAuth extends EmailAuth {
   @override
-  WebViewController? launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {
+    return createWebViewController("https://robinhood.com/login/");
+  }
 }
 
 // TradeView Auth Methods
 class TradingViewEmailAuth extends EmailAuth {
   @override
-  WebViewController? launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {
+    const link = "https://www.tradingview.com/pricing/?source=header_go_pro_button&feature=start_free_trial";
+    const script = """
+      (async () => {
+        const waitFor = (findFn, timeout = 5000) => new Promise((resolve) => {
+          const start = Date.now();
+          const check = () => {
+            const el = findFn();
+            if (el) return resolve(el);
+            if (Date.now() - start > timeout) return resolve(null);
+            requestAnimationFrame(check);
+          };
+          check();
+        });
+
+        const clickEl = (el) => {
+          const target = el.closest('button, a, [role="button"], [onclick]') || el;
+          target.click();
+        };
+
+        // Step 1: Open user menu
+        const menuBtn = await waitFor(() =>
+          document.querySelector('[aria-label="Open user menu"]')
+          || [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Open user menu')
+        );
+        if (!menuBtn) return console.log('❌ Open user menu not found');
+        clickEl(menuBtn);
+
+        // Step 2: Target span
+        const cls = 'label-jFqVJoPk.label-mDJVFqQ3.label-YQGjel_5';
+        const span = await waitFor(() => document.querySelector(`span.${cls}`));
+        if (!span) return console.log('❌ Target span not found');
+        clickEl(span);
+
+        // Step 3: Email button
+        const emailBtn = await waitFor(() =>
+          [...document.querySelectorAll('button, a, [role="button"], span')]
+            .find(b => b.textContent.trim() === 'Email')
+        );
+        if (!emailBtn) return console.log('❌ Email button not found');
+        clickEl(emailBtn);
+
+        console.log('✅ Navigation complete');
+      })();
+    """;
+
+    return createWebViewController(link, injectionScript: script);
+  }
 }
 
 //Finiz Auth Methods
