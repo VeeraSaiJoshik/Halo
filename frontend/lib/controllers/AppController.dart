@@ -159,32 +159,39 @@ class WindowInfo {
   }
 }
 
-WebViewController createWebViewController(String url, {String injectionScript = ""}) {
-  WebViewController controller =  WebViewController()
+WebViewController createWebViewController(String url, {String injectionScript = "", void Function(WebViewController)? onReady}) {
+  WebViewController controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-    
-    controller..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) async {
-          if(injectionScript != "") await controller.runJavaScript(injectionScript);
-        },
-        onHttpError: (HttpResponseError error) {},
-        onWebResourceError: (WebResourceError error) {},
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ),
-    )..loadRequest(Uri.parse(url));
+  
+  controller.addJavaScriptChannel(
+    'HaloAuthReady',
+    onMessageReceived: (_) => onReady?.call(controller),
+  );
 
-    return controller;
+  controller..setNavigationDelegate(
+    NavigationDelegate(
+      onProgress: (int progress) {},
+      onPageStarted: (String url) {},
+      onPageFinished: (String url) async {
+        if (injectionScript != "") {
+          await controller.runJavaScript(injectionScript);
+        } else {
+          onReady?.call(controller);
+        }
+      },
+      onHttpError: (HttpResponseError error) {},
+      onWebResourceError: (WebResourceError error) {},
+      onNavigationRequest: (NavigationRequest request) {
+        if (request.url.startsWith('https://www.youtube.com/')) {
+          return NavigationDecision.prevent;
+        }
+        return NavigationDecision.navigate;
+      },
+    ),
+  )..loadRequest(Uri.parse(url));
+
+  return controller;
 }
 
 class AppController extends ChangeNotifier{

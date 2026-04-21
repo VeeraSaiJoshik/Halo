@@ -21,14 +21,14 @@ class PlatformAuthPage extends StatefulWidget {
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
   void _handleAuthTap(AuthMethods method) {
     if (method is GoogleAuth) {
-      method.launchSignupMethod();
+      method.launchSignupMethod(null);
       return;
     }
 
-    final controller = method.launchSignupMethod();
-    if (controller != null) {
+    method.launchSignupMethod((controller) {
+      if (!mounted) return;
       widget.launchAuthWebView(controller);
-    }
+    });
   }
 
   @override
