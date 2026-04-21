@@ -2,7 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/models/customColors.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
+import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
@@ -35,49 +37,71 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Consumer(
+      builder: (context, ref, _) {
+        final theme = ref.watch(haloThemeProvider);
+        final authenticated = widget.authPlatform.authenticated;
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo — gains a green ring when connected
+            SizedBox(
+              width: 100,
+              height: 100,
+              child: Image.asset(widget.authPlatform.logoUrl, fit: BoxFit.contain),
+            ),
+            const SizedBox(height: 15),
+            Text('Sign in to ${widget.authPlatform.id}', style: theme.headlineMedium),
+            const SizedBox(height: 8),
+            // Swaps between subtitle and connected indicator
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              child: authenticated
+                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme)
+                  : Text(
+                      key: const ValueKey('hint'),
+                      'Choose how you\'d like to authenticate',
+                      style: theme.bodyMedium.copyWith(
+                        color: theme.whiteColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+            ),
+            const SizedBox(height: 48),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: widget.authPlatform.authMethods.map((method) {
+                return _AuthMethodButton(
+                  method: method,
+                  brandColor: Colors.transparent,
+                  selected: false,
+                  onTap: () => _handleAuthTap(method),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+const _kConnectedGreen = Color(0xFF22C55E);
+
+class _ConnectedPill extends StatelessWidget {
+  final HaloThemeData theme;
+  const _ConnectedPill({super.key, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 6,
       children: [
-        Container(
-          height: 100,
-          width: 100,
-          child: Image.asset(
-           widget.authPlatform.logoUrl,
-           fit: BoxFit.contain,
-          ),
-        ),
-        SizedBox(height: 15,),
-        Consumer(
-          builder: (context, ref, _) {
-            final theme = ref.watch(haloThemeProvider);
-            return Text(
-              'Sign in to ${widget.authPlatform.id}',
-              style: theme.headlineMedium,
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        Consumer(
-          builder: (context, ref, _) {
-            final theme = ref.watch(haloThemeProvider);
-            return Text(
-              'Choose how you\'d like to authenticate',
-              style: theme.bodyMedium.copyWith(color: Colors.white.withOpacity(0.8)),
-            );
-          },
-        ),
-        const SizedBox(height: 48),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 12,
-          children: widget.authPlatform.authMethods.map((method) {
-            return _AuthMethodButton(
-              method: method,
-              brandColor: Colors.transparent,
-              selected: false,
-              onTap: () => _handleAuthTap(method),
-            );
-          }).toList(),
+        Text(
+          'succesfully connected',
+          style: theme.labelLarge.copyWith(color: _kConnectedGreen),
         ),
       ],
     );
