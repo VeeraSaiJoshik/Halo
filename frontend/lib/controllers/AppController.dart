@@ -159,7 +159,9 @@ class WindowInfo {
   }
 }
 
-WebViewController createWebViewController(String url, {String injectionScript = "", void Function(WebViewController)? onReady}) {
+WebViewController createWebViewController(String url, {String injectionScript = "", void Function(WebViewController)? onReady, void Function()? getReady}) {
+  if (getReady != null) getReady.call();
+
   WebViewController controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');

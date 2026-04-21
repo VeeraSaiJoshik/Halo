@@ -1,27 +1,43 @@
 import 'package:flutter/material.dart';
 
-enum HaloThemeType { aurum, terminal, meridian }
+enum HaloThemeType { golden, terminal, meridian, blue, green, pink, red }
 
 extension HaloThemeTypeExt on HaloThemeType {
   String get displayName {
     switch (this) {
-      case HaloThemeType.aurum:
-        return 'Aurum';
+      case HaloThemeType.golden:
+        return 'Golden';
       case HaloThemeType.terminal:
         return 'Terminal';
       case HaloThemeType.meridian:
         return 'Meridian';
+      case HaloThemeType.blue:
+        return 'Blue';
+      case HaloThemeType.green:
+        return 'Green';
+      case HaloThemeType.pink:
+        return 'Pink';
+      case HaloThemeType.red:
+        return 'Red';
     }
   }
 
   String get tagline {
     switch (this) {
-      case HaloThemeType.aurum:
-        return 'Editorial Luxury';
+      case HaloThemeType.golden:
+        return 'Liquid Gold';
       case HaloThemeType.terminal:
         return 'Technical Precision';
       case HaloThemeType.meridian:
         return 'Clean Swiss';
+      case HaloThemeType.blue:
+        return 'Deep Sapphire';
+      case HaloThemeType.green:
+        return 'Emerald Forest';
+      case HaloThemeType.pink:
+        return 'Rose Bloom';
+      case HaloThemeType.red:
+        return 'Crimson Fire';
     }
   }
 }

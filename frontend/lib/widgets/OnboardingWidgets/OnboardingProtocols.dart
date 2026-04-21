@@ -9,7 +9,7 @@ abstract class AuthMethods {
   String get authName;
   Widget get authLogo;
 
-  void launchSignupMethod(void Function(WebViewController)? onReady);
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady);
 }
 
 abstract class EmailAuth implements AuthMethods {
@@ -28,14 +28,14 @@ class GoogleAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {}
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {}
 }
 
 // Webull Specific Auth Methods
 
 class WebullEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
       (async () => {
@@ -56,7 +56,7 @@ class WebullEmailAuth extends EmailAuth {
         HaloAuthReady.postMessage('ready');
       })();
     """;
-    createWebViewController(authUrl, injectionScript: script, onReady: onReady);
+    createWebViewController(authUrl, injectionScript: script, onReady: onReady, getReady: getReady);
   }
 }
 
@@ -68,9 +68,9 @@ class WebullPhoneAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.phone, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    createWebViewController(authUrl, onReady: onReady);
+    createWebViewController(authUrl, onReady: onReady, getReady: getReady);
   }
 }
 
@@ -82,7 +82,7 @@ class WebullQRCodeAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.qrcode, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
       (async () => {
@@ -101,22 +101,22 @@ class WebullQRCodeAuth implements AuthMethods {
         HaloAuthReady.postMessage('ready');
       })();
     """;
-    createWebViewController(authUrl, injectionScript: script, onReady: onReady);
+    createWebViewController(authUrl, injectionScript: script, onReady: onReady, getReady: getReady);
   }
 }
 
 // Robinhood Specific Auth Methods
 class RobinhoodEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
-    createWebViewController("https://robinhood.com/login/", onReady: onReady);
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
+    createWebViewController("https://robinhood.com/login/", onReady: onReady, getReady: getReady);
   }
 }
 
 // TradeView Auth Methods
 class TradingViewEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const link = "https://www.tradingview.com/pricing/?source=header_go_pro_button&feature=start_free_trial";
     const script = """
       (async () => {
@@ -159,16 +159,16 @@ class TradingViewEmailAuth extends EmailAuth {
       })();
     """;
 
-    createWebViewController(link, injectionScript: script, onReady: onReady);
+    createWebViewController(link, injectionScript: script, onReady: onReady, getReady: getReady);
   }
 }
 
 //Finiz Auth Methods
 class FinizEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const link = "https://finviz.com/login-email?remember=true";
-    createWebViewController(link, onReady: onReady);
+    createWebViewController(link, onReady: onReady, getReady: getReady);
   }
 }
 
@@ -181,9 +181,9 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.idBadge, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady) {
+  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady) {
     const link = "https://trade.thinkorswim.com/";
-    createWebViewController(link, onReady: onReady);
+    createWebViewController(link, onReady: onReady, getReady: getReady);
   }
 }
 

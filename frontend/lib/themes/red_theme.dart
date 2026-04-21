@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'halo_theme.dart';
 
-/// Aurum — Editorial Luxury theme.
-///
-/// Playfair Display serifs for display/headline tokens,
-/// Inter for all functional text (title/body/label),
-/// JetBrains Mono exclusively for financial ticker data.
-class AurumTheme implements HaloThemeData {
-  const AurumTheme();
+class RedTheme implements HaloThemeData {
+  const RedTheme();
 
   // ─── Semantic text colors ─────────────────────────────────────────────────
 
@@ -22,12 +17,12 @@ class AurumTheme implements HaloThemeData {
   Color get textMuted => const Color(0xFF475569);
 
   @override
-  Color get textAccent => const Color(0xFFF59E0B); // Gold
+  Color get textAccent => const Color(0xFFF87171); // red-400
 
   // ─── Theme identity ───────────────────────────────────────────────────────
 
   @override
-  HaloThemeType get type => HaloThemeType.aurum;
+  HaloThemeType get type => HaloThemeType.red;
 
   // ─── Display ─────────────────────────────────────────────────────────────
 
@@ -150,41 +145,32 @@ class AurumTheme implements HaloThemeData {
       );
 
   // ─── Background color system ─────────────────────────────────────────────
-  // UI/UX Pro Max sources:
-  //   • Liquid Glass style — "vibrant iridescent, translucent base, opacity shifts"
-  //   • Aurora UI style — blend-mode: screen, color-saturation: 1.2 for luminous glow
-  //   • Color domain: amber-500 #F59E0B (luxury primary), amber-400 #FBBF24 (highlight)
-  //   • Glassmorphism spec: translucent overlay 10–30% so vibrant background shows through
 
   @override
   List<Color> get backgroundGradient => const [
-        Color(0xFF3D1500), // rich dark amber-brown — clearly not black
-        Color(0xFF210A00), // deep warm anchor with strong hue
+        Color(0xFF2E0000), // deep crimson
+        Color(0xFF150000), // near-black with red hue
       ];
 
   @override
   List<Color> get blobColors => const [
-    Color(0xFFF59E0B), // amber-500  — bright gold  (UI/UX Pro Max luxury primary)
-    Color(0xFFF97316), // orange-500 — vivid orange (warm spectrum expansion)
-    Color(0xFFEAB308), // yellow-500 — bright yellow highlight
-    Color(0xFFD97706), // amber-600  — rich amber anchor
-    Color(0xFFFBBF24), // amber-400  — light gold shimmer
-    Color(0xFFEA580C), // orange-600 — deep orange depth
+    Color(0xFFEF4444), // red-500    — vivid crimson
+    Color(0xFFDC2626), // red-600    — deep blood red
+    Color(0xFFF97316), // orange-500 — warm ember glow
+    Color(0xFFF87171), // red-400    — light shimmer
+    Color(0xFFE11D48), // rose-600   — electric rose-red
+    Color(0xFFB91C1C), // red-700    — anchor depth
   ];
 
-  // Overlay drops to 0.48 — Liquid Glass / Glassmorphism require a light translucent
-  // layer so the vibrant blobs bleed through and become the visual centerpiece.
   @override
-  Color get glassOverlay => const Color(0xFF0A0400).withValues(alpha: 0.48);
+  Color get glassOverlay => const Color(0xFF0A0000).withValues(alpha: 0.48);
 
-  // 0.50 blob opacity — Liquid Glass "vibrant iridescent" centerpiece mode.
-  // Higher than the atmospheric 0.08–0.12 used for subtle hints; here color IS the design.
   @override
   double get blobOpacity => 0.50;
 
   @override
-  Color get accentColor => Color.fromARGB(255, 242, 163, 64);
+  Color get accentColor => const Color(0xFFFF5555);
 
-  @override 
-  Color get whiteColor => Color.fromARGB(255, 244, 233, 216);
+  @override
+  Color get whiteColor => const Color(0xFFFEE2E2);
 }

@@ -42,6 +42,7 @@ class OnboardingPage extends StatefulWidget {
 
 class _OnboardingPageState extends State<OnboardingPage> {
   bool showWelcome = true;
+  bool loadWebView = false;
   FormController formController = FormController();
   WebViewController? controller;
 
@@ -57,7 +58,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
       controller = authController;
     });
   }
-  
+
+  void getReady() {
+    setState(() {
+      load
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

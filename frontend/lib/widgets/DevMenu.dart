@@ -128,19 +128,31 @@ class _ThemeCardState extends State<_ThemeCard> {
 
   Color get _accent {
     switch (widget.type) {
-      case HaloThemeType.aurum:
+      case HaloThemeType.golden:
         return const Color(0xFFF59E0B);
       case HaloThemeType.terminal:
         return const Color(0xFF00D97A);
       case HaloThemeType.meridian:
         return const Color(0xFF3B82F6);
+      case HaloThemeType.blue:
+        return const Color(0xFF60A5FA);
+      case HaloThemeType.green:
+        return const Color(0xFF34D399);
+      case HaloThemeType.pink:
+        return const Color(0xFFF472B6);
+      case HaloThemeType.red:
+        return const Color(0xFFF87171);
     }
   }
 
   String get _fontPreview {
     switch (widget.type) {
-      case HaloThemeType.aurum:
-        return 'Playfair Display · Inter · JetBrains Mono';
+      case HaloThemeType.golden:
+      case HaloThemeType.blue:
+      case HaloThemeType.green:
+      case HaloThemeType.pink:
+      case HaloThemeType.red:
+        return 'Instrument Serif · Playfair · Inter · JetBrains';
       case HaloThemeType.terminal:
         return 'JetBrains Mono · IBM Plex Sans';
       case HaloThemeType.meridian:
