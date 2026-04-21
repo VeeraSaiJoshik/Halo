@@ -70,7 +70,7 @@ class FormWidget extends StatelessWidget {
                   final theme = ref.watch(haloThemeProvider);
                   return PlushyButton(
                     onPressed: formController.next,
-                    disabled: false,
+                    disabled: !formController.nextAvailable(),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     child: Row(
                       spacing: 8,

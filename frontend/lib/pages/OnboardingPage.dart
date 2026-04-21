@@ -47,14 +47,13 @@ class FormController {
   }
 
   bool nextAvailable() {
-    List<bool> params = [
-      selectedBuyingPlatform != null,
-      selectedBuyingPlatform!.authenticated,
-      selectedChartingPlatform != null,
-      selectedChartingPlatform!.authenticated, 
-    ];
-
-    return params[currentIndex];
+    switch (currentIndex) {
+      case 0: return selectedBuyingPlatform != null;
+      case 1: return selectedBuyingPlatform?.authenticated ?? false;
+      case 2: return selectedChartingPlatform != null;
+      case 3: return selectedChartingPlatform?.authenticated ?? false;
+      default: return false;
+    }
   }
 
   void back() {
