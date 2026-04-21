@@ -122,7 +122,7 @@ class TradingViewEmailAuth extends EmailAuth {
 
         // Step 2: Target span
         const cls = 'label-jFqVJoPk.label-mDJVFqQ3.label-YQGjel_5';
-        const span = await waitFor(() => document.querySelector(`span.${cls}`));
+        const span = await waitFor(() => document.querySelector(`span.\${cls}`));
         if (!span) return ;
         clickEl(span);
 
@@ -159,7 +159,11 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.idBadge, size: 18, color: Colors.white);
 
   @override
-  WebViewController? launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {
+    const link = "https://trade.thinkorswim.com/";
+
+    return createWebViewController(link);
+  }
 }
 
 class Platform {
