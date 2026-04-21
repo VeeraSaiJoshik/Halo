@@ -12,17 +12,17 @@ import 'package:frontend/pages/OnboardingPage.dart';
 
 class FormWidget extends StatelessWidget {
   final FormController formController;
-
+  final Function launchAuth;
   static const int _totalSteps = 4;
 
-  const FormWidget({super.key, required this.formController});
+  const FormWidget({super.key, required this.formController, required this.launchAuth});
 
   Widget _pageForIndex(int index) {
     switch (index) {
       case 0:  return BuyingPortalPage(formController: formController);
-      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!);
+      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!, launchAuthWebView: launchAuth,);
       case 2:  return ChartingPlatformPage(formController: formController);
-      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!);
+      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!, launchAuthWebView: launchAuth);
       default: return const SizedBox.shrink();
     }
   }

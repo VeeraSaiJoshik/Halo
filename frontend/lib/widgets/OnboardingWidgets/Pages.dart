@@ -1,21 +1,36 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 
 class PlatformAuthPage extends StatefulWidget {
   final Platform authPlatform;
-  PlatformAuthPage({super.key, required this.authPlatform});
+  Function launchAuthWebView;
+  PlatformAuthPage({super.key, required this.authPlatform, required this.launchAuthWebView});
 
   @override
   State<PlatformAuthPage> createState() => _PlatformAuthPageState();
 }
 
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
+  void _handleAuthTap(AuthMethods method) {
+    if (method is GoogleAuth) {
+      method.launchSignupMethod();
+      return;
+    }
+
+    final controller = method.launchSignupMethod();
+    if (controller != null) {
+      widget.launchAuthWebView(controller);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -23,10 +38,10 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
       children: [
         Container(
           height: 100,
-          width: 100, 
+          width: 100,
           child: Image.asset(
-           widget.authPlatform.logoUrl, 
-           fit: BoxFit.contain, 
+           widget.authPlatform.logoUrl,
+           fit: BoxFit.contain,
           ),
         ),
         SizedBox(height: 15,),
@@ -58,9 +73,7 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
               method: method,
               brandColor: Colors.transparent,
               selected: false,
-              onTap: () => setState(() {
-                method.launchSignupMethod();
-              }),
+              onTap: () => _handleAuthTap(method),
             );
           }).toList(),
         ),

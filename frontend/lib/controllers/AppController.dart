@@ -169,10 +169,10 @@ WebViewController createWebViewController(String url, {String injectionScript = 
         onProgress: (int progress) {
           // Update loading bar.
         },
-        onPageStarted: (String url) async {
-          if(injectionScript == "") await controller.runJavaScript(injectionScript);
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) async {
+          if(injectionScript != "") await controller.runJavaScript(injectionScript);
         },
-        onPageFinished: (String url) {},
         onHttpError: (HttpResponseError error) {},
         onWebResourceError: (WebResourceError error) {},
         onNavigationRequest: (NavigationRequest request) {

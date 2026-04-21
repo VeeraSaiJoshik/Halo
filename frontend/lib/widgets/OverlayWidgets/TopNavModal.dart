@@ -40,27 +40,30 @@ class TopNavModel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 5,
         children: [
-          _NavButton(icon: FontAwesomeIcons.x, onTap: () => closeTab()),
+          NavButton(icon: FontAwesomeIcons.x, onTap: () => closeTab()),
           _UrlPill(url: url),
-          _NavButton(icon: FontAwesomeIcons.arrowRotateRight, onTap: () => reload(), reverse: true),
+          NavButton(icon: FontAwesomeIcons.arrowRotateRight, onTap: () => reload(), reverse: true),
         ],
       ),
     );
   }
 }
 
-class _NavButton extends StatefulWidget {
+class NavButton extends StatefulWidget {
   final FaIconData icon;
   final VoidCallback onTap;
   final bool reverse;
+  final bool isAccented;
+  final double width;
+  final double height;
 
-  const _NavButton({required this.icon, required this.onTap, this.reverse = false});
+  const NavButton({required this.icon, required this.onTap, this.reverse = false, this.isAccented = false, this.width = 30, this.height = 30});
 
   @override
-  State<_NavButton> createState() => _NavButtonState();
+  State<NavButton> createState() => _NavButtonState();
 }
 
-class _NavButtonState extends State<_NavButton> {
+class _NavButtonState extends State<NavButton> {
   bool _hovered = false;
 
   @override
@@ -80,30 +83,33 @@ class _NavButtonState extends State<_NavButton> {
           child: GestureDetector(
             onTap: widget.onTap,
             child: SizedBox(
-              width: 30,
-              height: 30,
+              width: widget.width,
+              height: widget.height,
               child: Stack(
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 30,
-                    height: 30,
+                    width: widget.width,
+                    height: widget.height,
                     decoration: BoxDecoration(
-                      color:  CustomColors.background.withValues(alpha: 0.1),
+                      color: widget.isAccented
+                          ? CustomColors.accent
+                          : CustomColors.background.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(
-                        color: CustomColors.background
-                            .withValues(alpha: _hovered ? 0.4 : 0.07),
+                        color: widget.isAccented
+                            ? CustomColors.accent
+                            : CustomColors.background.withValues(alpha: _hovered ? 0.4 : 0.07),
                         width: 1,
                       ),
                     ),
                   ),
                   AnimatedOpacity(
-                    opacity: _hovered ? 1.0 : 0.0,
+                    opacity: !widget.isAccented && _hovered ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 200),
                     child: Container(
-                      width: 30,
-                      height: 30,
+                      width: widget.width,
+                      height: widget.height,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),
                         gradient: LinearGradient(
@@ -120,8 +126,9 @@ class _NavButtonState extends State<_NavButton> {
                   Center(
                     child: FaIcon(
                       widget.icon,
-                      color: CustomColors.background
-                          .withValues(alpha: _hovered ? 1.0 : 0.85),
+                      color: widget.isAccented
+                          ? CustomColors.primary
+                          : CustomColors.background.withValues(alpha: _hovered ? 1.0 : 0.85),
                       size: 15,
                     ),
                   ),

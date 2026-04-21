@@ -57,7 +57,8 @@ class BototmNavBarIcons extends StatefulWidget {
   final String icon;
   final int directionMulti;
   bool showFrost;
-  BototmNavBarIcons({super.key, required this.icon, this.directionMulti = 0, this.showFrost = false});
+  bool isAccented;
+  BototmNavBarIcons({super.key, required this.icon, this.directionMulti = 0, this.showFrost = false, this.isAccented = false});
 
   @override
   State<BototmNavBarIcons> createState() => _BototmNavBarIconsState();
@@ -82,7 +83,8 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
           curve: Curves.easeOutBack,
           child: Stack(
             children: [
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 width: 47,
                 height: 47,
                 padding: EdgeInsets.all(5),
@@ -90,9 +92,20 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
                   color: CustomColors.accent,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: CustomColors.background.withValues(alpha: 0.07),
+                    color: widget.isAccented
+                        ? CustomColors.accent.withValues(alpha: 0.6)
+                        : CustomColors.background.withValues(alpha: 0.07),
                     width: 2,
                   ),
+                  boxShadow: widget.isAccented
+                      ? [
+                          BoxShadow(
+                            color: CustomColors.accent.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Image.asset(
                   "assets/images/${widget.icon}.png",
@@ -100,25 +113,31 @@ class _BototmNavBarIconsState extends State<BototmNavBarIcons> {
                 ),
               ),
               AnimatedOpacity(
-                  opacity: _hovered || widget.showFrost ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Container(
-                    width: 47,
-                    height: 47,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withValues(alpha: 0.18),
-                          Colors.white.withValues(alpha: 0.05),
-                          Colors.white.withValues(alpha: 0.00),
-                        ],
-                      ),
+                opacity: _hovered || widget.showFrost || widget.isAccented ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  width: 47,
+                  height: 47,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: widget.isAccented
+                          ? [
+                              CustomColors.accent.withValues(alpha: 0.30),
+                              CustomColors.accent.withValues(alpha: 0.10),
+                              CustomColors.accent.withValues(alpha: 0.00),
+                            ]
+                          : [
+                              Colors.white.withValues(alpha: 0.18),
+                              Colors.white.withValues(alpha: 0.05),
+                              Colors.white.withValues(alpha: 0.00),
+                            ],
                     ),
                   ),
                 ),
+              ),
             ],
           ),
         ),
