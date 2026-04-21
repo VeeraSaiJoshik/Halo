@@ -9,7 +9,7 @@ abstract class AuthMethods {
   String get authName;
   Widget get authLogo;
 
-  void launchSignupMethod();
+  WebViewController? launchSignupMethod();
 }
 
 abstract class EmailAuth implements AuthMethods {
@@ -28,15 +28,24 @@ class GoogleAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {}
 }
 
 // Webull Specific Auth Methods
 
 class WebullEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod() {
+  WebViewController launchSignupMethod() {
+    const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
+    const script = """
+      const span = [...document.querySelectorAll('span')]
+        .find(s => s.textContent.trim() === 'Email Login');
 
+      if (span) span.click();
+    """;
+    WebViewController controller = createWebViewController(authUrl, injectionScript: script);
+
+    return controller;
   }
 }
 
@@ -67,9 +76,7 @@ class WebullQRCodeAuth implements AuthMethods {
   WebViewController? launchSignupMethod() {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
-      const span = [...document.querySelectorAll('span')]
-        .find(s => s.textContent.trim() === 'Email Login');
-
+      const span = document.querySelector('div.csr30 span');
       if (span) span.click();
     """;
     WebViewController controller = createWebViewController(authUrl, injectionScript: script);
@@ -81,19 +88,19 @@ class WebullQRCodeAuth implements AuthMethods {
 // Robinhood Specific Auth Methods
 class RobinhoodEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {}
 }
 
 // TradeView Auth Methods
 class TradingViewEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {}
 }
 
 //Finiz Auth Methods
 class FinizEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {}
 }
 
 //Think or Swim Auth Methods
@@ -105,7 +112,7 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   Widget get authLogo => FaIcon(FontAwesomeIcons.idBadge, size: 18, color: Colors.white);
 
   @override
-  void launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {}
 }
 
 class Platform {
