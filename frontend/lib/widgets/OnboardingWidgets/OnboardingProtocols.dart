@@ -117,13 +117,13 @@ class TradingViewEmailAuth extends EmailAuth {
           document.querySelector('[aria-label="Open user menu"]')
           || [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Open user menu')
         );
-        if (!menuBtn) return console.log('❌ Open user menu not found');
+        if (!menuBtn) return ;
         clickEl(menuBtn);
 
         // Step 2: Target span
         const cls = 'label-jFqVJoPk.label-mDJVFqQ3.label-YQGjel_5';
         const span = await waitFor(() => document.querySelector(`span.${cls}`));
-        if (!span) return console.log('❌ Target span not found');
+        if (!span) return ;
         clickEl(span);
 
         // Step 3: Email button
@@ -131,10 +131,8 @@ class TradingViewEmailAuth extends EmailAuth {
           [...document.querySelectorAll('button, a, [role="button"], span')]
             .find(b => b.textContent.trim() === 'Email')
         );
-        if (!emailBtn) return console.log('❌ Email button not found');
+        if (!emailBtn) return ;
         clickEl(emailBtn);
-
-        console.log('✅ Navigation complete');
       })();
     """;
 
@@ -145,7 +143,11 @@ class TradingViewEmailAuth extends EmailAuth {
 //Finiz Auth Methods
 class FinizEmailAuth extends EmailAuth {
   @override
-  WebViewController? launchSignupMethod() {}
+  WebViewController? launchSignupMethod() {
+    const link = "https://finviz.com/login-email?remember=true";
+
+    return createWebViewController(link);
+  }
 }
 
 //Think or Swim Auth Methods
