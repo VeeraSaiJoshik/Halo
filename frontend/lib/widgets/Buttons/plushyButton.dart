@@ -95,7 +95,7 @@ class _PlushyButtonState extends ConsumerState<PlushyButton> {
               borderRadius: BorderRadius.circular(10),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                color: widget.selected ? CustomColors.primary.withOpacity(1) : CustomColors.primary.withOpacity(isActive ? 1 : 0.4),
+                color: widget.selected ? theme.primaryColor.withOpacity(1) : theme.primaryColor.withOpacity(isActive ? 1 : 0.4),
                 child: Container(
                   padding: widget.padding,
                   decoration: BoxDecoration(

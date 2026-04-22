@@ -83,4 +83,5 @@ abstract class HaloThemeData {
   Color get accentColor;
   Color get whiteColor;
   Color get backgroundColor;
+  Color get primaryColor;
 }

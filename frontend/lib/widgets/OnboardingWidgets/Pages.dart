@@ -355,6 +355,8 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
+    double width = MediaQuery.of(context).size.width;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -370,13 +372,14 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
         ),
         const SizedBox(height: 48),
         SizedBox(
-          height: 200,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Row(
+          height: 90 + 44 + 40,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // 150px card + 10px gap per item, minus one trailing gap
+              final contentWidth = themes.length * 160.0 - 10.0;
+              final needsScroll = contentWidth > constraints.maxWidth;
+
+              final cards = Row(
                 mainAxisSize: MainAxisSize.min,
                 children: themes.map((t) {
                   return Padding(
@@ -388,8 +391,21 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
                     ),
                   );
                 }).toList(),
-              ),
-            ),
+              );
+
+              final padded = Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: cards,
+              );
+
+              return needsScroll
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.none,
+                      child: padded,
+                    )
+                  : Center(child: padded);
+            },
           ),
         ),
       ],
@@ -413,6 +429,7 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
   Widget build(BuildContext context) {
     final t = widget.theme;
     final blobs = t.blobColors;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -428,7 +445,7 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
             curve: Curves.easeOutBack,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 150,
+              width: 90 + 44,
               height: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),

@@ -176,4 +176,6 @@ class BlueTheme implements HaloThemeData {
 
   @override
   Color get backgroundColor => const Color(0xFF04081A);
+  @override
+  Color get primaryColor => const Color(0xFF0C1840);
 }

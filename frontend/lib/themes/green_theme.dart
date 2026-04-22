@@ -176,4 +176,6 @@ class GreenTheme implements HaloThemeData {
 
   @override
   Color get backgroundColor => const Color(0xFF030A05);
+  @override
+  Color get primaryColor => const Color(0xFF091C0E);
 }

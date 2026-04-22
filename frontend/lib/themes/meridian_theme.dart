@@ -195,4 +195,6 @@ class MeridianTheme implements HaloThemeData {
 
   @override
   Color get backgroundColor => const Color(0xFF060C1A);
+  @override
+  Color get primaryColor => const Color(0xFF12244A);
 }

@@ -172,4 +172,6 @@ class TerminalTheme implements HaloThemeData {
 
   @override
   Color get backgroundColor => const Color(0xFF030D07);
+  @override
+  Color get primaryColor => const Color(0xFF09261A);
 }

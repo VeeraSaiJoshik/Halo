@@ -176,4 +176,6 @@ class GoldenTheme implements HaloThemeData {
 
   @override
   Color get backgroundColor => const Color(0xFF0D0702);
+  @override
+  Color get primaryColor => const Color(0xFF2A1000);
 }
