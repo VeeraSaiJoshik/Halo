@@ -20,8 +20,8 @@ enum AppPage {
 
 class WindowInfo {
   final StockName Stock;
-  final WebViewController? portalController;
-  final WebViewController? chartController;
+  final WebBundle? portalController;
+  final WebBundle? chartController;
   late bool isActive;
   late String uuid;
   late List<AppPage> pages;
@@ -41,7 +41,7 @@ class WindowInfo {
   
   Future<bool> initializeChartDomListener() async {
     try{
-      await chartController!.runJavaScript('''
+      await chartController!.controller.injectJavascriptFileFromAsset(assetFilePath: '''
         const meta = document.querySelector('meta[name="viewport"]');
         if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
         
@@ -62,14 +62,6 @@ class WindowInfo {
           characterData: true
         });
       ''');
-
-      chartController!.addJavaScriptChannel(
-        'onDOMChange',
-        onMessageReceived: (message) {
-          chartDomListener(message.message);
-        },
-      );
-
       return true;
     } catch (e) {
       print("Error initializing chart DOM listener: $e");
@@ -79,7 +71,7 @@ class WindowInfo {
 
   Future<bool> initializePortalDomListener() async {
     try {
-      await portalController!.runJavaScript('''
+      await portalController!.controller.injectJavascriptFileFromAsset(assetFilePath: '''
         const meta = document.querySelector('meta[name="viewport"]');
         if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
 
@@ -101,12 +93,6 @@ class WindowInfo {
         });
       ''');
 
-      portalController!.addJavaScriptChannel(
-        'onDOMChange',
-        onMessageReceived: (message) {
-          portalDomListener(message.message);
-        },
-      );
       return true;
     } catch (e) {
       print("Error initializing portal DOM listener: $e");
@@ -148,8 +134,6 @@ class WindowInfo {
   }
 
   Future<void> dispose() async {
-    await portalController!.removeJavaScriptChannel('onDOMChange');
-    await chartController!.removeJavaScriptChannel('onDOMChange');
     intakeService.dispose();
   }
 
@@ -178,8 +162,8 @@ class AppController extends ChangeNotifier{
       return;
     }
 
-    final portalController = createWebViewController('https://www.webull.com/center');
-    final chartingController = createWebViewController('https://www.tradingview.com/chart/d3IIUEuI/');
+    final portalController = createInAppWebView('https://www.webull.com/center');
+    final chartingController = createInAppWebView('https://www.tradingview.com/chart/d3IIUEuI/');
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
     newTab.initializeBrowserServices().then((_) => notifyListeners());

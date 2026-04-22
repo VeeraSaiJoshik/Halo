@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
-import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/controllers/createInAppWebView.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -12,7 +12,7 @@ abstract class AuthMethods {
   String get authName;
   Widget get authLogo;
 
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit);
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit);
 }
 
 abstract class EmailAuth implements AuthMethods {
@@ -41,14 +41,14 @@ class GoogleAuth implements AuthMethods {
   );
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getRead, void Function()? exity) {}
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getRead, void Function()? exity) {}
 }
 
 // Webull Specific Auth Methods
 
 class WebullEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
       (async () => {
@@ -69,7 +69,7 @@ class WebullEmailAuth extends EmailAuth {
         HaloAuthReady.postMessage('ready');
       })();
     """;
-    createWebViewController(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
   }
 }
 
@@ -86,9 +86,9 @@ class WebullPhoneAuth implements AuthMethods {
   );
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    createWebViewController(authUrl, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
   }
 }
 
@@ -105,7 +105,7 @@ class WebullQRCodeAuth implements AuthMethods {
   );
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
     const script = """
       (async () => {
@@ -124,22 +124,22 @@ class WebullQRCodeAuth implements AuthMethods {
         HaloAuthReady.postMessage('ready');
       })();
     """;
-    createWebViewController(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
   }
 }
 
 // Robinhood Specific Auth Methods
 class RobinhoodEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
-    createWebViewController("https://robinhood.com/login/", onReady: onReady, getReady: getReady, exit: exit, domain: "robinhood");
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
+    createInAppWebView("https://robinhood.com/login/", onReady: onReady, getReady: getReady, exit: exit, domain: "robinhood");
   }
 }
 
 // TradeView Auth Methods
 class TradingViewEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://www.tradingview.com/pricing/?source=header_go_pro_button&feature=start_free_trial";
     const script = """
       (async () => {
@@ -182,16 +182,16 @@ class TradingViewEmailAuth extends EmailAuth {
       })();
     """;
 
-    createWebViewController(link, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview");
+    createInAppWebView(link, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview");
   }
 }
 
 //Finiz Auth Methods
 class FinizEmailAuth extends EmailAuth {
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://finviz.com/login-email?remember=true";
-    createWebViewController(link, onReady: onReady, getReady: getReady, exit: exit, domain: "finviz");
+    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "finviz");
   }
 }
 
@@ -209,9 +209,9 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   );
 
   @override
-  void launchSignupMethod(void Function(WebViewController)? onReady, void Function()? getReady, void Function()? exit) {
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://trade.thinkorswim.com/";
-    createWebViewController(link, onReady: onReady, getReady: getReady, exit: exit, domain: "thinkorswim");
+    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "thinkorswim");
   }
 }
 

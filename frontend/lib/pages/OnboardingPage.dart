@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/controllers/createWebViewController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
@@ -75,7 +76,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   bool showWelcome = true;
   bool loadWebView = false;
   FormController formController = FormController();
-  WebViewController? controller;
+  WebBundle? controller;
 
   void initState() {
     super.initState();
@@ -84,7 +85,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     };
   }
 
-  void launchAuthWebView (WebViewController authController) {
+  void launchAuthWebView (WebBundle authController) {
     setState(() {
       controller = authController;
     });
