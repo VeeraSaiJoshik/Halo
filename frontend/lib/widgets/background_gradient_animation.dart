@@ -82,7 +82,15 @@ class _BackgroundGradientAnimationState
             ),
             child: Container(color: theme.glassOverlay),
           ),
-          // 4. Content
+          // 4. Grain overlay — animated with the blob layer
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) => CustomPaint(
+              painter: _GrainPainter(progress: _controller.value, colorCount: blobColors.length),
+              size: Size.infinite,
+            ),
+          ),
+          // 5. Content
           if (widget.child != null) widget.child!,
         ],
       ),
@@ -144,4 +152,60 @@ class GradientBlobsPainter extends CustomPainter {
   bool shouldRepaint(covariant GradientBlobsPainter oldDelegate) =>
       oldDelegate.progress != progress ||
       oldDelegate.blobOpacity != blobOpacity;
+}
+
+class _GrainPainter extends CustomPainter {
+  final double progress;
+  final int colorCount;
+
+  _GrainPainter({required this.progress, required this.colorCount});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = math.Random((progress * 120).toInt());
+    final paint = Paint()
+      ..color = const Color(0x14FFFFFF)
+      ..strokeWidth = 1.0;
+
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+
+    // Gaussian sigma — keeps grain visually inside each blob
+    final sigma = size.shortestSide * 0.22;
+    final pointsPerBlob = (size.shortestSide * 3.5).toInt();
+    final points = <Offset>[];
+
+    for (int i = 0; i < colorCount; i++) {
+      // Mirror blob position math from GradientBlobsPainter exactly
+      final t = (progress + (i / colorCount)) % 1.0;
+      final angle = t * 2 * math.pi;
+      double dx = 0, dy = 0;
+      if (i == 0) {
+        dy = math.sin(angle) * (size.height * 0.2);
+      } else if (i == 1 || i == 2 || i == 4) {
+        dx = math.cos(angle) * (size.width * 0.3);
+        dy = math.sin(angle) * (size.height * 0.3);
+      } else {
+        dx = math.sin(angle) * (size.width * 0.4);
+      }
+      final cx = size.width / 2 + dx;
+      final cy = size.height / 2 + dy;
+
+      for (int j = 0; j < pointsPerBlob; j++) {
+        // Box-Muller transform: uniform → Gaussian
+        final u1 = random.nextDouble() + 1e-10;
+        final u2 = random.nextDouble();
+        final r = math.sqrt(-2.0 * math.log(u1)) * sigma;
+        final theta = u2 * 2 * math.pi;
+        points.add(Offset(cx + r * math.cos(theta), cy + r * math.sin(theta)));
+      }
+    }
+
+    canvas.drawPoints(ui.PointMode.points, points, paint);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_GrainPainter old) =>
+      old.progress != progress || old.colorCount != colorCount;
 }
