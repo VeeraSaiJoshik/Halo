@@ -27,8 +27,6 @@ final haloThemeProvider = Provider<HaloThemeData>((ref) {
 
 List<HaloThemeData> themes = [
   GoldenTheme(), 
-  TerminalTheme(), 
-  MeridianTheme(), 
   BlueTheme(), 
   GreenTheme(), 
   PinkTheme(), 

@@ -39,7 +39,7 @@ class _PlushyButtonState extends ConsumerState<PlushyButton> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
-    final shadow = widget.glowColor ?? CustomColors.accent;
+    final shadow = widget.glowColor ?? theme.accentColor;
     if(widget.disabled) {
       _hovering = false;
       _pressed = false;

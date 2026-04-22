@@ -356,6 +356,8 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           'Choose your vibe',
@@ -369,21 +371,25 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
         const SizedBox(height: 48),
         SizedBox(
           height: 200,
-          width: 900,
-          child: ListView(
+          child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(vertical: 20),
             clipBehavior: Clip.none,
-            children: themes.map((t) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: _ThemePreviewCard(
-                  theme: t,
-                  selected: t.type == ref.watch(haloThemeTypeProvider),
-                  onTap: () => ref.read(haloThemeTypeProvider.notifier).state = t.type,
-                ),
-              );
-            }).toList(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: themes.map((t) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: _ThemePreviewCard(
+                      theme: t,
+                      selected: t.type == ref.watch(haloThemeTypeProvider),
+                      onTap: () => ref.read(haloThemeTypeProvider.notifier).state = t.type,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ),
       ],
@@ -413,87 +419,86 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
       onExit:  (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _hovered ? 1.05 : 1.0,
+        child: AnimatedRotation(
+          turns: _hovered ? -0.03 / (2 * 3.1415) : 0.0,
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutBack,
-          child: AnimatedContainer(
+          child: AnimatedScale(
+            scale: _hovered ? 1.05 : 1.0,
             duration: const Duration(milliseconds: 200),
-            width: 150,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: widget.selected
-                    ? t.whiteColor.withValues(alpha: 0.85)
-                    : t.whiteColor.withValues(alpha: _hovered ? 0.30 : 0.10),
-                width: widget.selected ? 1.5 : 1.0,
+            curve: Curves.easeOutBack,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 150,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: widget.selected
+                      ? t.whiteColor.withValues(alpha: 0.85)
+                      : t.whiteColor.withValues(alpha: _hovered ? 0.30 : 0.10),
+                  width: widget.selected ? 1.5 : 1.0,
+                ),
+                boxShadow: widget.selected && blobs.isNotEmpty
+                    ? [BoxShadow(color: blobs[0].withValues(alpha: 0.40), blurRadius: 24)]
+                    : null,
               ),
-              boxShadow: widget.selected && blobs.isNotEmpty
-                  ? [BoxShadow(color: blobs[0].withValues(alpha: 0.40), blurRadius: 24)]
-                  : null,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // 1. Dark theme base
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: t.backgroundGradient,
-                      ),
-                    ),
-                  ),
-                  // 2. Diagonal color sweep using blob colors
-                  if (blobs.isNotEmpty)
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // 1. Dark theme base
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                          colors: blobs.length > 1
-                              ? [
-                                  blobs[0].withValues(alpha: 0.50),
-                                  Colors.transparent,
-                                  blobs[1].withValues(alpha: 0.38),
-                                ]
-                              : [
-                                  blobs[0].withValues(alpha: 0.50),
-                                  Colors.transparent,
-                                ],
-                          stops: blobs.length > 1 ? [0.0, 0.5, 1.0] : [0.0, 1.0],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: t.backgroundGradient,
                         ),
                       ),
                     ),
-                  // 3. Palette strip at bottom — one segment per blob color
-                  Positioned(
-                    bottom: 0, left: 0, right: 0,
-                    child: Container(
-                      height: 5,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: blobs.isNotEmpty ? blobs : [Colors.transparent],
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (widget.selected)
-                    Positioned(
-                      top: 8, right: 8,
-                      child: Container(
-                        width: 18, height: 18,
+                    // 2a. Top-left blob
+                    if (blobs.isNotEmpty)
+                      Container(
                         decoration: BoxDecoration(
-                          color: t.whiteColor.withValues(alpha: 0.90),
-                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            center: Alignment.topLeft,
+                            radius: 1.2,
+                            colors: [
+                              blobs[0].withValues(alpha: 0.65),
+                              blobs[0].withValues(alpha: 0.0),
+                            ],
+                          ),
                         ),
-                        child: const Icon(Icons.check, size: 11, color: Colors.black),
                       ),
-                    ),
-                ],
+                    // 2b. Top-right blob
+                    if (blobs.length > 1)
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.topRight,
+                            radius: 1.2,
+                            colors: [
+                              blobs[1].withValues(alpha: 0.55),
+                              blobs[1].withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (widget.selected)
+                      Positioned(
+                        top: 8, right: 8,
+                        child: Container(
+                          width: 18, height: 18,
+                          decoration: BoxDecoration(
+                            color: t.whiteColor.withValues(alpha: 0.90),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.check, size: 11, color: Colors.black),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
