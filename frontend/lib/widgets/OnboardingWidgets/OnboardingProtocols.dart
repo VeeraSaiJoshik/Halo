@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/AppController.dart';
-import 'package:frontend/controllers/createInAppWebView.dart';
+import 'package:frontend/controllers/createWebViewController.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -50,26 +50,7 @@ class WebullEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    const script = """
-      (async () => {
-        const waitFor = (findFn, timeout = 8000) => new Promise((resolve) => {
-          const start = Date.now();
-          const check = () => {
-            const el = findFn();
-            if (el) return resolve(el);
-            if (Date.now() - start > timeout) return resolve(null);
-            requestAnimationFrame(check);
-          };
-          check();
-        });
-        const span = await waitFor(() =>
-          [...document.querySelectorAll('span')].find(s => s.textContent.trim() === 'Email Login')
-        );
-        if (span) span.click();
-        HaloAuthReady.postMessage('ready');
-      })();
-    """;
-    createInAppWebView(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
   }
 }
 
@@ -107,24 +88,7 @@ class WebullQRCodeAuth implements AuthMethods {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    const script = """
-      (async () => {
-        const waitFor = (findFn, timeout = 8000) => new Promise((resolve) => {
-          const start = Date.now();
-          const check = () => {
-            const el = findFn();
-            if (el) return resolve(el);
-            if (Date.now() - start > timeout) return resolve(null);
-            requestAnimationFrame(check);
-          };
-          check();
-        });
-        const span = await waitFor(() => document.querySelector('div.csr30 span'));
-        if (span) span.click();
-        HaloAuthReady.postMessage('ready');
-      })();
-    """;
-    createInAppWebView(authUrl, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_qr_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
   }
 }
 
@@ -141,48 +105,7 @@ class TradingViewEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://www.tradingview.com/pricing/?source=header_go_pro_button&feature=start_free_trial";
-    const script = """
-      (async () => {
-        const waitFor = (findFn, timeout = 5000) => new Promise((resolve) => {
-          const start = Date.now();
-          const check = () => {
-            const el = findFn();
-            if (el) return resolve(el);
-            if (Date.now() - start > timeout) return resolve(null);
-            requestAnimationFrame(check);
-          };
-          check();
-        });
-
-        const clickEl = (el) => {
-          const target = el.closest('button, a, [role="button"], [onclick]') || el;
-          target.click();
-        };
-
-        const menuBtn = await waitFor(() =>
-          document.querySelector('[aria-label="Open user menu"]')
-          || [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Open user menu')
-        );
-        if (!menuBtn) { HaloAuthReady.postMessage('ready'); return; }
-        clickEl(menuBtn);
-
-        const cls = 'label-jFqVJoPk.label-mDJVFqQ3.label-YQGjel_5';
-        const span = await waitFor(() => document.querySelector(`span.\${cls}`));
-        if (!span) { HaloAuthReady.postMessage('ready'); return; }
-        clickEl(span);
-
-        const emailBtn = await waitFor(() =>
-          [...document.querySelectorAll('button, a, [role="button"], span')]
-            .find(b => b.textContent.trim() === 'Email')
-        );
-        if (!emailBtn) { HaloAuthReady.postMessage('ready'); return; }
-        clickEl(emailBtn);
-
-        HaloAuthReady.postMessage('ready');
-      })();
-    """;
-
-    createInAppWebView(link, injectionScript: script, onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview");
+    createInAppWebView(link, injectionScript: 'assets/scripts/tradingview_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview");
   }
 }
 

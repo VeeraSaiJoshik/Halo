@@ -41,27 +41,7 @@ class WindowInfo {
   
   Future<bool> initializeChartDomListener() async {
     try{
-      await chartController!.controller.injectJavascriptFileFromAsset(assetFilePath: '''
-        const meta = document.querySelector('meta[name="viewport"]');
-        if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
-        
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            // Send data back to Flutter
-            window.flutter_inappwebview.callHandler('onDOMChange', {
-              type: mutation.type,
-              target: mutation.target.id || mutation.target.className
-            });
-          });
-        });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          characterData: true
-        });
-      ''');
+      await chartController!.controller.injectJavascriptFileFromAsset(assetFilePath: 'assets/scripts/dom_listener.js');
       return true;
     } catch (e) {
       print("Error initializing chart DOM listener: $e");
@@ -71,28 +51,7 @@ class WindowInfo {
 
   Future<bool> initializePortalDomListener() async {
     try {
-      await portalController!.controller.injectJavascriptFileFromAsset(assetFilePath: '''
-        const meta = document.querySelector('meta[name="viewport"]');
-        if (meta) meta.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
-
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            // Send data back to Flutter
-            window.flutter_inappwebview.callHandler('onDOMChange', {
-              type: mutation.type,
-              target: mutation.target.id || mutation.target.className
-            });
-          });
-        });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          characterData: true
-        });
-      ''');
-
+      await portalController!.controller.injectJavascriptFileFromAsset(assetFilePath: 'assets/scripts/dom_listener.js');
       return true;
     } catch (e) {
       print("Error initializing portal DOM listener: $e");
