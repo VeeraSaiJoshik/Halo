@@ -116,13 +116,17 @@ class WindowInfo {
 
   WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
     alpacaClient: AlpacaClient(
-      apiKey: String.fromEnvironment("ALPACA_API_KEY"), 
-      secretKey: String.fromEnvironment("ALPACA_API_SECRET")
+      apiKey: const String.fromEnvironment("ALPACA_API_KEY"), 
+      secretKey: const String.fromEnvironment("ALPACA_API_SECRET")
     ),
     binanceClient: BinanceClient(),
-    finnhubClient: FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY")),
+    finnhubClient: FinnhubClient(apiKey: const String.fromEnvironment("FINNHUB_API_KEY")),
     eventBus: eventBus,
   ){
+    print("ALPACA_API_KEY : ${const String.fromEnvironment("ALPACA_API_KEY")}");
+    print("ALPACA_API_SECRET : ${const String.fromEnvironment("ALPACA_API_SECRET")}");
+    print("FINNHUB_API_KEY : ${const String.fromEnvironment("FINNHUB_API_KEY")}");
+
     intakeService.updateNotifications = updateNotification;
 
     if(pages == null) {
