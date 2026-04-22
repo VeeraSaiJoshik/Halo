@@ -8,6 +8,7 @@ import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
+import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 
@@ -89,6 +90,7 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
 
 const _kConnectedGreen = Color(0xFF22C55E);
 
+
 class _ConnectedPill extends StatelessWidget {
   final HaloThemeData theme;
   const _ConnectedPill({super.key, required this.theme});
@@ -169,30 +171,21 @@ class _AuthMethodButtonState extends ConsumerState<_AuthMethodButton> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: widget.selected
                           ? widget.brandColor.withOpacity(0.85)
                           : theme.whiteColor.withOpacity(_hovered ? 0.40 : 0.24),
-                      width: widget.selected ? 1.5 : 1.5,
+                      width: 1.5,
                     ),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: widget.selected
-                          ? [
-                              widget.brandColor.withOpacity(0.32),
-                              widget.brandColor.withOpacity(0.10),
-                              theme.whiteColor.withOpacity(0.04),
-                            ]
-                          : [
-                              theme.whiteColor.withOpacity(_hovered ? 0.22 : 0.14),
-                              theme.whiteColor.withOpacity(0.04),
-                            ],
+                      colors: theme.backgroundGradient,
                     ),
                   ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 12,
@@ -347,6 +340,165 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class ChooseThemePage extends ConsumerStatefulWidget {
+  const ChooseThemePage({super.key});
+
+  @override
+  ConsumerState<ChooseThemePage> createState() => _ChooseThemePageState();
+}
+
+class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
+    return Column(
+      children: [
+        Text(
+          'Choose your vibe',
+          style: theme.headlineMedium,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Select your charting platform',
+          style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
+        ),
+        const SizedBox(height: 48),
+        SizedBox(
+          height: 200,
+          width: 900,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            clipBehavior: Clip.none,
+            children: themes.map((t) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: _ThemePreviewCard(
+                  theme: t,
+                  selected: t.type == ref.watch(haloThemeTypeProvider),
+                  onTap: () => ref.read(haloThemeTypeProvider.notifier).state = t.type,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemePreviewCard extends StatefulWidget {
+  final HaloThemeData theme;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ThemePreviewCard({required this.theme, required this.selected, required this.onTap});
+  @override
+  State<_ThemePreviewCard> createState() => _ThemePreviewCardState();
+}
+
+class _ThemePreviewCardState extends State<_ThemePreviewCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.theme;
+    final blobs = t.blobColors;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _hovered ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutBack,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 150,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: widget.selected
+                    ? t.whiteColor.withValues(alpha: 0.85)
+                    : t.whiteColor.withValues(alpha: _hovered ? 0.30 : 0.10),
+                width: widget.selected ? 1.5 : 1.0,
+              ),
+              boxShadow: widget.selected && blobs.isNotEmpty
+                  ? [BoxShadow(color: blobs[0].withValues(alpha: 0.40), blurRadius: 24)]
+                  : null,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // 1. Dark theme base
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: t.backgroundGradient,
+                      ),
+                    ),
+                  ),
+                  // 2. Diagonal color sweep using blob colors
+                  if (blobs.isNotEmpty)
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: blobs.length > 1
+                              ? [
+                                  blobs[0].withValues(alpha: 0.50),
+                                  Colors.transparent,
+                                  blobs[1].withValues(alpha: 0.38),
+                                ]
+                              : [
+                                  blobs[0].withValues(alpha: 0.50),
+                                  Colors.transparent,
+                                ],
+                          stops: blobs.length > 1 ? [0.0, 0.5, 1.0] : [0.0, 1.0],
+                        ),
+                      ),
+                    ),
+                  // 3. Palette strip at bottom — one segment per blob color
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    child: Container(
+                      height: 5,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: blobs.isNotEmpty ? blobs : [Colors.transparent],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (widget.selected)
+                    Positioned(
+                      top: 8, right: 8,
+                      child: Container(
+                        width: 18, height: 18,
+                        decoration: BoxDecoration(
+                          color: t.whiteColor.withValues(alpha: 0.90),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.check, size: 11, color: Colors.black),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

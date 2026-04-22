@@ -22,10 +22,11 @@ class FormWidget extends StatelessWidget {
 
   Widget _pageForIndex(int index) {
     switch (index) {
-      case 0:  return BuyingPortalPage(formController: formController);
-      case 1:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
-      case 2:  return ChartingPlatformPage(formController: formController);
-      case 3:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
+      case 0:  return ChooseThemePage();
+      case 1:  return BuyingPortalPage(formController: formController);
+      case 2:  return PlatformAuthPage(authPlatform: formController.selectedBuyingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
+      case 3:  return ChartingPlatformPage(formController: formController);
+      case 4:  return PlatformAuthPage(authPlatform: formController.selectedChartingPlatform!, launchAuthWebView: launchAuth, getReady: launchLoad, exitAuth: exitAuth);
       default: return const SizedBox.shrink();
     }
   }

@@ -24,3 +24,13 @@ final haloThemeProvider = Provider<HaloThemeData>((ref) {
     HaloThemeType.red      => RedTheme(),
   };
 });
+
+List<HaloThemeData> themes = [
+  GoldenTheme(), 
+  TerminalTheme(), 
+  MeridianTheme(), 
+  BlueTheme(), 
+  GreenTheme(), 
+  PinkTheme(), 
+  RedTheme()
+];

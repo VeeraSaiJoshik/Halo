@@ -49,10 +49,11 @@ class FormController {
 
   bool nextAvailable() {
     switch (currentIndex) {
-      case 0: return selectedBuyingPlatform != null;
-      case 1: return selectedBuyingPlatform?.authenticated ?? false;
-      case 2: return selectedChartingPlatform != null;
-      case 3: return selectedChartingPlatform?.authenticated ?? false;
+      case 0: return true;
+      case 1: return selectedBuyingPlatform != null;
+      case 2: return selectedBuyingPlatform?.authenticated ?? false;
+      case 3: return selectedChartingPlatform != null;
+      case 4: return selectedChartingPlatform?.authenticated ?? false;
       default: return false;
     }
   }

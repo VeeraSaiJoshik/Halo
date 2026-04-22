@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 
 class BackgroundGradientAnimation extends ConsumerStatefulWidget {
@@ -9,12 +10,14 @@ class BackgroundGradientAnimation extends ConsumerStatefulWidget {
   // Optional color override — when null, colors come from haloThemeProvider.
   final List<Color>? colors;
   final double blurSigma;
+  final HaloThemeData? finalSourceTheme;
 
   const BackgroundGradientAnimation({
     super.key,
     this.child,
     this.colors,
     this.blurSigma = 40.0,
+    this.finalSourceTheme
   });
 
   @override
@@ -44,12 +47,12 @@ class _BackgroundGradientAnimationState
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(haloThemeProvider);
+    final HaloThemeData theme = widget.finalSourceTheme ?? ref.watch(haloThemeProvider);
     final List<Color> blobColors = widget.colors ?? theme.blobColors;
 
-    return Scaffold(
-      body: Stack(
-        children: [
+    return Stack(
+      fit: StackFit.expand,
+      children: [
           // 1. Static background gradient — theme-driven, replaces generic purple→navy
           Container(
             decoration: BoxDecoration(
@@ -93,7 +96,6 @@ class _BackgroundGradientAnimationState
           // 5. Content
           if (widget.child != null) widget.child!,
         ],
-      ),
     );
   }
 }
