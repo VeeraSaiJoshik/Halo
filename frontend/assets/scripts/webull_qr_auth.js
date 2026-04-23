@@ -11,5 +11,5 @@
   });
   const span = await waitFor(() => document.querySelector('div.csr30 span'));
   if (span) span.click();
-  HaloAuthReady.postMessage('ready');
+  window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
 })();

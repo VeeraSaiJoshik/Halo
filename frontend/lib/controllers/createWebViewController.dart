@@ -7,56 +7,6 @@ import 'package:frontend/browser/browser_constants.dart';
 import 'package:frontend/browser/navigation_key.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-WebViewController createWebViewController(
-  String url,
-  {
-    String domain = "",
-    String injectionScript = "",
-    void Function(WebViewController)? onReady,
-    void Function()? getReady,
-    void Function()? exit
-  }
-) {
-  WebViewController controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setUserAgent(kDesktopChromeUA);
-
-  onReady?.call(controller);
-  if (injectionScript == "") getReady?.call();
-
-  controller.addJavaScriptChannel(
-    'HaloAuthReady',
-    onMessageReceived: (_) {
-      getReady?.call();
-    }
-  );
-
-  controller..setNavigationDelegate(
-    NavigationDelegate(
-      onProgress: (int progress) {},
-      onPageFinished: (String url) async {
-        if (injectionScript != "") {
-          try {
-            await controller.runJavaScript(injectionScript);
-          } catch (e) {
-            debugPrint("JS injection threw: $e");
-          }
-        } else {
-          onReady?.call(controller);
-        }
-      },
-      onWebResourceError: (e) => debugPrint("WEB ERROR: ${e.description}"),
-      onHttpError: (HttpResponseError error) {},
-      onNavigationRequest: (NavigationRequest request) {
-        if (exit != null && request.url != url && request.url.contains(domain)) exit.call();
-        return NavigationDecision.navigate;
-      },
-    ),
-  )..loadRequest(Uri.parse(url));
-
-  return controller;
-}
-
 class WebBundle {
   InAppWebView? widget;
   late InAppWebViewController controller;
@@ -73,6 +23,7 @@ WebBundle createInAppWebView(
   }
 ) {
   WebBundle webBundle = WebBundle();
+  bool _handlerRegistered = false;
 
   webBundle.widget = InAppWebView(
     initialUrlRequest: URLRequest(url: WebUri(url)),
@@ -88,7 +39,7 @@ WebBundle createInAppWebView(
       javaScriptCanOpenWindowsAutomatically: true,
       supportMultipleWindows: true,
       useShouldOverrideUrlLoading: true,
-      sharedCookiesEnabled: true,
+      sharedCookiesEnabled: false,
       thirdPartyCookiesEnabled: true,
       mediaPlaybackRequiresUserGesture: false,
       allowsInlineMediaPlayback: true,
@@ -99,21 +50,29 @@ WebBundle createInAppWebView(
       // Safari → Develop → <device> → <page>
       isInspectable: kDebugMode,
     ),
-    onWebViewCreated: (controller) {
-      webBundle.controller = controller;
-      // Signal the host widget that the WebBundle is ready to embed. This must
-      // happen here (not onLoadStop) so auth flows with an injectionScript
-      // still get the callback — onLoadStop skips onReady when a script is set.
-      onReady?.call(webBundle);
-      controller.addJavaScriptHandler(
-        handlerName: 'HaloAuthReady',
-        callback: (_) => getReady?.call(),
-      );
-    },
     onLoadStop: (controller, url) {
       if (injectionScript != "") {
+        webBundle.controller = controller;
+    
+        onReady?.call(webBundle);
+        if (!_handlerRegistered) {
+          _handlerRegistered = true;
+          controller.addJavaScriptHandler(
+            handlerName: 'HaloAuthReady',
+            callback: (_) {
+              print("recieved");
+              getReady?.call();
+            },
+          );
+        }
         controller.injectJavascriptFileFromAsset(assetFilePath: injectionScript);
+        print("Injection was succesfull");
+      } else {
+        getReady?.call();
       }
+    },
+    onConsoleMessage: (controller, message) {
+      print(message.message);
     },
     onCreateWindow: (controller, createWindowAction) async {
       final ctx = navigatorKey.currentContext;
@@ -128,6 +87,7 @@ WebBundle createInAppWebView(
     shouldOverrideUrlLoading: (controller, navigationAction) async {
       if (!navigationAction.isForMainFrame) return NavigationActionPolicy.ALLOW;
 
+      print("I am here with overload");
       final requestUrl = navigationAction.request.url?.toString() ?? '';
       if (exit != null && requestUrl != url && requestUrl.contains(domain)) {
         exit.call();
@@ -136,6 +96,8 @@ WebBundle createInAppWebView(
       return NavigationActionPolicy.ALLOW;
     },
   );
+
+  onReady?.call(webBundle);
 
   return webBundle;
 }
@@ -185,7 +147,7 @@ void _showOAuthPopup({
                     javaScriptEnabled: true,
                     javaScriptCanOpenWindowsAutomatically: true,
                     supportMultipleWindows: true,
-                    sharedCookiesEnabled: true,
+                    sharedCookiesEnabled: false,
                     thirdPartyCookiesEnabled: true,
                     isInspectable: kDebugMode,
                   ),

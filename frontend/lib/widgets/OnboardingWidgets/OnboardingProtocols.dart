@@ -29,6 +29,11 @@ abstract class EmailAuth implements AuthMethods {
 }
 
 class GoogleAuth implements AuthMethods {
+  final String loginUrl;
+  final String domain;
+
+  const GoogleAuth({required this.loginUrl, required this.domain});
+
   @override
   String get authName => 'Google';
 
@@ -40,8 +45,13 @@ class GoogleAuth implements AuthMethods {
     },
   );
 
+  // Opens the platform's login page. When the user clicks "Sign in with Google"
+  // on that page, window.open() fires and onCreateWindow shows the OAuth popup.
   @override
-  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getRead, void Function()? exity) {}
+  void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
+    print("Google Auth onboaridng started ${loginUrl}");
+    createInAppWebView(loginUrl, onReady: onReady, getReady: getReady, exit: exit, domain: domain);
+  }
 }
 
 // Webull Specific Auth Methods
@@ -100,7 +110,7 @@ class RobinhoodEmailAuth extends EmailAuth {
   }
 }
 
-// TradeView Auth Methods
+// TradingView Auth Methods
 class TradingViewEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
@@ -109,7 +119,7 @@ class TradingViewEmailAuth extends EmailAuth {
   }
 }
 
-//Finiz Auth Methods
+// Finviz Auth Methods
 class FinizEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
@@ -118,7 +128,7 @@ class FinizEmailAuth extends EmailAuth {
   }
 }
 
-//Think or Swim Auth Methods
+// Think or Swim Auth Methods
 class ThinkOrSwimIDAuth implements AuthMethods {
   @override
   String get authName => 'Think or Swim ID';
@@ -141,20 +151,22 @@ class ThinkOrSwimIDAuth implements AuthMethods {
 class Platform {
   final String id;
   final String logoUrl;
-  final Color  brandColor;
-  String link = "";
+  final Color brandColor;
+  String link;
   bool authenticated = false;
   List<AuthMethods> authMethods;
 
-  Platform(this.id, this.brandColor, {required this.authMethods}): logoUrl = 'assets/images/icons/${id}.png';
+  Platform(this.id, this.brandColor, {required this.link, required this.authMethods})
+      : logoUrl = 'assets/images/icons/$id.png';
 }
 
 List<Platform> buyingPlatforms = [
   Platform(
     'Webull',
     Color(0xFF1942E0),
+    link: "https://www.webull.com/",
     authMethods: [
-      GoogleAuth(),
+      GoogleAuth(loginUrl: "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center", domain: "webull"),
       WebullPhoneAuth(),
       WebullEmailAuth(),
       WebullQRCodeAuth(),
@@ -163,8 +175,9 @@ List<Platform> buyingPlatforms = [
   Platform(
     'Robinhood',
     Color(0xFF00C805),
+    link: "https://robinhood.com/",
     authMethods: [
-      RobinhoodEmailAuth()
+      RobinhoodEmailAuth(),
     ],
   ),
 ];
@@ -173,14 +186,16 @@ List<Platform> chartingPlatforms = [
   Platform(
     'TradingView',
     Colors.blue,
+    link: "https://www.tradingview.com/",
     authMethods: [
-      GoogleAuth(),
+      GoogleAuth(loginUrl: "https://www.tradingview.com/sign-in/", domain: "tradingview"),
       TradingViewEmailAuth(),
     ],
   ),
   Platform(
     'Finiz',
     Color(0xFF5FAAF4),
+    link: "https://finviz.com/",
     authMethods: [
       FinizEmailAuth(),
     ],
@@ -188,6 +203,7 @@ List<Platform> chartingPlatforms = [
   Platform(
     'Think or Swim',
     Color(0xFF00A651),
+    link: "https://trade.thinkorswim.com/",
     authMethods: [
       ThinkOrSwimIDAuth(),
     ],

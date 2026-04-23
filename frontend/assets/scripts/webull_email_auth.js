@@ -13,5 +13,6 @@
     [...document.querySelectorAll('span')].find(s => s.textContent.trim() === 'Email Login')
   );
   if (span) span.click();
-  HaloAuthReady.postMessage('ready');
+  console.log("Succesfull injected");
+  window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
 })();

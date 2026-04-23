@@ -27,17 +27,14 @@ class PlatformAuthPage extends StatefulWidget {
 
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
   void _handleAuthTap(AuthMethods method) {
+    print(widget.controller.selectedBuyingPlatform!.link);
+    CookieManager.instance().deleteAllCookies();
     if(widget.controller.currentIndex == 2) {
       CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedBuyingPlatform!.link));
     } else if (widget.controller.currentIndex == 4) {
       CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedChartingPlatform!.link));
     }
     
-    if (method is GoogleAuth) {
-      method.launchSignupMethod(null, null, null);
-      return;
-    }
-
     method.launchSignupMethod((controller) {
       if (!mounted) return;
       widget.launchAuthWebView(controller);
