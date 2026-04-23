@@ -14,11 +14,10 @@ class FormWidget extends StatelessWidget {
   final FormController formController;
   final Function launchAuth;
   final void Function() launchLoad;
-  final void Function() exitAuth;
+  final Function exit;
   static const int _totalSteps = 4;
 
-
-  const FormWidget({super.key, required this.formController, required this.launchAuth, required this.launchLoad, required this.exitAuth});
+  const FormWidget({super.key, required this.formController, required this.launchAuth, required this.launchLoad, required this.exit});
 
   Widget _pageForIndex(int index) {
     switch (index) {
@@ -28,16 +27,16 @@ class FormWidget extends StatelessWidget {
         authPlatform: formController.selectedBuyingPlatform!, 
         launchAuthWebView: launchAuth, 
         getReady: launchLoad, 
-        exitAuth: exitAuth,
-        controller: formController
+        controller: formController, 
+        exit: exit
       );
       case 3:  return ChartingPlatformPage(formController: formController);
       case 4:  return PlatformAuthPage(
         authPlatform: formController.selectedChartingPlatform!, 
         launchAuthWebView: launchAuth, 
         getReady: launchLoad, 
-        exitAuth: exitAuth,
-        controller: formController
+        controller: formController,
+        exit: exit
       );
       default: return const SizedBox.shrink();
     }

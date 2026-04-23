@@ -148,12 +148,19 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   }
 }
 
+enum AuthState {
+  authenticated, 
+  notAuthenticated, 
+  failedAuthentication,
+  checking
+}
+
 class Platform {
   final String id;
   final String logoUrl;
   final Color brandColor;
   List<String> links;
-  bool authenticated = false;
+  AuthState authenticated = AuthState.notAuthenticated;
   List<AuthMethods> authMethods;
 
   Platform(this.id, this.brandColor, {required this.links, required this.authMethods})

@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/controllers/createWebViewController.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/cookie_manager.dart';
 import 'package:frontend/themes/halo_theme.dart';
@@ -12,15 +14,15 @@ class PlatformAuthPage extends StatefulWidget {
   final Platform authPlatform;
   Function launchAuthWebView;
   void Function() getReady;
-  void Function() exitAuth;
   FormController controller;
+  Function exit;
   PlatformAuthPage({
     super.key,
     required this.controller,
     required this.authPlatform,
     required this.launchAuthWebView,
     required this.getReady,
-    required this.exitAuth,
+    required this.exit
   });
 
   @override
@@ -29,35 +31,40 @@ class PlatformAuthPage extends StatefulWidget {
 
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
   void _handleAuthTap(AuthMethods method) async {
-  List<String> links = [];
+    List<String> links = [];
 
-  if (widget.controller.currentIndex == 2) {
-    links = widget.controller.selectedBuyingPlatform!.links;
-  } else if (widget.controller.currentIndex == 4) {
-    links = widget.controller.selectedChartingPlatform!.links;
-  }
-
-  if (links.isNotEmpty) {
-    final uniqueDomains = links
-        .map((l) => Uri.parse(l).host)
-        .map((h) {
-          final parts = h.split('.');
-          return parts.length > 2
-              ? '${parts[parts.length - 2]}.${parts[parts.length - 1]}'
-              : h;
-        })
-        .toSet();
-
-    for (final domain in uniqueDomains) {
-      await NativeCookieManager.deleteCookiesForDomain(domain);
+    if (widget.controller.currentIndex == 2) {
+      links = widget.controller.selectedBuyingPlatform!.links;
+    } else if (widget.controller.currentIndex == 4) {
+      links = widget.controller.selectedChartingPlatform!.links;
     }
-  }
 
-  method.launchSignupMethod((controller) {
-    if (!mounted) return;
-    widget.launchAuthWebView(controller);
-  }, widget.getReady, widget.exitAuth);
-}
+    if (links.isNotEmpty) {
+      final uniqueDomains = links
+          .map((l) => Uri.parse(l).host)
+          .map((h) {
+            final parts = h.split('.');
+            return parts.length > 2
+                ? '${parts[parts.length - 2]}.${parts[parts.length - 1]}'
+                : h;
+          })
+          .toSet();
+
+      for (final domain in uniqueDomains) {
+        await NativeCookieManager.deleteCookiesForDomain(domain);
+      }
+    }
+
+    method.launchSignupMethod((controller) {
+      if (!mounted) return;
+      widget.launchAuthWebView(controller);
+    }, widget.getReady, () {
+      widget.exit.call();
+
+      widget.controller.setAuthState(AuthState.authenticated);
+      widget.controller.onChanged?.call();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +94,32 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
             // Swaps between subtitle and connected indicator
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 350),
-              child: authenticated
-                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme)
+              child: authenticated == AuthState.authenticated
+                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: true,) : 
+                  authenticated == AuthState.failedAuthentication
+                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: false,) : 
+                  authenticated == AuthState.checking ? 
+                  Row(
+                    spacing: 5,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        key: const ValueKey('hint'),
+                        'Verifying authentication',
+                        style: theme.bodyMedium.copyWith(
+                          color: theme.whiteColor.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10,
+                        width: 10,
+                        child: CircularProgressIndicator(
+                          color: theme.whiteColor.withValues(alpha: 0.6),
+                          strokeWidth: 2,
+                        ),    
+                      ),
+                    ],
+                  ) 
                   : Text(
                       key: const ValueKey('hint'),
                       'Choose how you\'d like to authenticate',
@@ -121,7 +152,8 @@ const _kConnectedGreen = Color(0xFF22C55E);
 
 class _ConnectedPill extends StatelessWidget {
   final HaloThemeData theme;
-  const _ConnectedPill({super.key, required this.theme});
+  final bool success;
+  const _ConnectedPill({super.key, required this.theme, required this.success});
 
   @override
   Widget build(BuildContext context) {
@@ -130,8 +162,8 @@ class _ConnectedPill extends StatelessWidget {
       spacing: 6,
       children: [
         Text(
-          'succesfully connected',
-          style: theme.labelLarge.copyWith(color: _kConnectedGreen),
+          success ? 'succesfully connected' : 'authentication failed, try again',
+          style: theme.labelLarge.copyWith(color: success ? _kConnectedGreen : Colors.red),
         ),
       ],
     );

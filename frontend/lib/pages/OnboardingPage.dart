@@ -25,19 +25,14 @@ class FormController {
     selectedBuyingPlatform = platform;
   }
 
-  void setBuyingPlatformAuthState(bool state) {
-    if(selectedBuyingPlatform == null) return;
-
-    selectedBuyingPlatform!.authenticated = state;
-    onChanged!.call();
+  void setAuthState(AuthState state) {
+    if(currentIndex == 2) {
+      selectedBuyingPlatform!.authenticated = state;
+    } else {
+      selectedChartingPlatform!.authenticated = state;
+    }
   }
 
-  void setChartingPlatformAuthState(bool state) {
-    if(selectedChartingPlatform == null) return;
-
-    selectedChartingPlatform!.authenticated = state;
-    onChanged!.call();
-  }
 
   void setSelectedChartingPlatform(Platform platform) {
     selectedChartingPlatform = platform;
@@ -52,9 +47,9 @@ class FormController {
     switch (currentIndex) {
       case 0: return true;
       case 1: return selectedBuyingPlatform != null;
-      case 2: return selectedBuyingPlatform?.authenticated ?? false;
+      case 2: return selectedBuyingPlatform?.authenticated == AuthState.authenticated;
       case 3: return selectedChartingPlatform != null;
-      case 4: return selectedChartingPlatform?.authenticated ?? false;
+      case 4: return selectedChartingPlatform?.authenticated == AuthState.authenticated;
       default: return false;
     }
   }
@@ -97,17 +92,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     });
   }
 
-  void authSuccesfull() {
+  void exitFunction() {
     loadWebView = false;
     controller = null;
-
-    print("Auth was succesfull ${formController.currentIndex}");
-
-    if(formController.currentIndex == 2) {
-      formController.setBuyingPlatformAuthState(true);
-    } else {
-      formController.setChartingPlatformAuthState(true);
-    }
   }
 
   @override
@@ -140,7 +127,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       formController: formController, 
                       launchAuth: launchAuthWebView, 
                       launchLoad: getReady, 
-                      exitAuth: authSuccesfull
+                      exit: exitFunction
                     )
                   )
                 ],

@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:frontend/browser/browser_constants.dart';
 import 'package:frontend/browser/navigation_key.dart';
+import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebBundle {
   InAppWebView? widget;
   InAppWebViewController? controller;
+  int initialCookies = 0;
 
   void reload() {
     if(controller != null) {
@@ -17,6 +19,23 @@ class WebBundle {
     }
   }
 }
+
+Future<int> countCookies(FormController controller) async {
+    List<String> links = [];
+
+    if (controller.currentIndex == 2) {
+      links = controller.selectedBuyingPlatform!.links;
+    } else if (controller.currentIndex == 4) {
+      links = controller.selectedChartingPlatform!.links;
+    }
+
+    int curCount = 0;
+    for(String link in links) {
+      curCount += (await CookieManager.instance().getCookies(url: WebUri(link))).length;
+    }
+
+    return curCount;
+  }
 
 WebBundle createInAppWebView(
   String url,
