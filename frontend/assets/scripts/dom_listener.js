@@ -17,4 +17,6 @@
     attributes: true,
     characterData: true
   });
+
+  window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
 })();

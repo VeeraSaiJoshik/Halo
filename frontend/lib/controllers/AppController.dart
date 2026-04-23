@@ -26,7 +26,7 @@ class WindowInfo {
   late String uuid;
   late List<AppPage> pages;
   bool aiListenerReady = false;
-  bool browserControllerReady = false;
+  bool browserControllerReady = true;
 
   List<String> notifications = [];
 
@@ -37,26 +37,6 @@ class WindowInfo {
 
   void updateNotification(String notification) {
     notifications.add(notification);
-  }
-  
-  Future<bool> initializeChartDomListener() async {
-    try{
-      await chartController!.controller.injectJavascriptFileFromAsset(assetFilePath: 'assets/scripts/dom_listener.js');
-      return true;
-    } catch (e) {
-      print("Error initializing chart DOM listener: $e");
-      return false;
-    }
-  }
-
-  Future<bool> initializePortalDomListener() async {
-    try {
-      await portalController!.controller.injectJavascriptFileFromAsset(assetFilePath: 'assets/scripts/dom_listener.js');
-      return true;
-    } catch (e) {
-      print("Error initializing portal DOM listener: $e");
-      return false;
-    }
   }
 
   WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
@@ -80,16 +60,6 @@ class WindowInfo {
       this.pages = pages;
     }
     uuid = const Uuid().v4();
-  }
-
-  Future<bool> initializeBrowserServices() async {
-    await initializeChartDomListener();
-    await initializePortalDomListener();
-
-    browserControllerReady = true;
-    print("Browser services initialized for ${Stock.symbol}");
-
-    return true;
   }
 
   Future<void> dispose() async {
@@ -121,16 +91,22 @@ class AppController extends ChangeNotifier{
       return;
     }
 
-    final portalController = createInAppWebView('https://www.webull.com/center');
-    final chartingController = createInAppWebView('https://www.tradingview.com/chart/d3IIUEuI/');
+    final portalController = createInAppWebView(
+      'https://www.webull.com/center', 
+      injectionScript: "assets/scripts/dom_listener.js",
+    );
+    final chartingController = createInAppWebView(
+      'https://www.tradingview.com/chart/d3IIUEuI/', 
+      injectionScript: "assets/scripts/dom_listener.js"
+    );
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
-    newTab.initializeBrowserServices().then((_) => notifyListeners());
-    newTab.initializeIntakeService().then((_) => notifyListeners());
 
     tabs.add(
       newTab
     );
+
+    newTab.initializeIntakeService().then((_) => notifyListeners());
 
     switchTab(tabs.elementAt(tabs.length - 1));
   }

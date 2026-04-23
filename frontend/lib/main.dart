@@ -158,7 +158,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
         child: Scaffold(
           body: Stack(
             children: [
-              OnboardingPage(),
+              HomePage(),
               if (_showDevMenu)
                 DevMenu(
                   onClose: () => setState(() => _showDevMenu = false),

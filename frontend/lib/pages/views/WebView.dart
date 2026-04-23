@@ -82,7 +82,7 @@ class _WebViewState extends ConsumerState<CustomWebView>
                           position: _slideAnimation,
                           child: Center(
                             child: TopNavModel(
-                              reload: widget.controller.controller.reload, 
+                              reload: widget.controller.reload, 
                               closeTab: () => ref.read(appControllerProvider).closeSubPage(widget.pageType),
                               url: "https://www.google.com"
                             )
