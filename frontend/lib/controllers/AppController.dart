@@ -139,8 +139,15 @@ class AppController extends ChangeNotifier{
   }
 
   void addNewSubPage(AppPage page, Side side) {
-    if(side == Side.right) getCurrentTab()!.pages.add(page);
-    else getCurrentTab()!.pages.insert(0, page);
+    print("Adding a new subpage ${page} ${side} ${getCurrentTab()!.pages}");
+
+    if(side == Side.right) {
+      getCurrentTab()!.pages.add(page);
+    } else {
+      getCurrentTab()!.pages.insert(0, page);
+    }
+
+    print("Adding a new subpage ${page} ${side} ${getCurrentTab()!.pages}");
     
     notifyListeners();
   }

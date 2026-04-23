@@ -53,9 +53,19 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   Widget _buildPanel(AppPage page, WindowInfo tab) {
     switch (page) {
       case AppPage.PORTAL:
-        return CustomWebView(controller: tab.portalController!, pageType: AppPage.PORTAL, context: tab);
+        return CustomWebView(
+          key: ValueKey('${tab.uuid}_portal'),
+          controller: tab.portalController!,
+          pageType: AppPage.PORTAL,
+          context: tab,
+        );
       case AppPage.GRAPH_VIEWER:
-        return CustomWebView(controller: tab.chartController!, pageType: AppPage.GRAPH_VIEWER, context: tab);
+        return CustomWebView(
+          key: ValueKey('${tab.uuid}_viewer'),
+          controller: tab.chartController!,
+          pageType: AppPage.GRAPH_VIEWER,
+          context: tab,
+        );
       case AppPage.NOTIFICATIONS:
         return AISummaryView();
     }
@@ -96,31 +106,51 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                             const double dividerWidth = 6;
                             final int dividerCount = pages.length - 1;
                             final double availableWidth =
-                                constraints.maxWidth - dividerCount * dividerWidth;
+                                constraints.maxWidth -
+                                dividerCount * dividerWidth;
 
                             final List<Widget> children = [];
                             for (int i = 0; i < pages.length; i++) {
-                              children.add(SizedBox(
-                                width: _fractions[i] * availableWidth,
-                                child: _buildPanel(pages[i], currentTab!),
-                              ));
+                              children.add(
+                                SizedBox(
+                                  width: _fractions[i] * availableWidth,
+                                  child: KeyedSubtree(
+                                    key: ValueKey(
+                                      '${currentTab!.uuid}_${pages[i].name}',
+                                    ),
+                                    child: _buildPanel(pages[i], currentTab),
+                                  ),
+                                ),
+                              );
 
                               if (i < pages.length - 1) {
                                 final int leftIndex = i;
-                                children.add(_PanelDivider(
-                                  width: dividerWidth,
-                                  onDrag: (double delta) {
-                                    setState(() {
-                                      const double minFraction = 0.1;
-                                      final double frac = delta / availableWidth;
-                                      final double newLeft = (_fractions[leftIndex] + frac)
-                                          .clamp(minFraction, _fractions[leftIndex] + _fractions[leftIndex + 1] - minFraction);
-                                      _fractions[leftIndex + 1] =
-                                          _fractions[leftIndex] + _fractions[leftIndex + 1] - newLeft;
-                                      _fractions[leftIndex] = newLeft;
-                                    });
-                                  },
-                                ));
+                                children.add(
+                                  _PanelDivider(
+                                    width: dividerWidth,
+                                    onDrag: (double delta) {
+                                      setState(() {
+                                        const double minFraction = 0.1;
+                                        final double frac =
+                                            delta / availableWidth;
+                                        final double newLeft =
+                                            (_fractions[leftIndex] + frac)
+                                                .clamp(
+                                                  minFraction,
+                                                  _fractions[leftIndex] +
+                                                      _fractions[leftIndex +
+                                                          1] -
+                                                      minFraction,
+                                                );
+                                        _fractions[leftIndex + 1] =
+                                            _fractions[leftIndex] +
+                                            _fractions[leftIndex + 1] -
+                                            newLeft;
+                                        _fractions[leftIndex] = newLeft;
+                                      });
+                                    },
+                                  ),
+                                );
                               }
                             }
 
@@ -128,12 +158,8 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                           },
                         ),
                 ),
-                tabExists
-                    ? AddSubSection(side: Side.left)
-                    : const SizedBox(),
-                tabExists
-                    ? AddSubSection(side: Side.right)
-                    : const SizedBox(),
+                tabExists ? AddSubSection(side: Side.left) : const SizedBox(),
+                tabExists ? AddSubSection(side: Side.right) : const SizedBox(),
               ],
             ),
           ),
@@ -162,7 +188,10 @@ class _EmptyState extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade700.withOpacity(0.5)),
             ),
-            child: Text('⌘T to search', style: theme.titleMedium.copyWith(color: theme.whiteColor)),
+            child: Text(
+              '⌘T to search',
+              style: theme.titleMedium.copyWith(color: theme.whiteColor),
+            ),
           ),
         ],
       ),
@@ -183,7 +212,7 @@ class _PanelDivider extends ConsumerStatefulWidget {
 }
 
 class _PanelDividerState extends ConsumerState<_PanelDivider> {
-  bool _hovered  = false;
+  bool _hovered = false;
   bool _dragging = false;
 
   bool get _active => _hovered || _dragging;
@@ -194,10 +223,10 @@ class _PanelDividerState extends ConsumerState<_PanelDivider> {
     return MouseRegion(
       cursor: SystemMouseCursors.resizeColumn,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
-        onHorizontalDragStart:  (_) => setState(() => _dragging = true),
-        onHorizontalDragEnd:    (_) => setState(() => _dragging = false),
+        onHorizontalDragStart: (_) => setState(() => _dragging = true),
+        onHorizontalDragEnd: (_) => setState(() => _dragging = false),
         onHorizontalDragUpdate: (details) => widget.onDrag(details.delta.dx),
         child: SizedBox(
           width: widget.width,
