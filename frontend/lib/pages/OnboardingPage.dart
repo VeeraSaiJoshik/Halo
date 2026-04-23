@@ -101,7 +101,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     loadWebView = false;
     controller = null;
 
-    if(formController.currentIndex == 1) {
+    print("Auth was succesfull ${formController.currentIndex}");
+
+    if(formController.currentIndex == 2) {
       formController.setBuyingPlatformAuthState(true);
     } else {
       formController.setChartingPlatformAuthState(true);
@@ -132,10 +134,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       controller: controller, 
                       loadWebView: loadWebView, 
                       theme: theme, 
-                    ) : 
-                      formController.currentIndex == -1 ? 
-                        Welcomewidget(formController: formController) :
-                        FormWidget(formController: formController, launchAuth: launchAuthWebView, launchLoad: getReady, exitAuth: authSuccesfull )
+                    ) : formController.currentIndex == -1 ? 
+                    Welcomewidget(formController: formController) :
+                    FormWidget(
+                      formController: formController, 
+                      launchAuth: launchAuthWebView, 
+                      launchLoad: getReady, 
+                      exitAuth: authSuccesfull
+                    )
                   )
                 ],
               ),

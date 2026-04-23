@@ -128,12 +128,12 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                   ),
                   // Inner highlight (top-left frost sheen)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     child: Container(
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(5),
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
