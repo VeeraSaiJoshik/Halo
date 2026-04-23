@@ -6,6 +6,7 @@ import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/browser/navigation_key.dart';
 import 'package:frontend/widgets/DevMenu.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -143,6 +144,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
     final windowContext = ref.watch(windowProvider);
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

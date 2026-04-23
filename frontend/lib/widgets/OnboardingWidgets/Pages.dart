@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
@@ -17,7 +18,8 @@ class PlatformAuthPage extends StatefulWidget {
   Function launchAuthWebView;
   void Function() getReady;
   void Function() exitAuth;
-  PlatformAuthPage({super.key, required this.authPlatform, required this.launchAuthWebView, required this.getReady, required this.exitAuth});
+  FormController controller;
+  PlatformAuthPage({super.key, required this.controller, required this.authPlatform, required this.launchAuthWebView, required this.getReady, required this.exitAuth});
 
   @override
   State<PlatformAuthPage> createState() => _PlatformAuthPageState();
@@ -25,6 +27,12 @@ class PlatformAuthPage extends StatefulWidget {
 
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
   void _handleAuthTap(AuthMethods method) {
+    if(widget.controller.currentIndex == 2) {
+      CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedBuyingPlatform!.link));
+    } else if (widget.controller.currentIndex == 4) {
+      CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedChartingPlatform!.link));
+    }
+    
     if (method is GoogleAuth) {
       method.launchSignupMethod(null, null, null);
       return;
