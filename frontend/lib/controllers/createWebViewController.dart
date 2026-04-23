@@ -25,20 +25,37 @@ WebBundle createInAppWebView(
     String injectionScript = "",
     void Function(WebBundle)? onReady,
     void Function()? getReady,
-    void Function()? exit
+    void Function()? exit, 
+    bool isAuth = false
   }
 ) {
   WebBundle webBundle = WebBundle();
   bool _handlerRegistered = false;
 
+  final scripts = [
+    UserScript(
+      source: kStealthScript,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ),
+  ];
+
+  if (isAuth) {
+    scripts.add(UserScript(
+      source: """
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("successfully cleared storage");
+      """,
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    ));
+  }
+
+  // Then use it:
+  print("Auth is ${isAuth} ${scripts}");
+
   webBundle.widget = InAppWebView(
     initialUrlRequest: URLRequest(url: WebUri(url)),
-    initialUserScripts: UnmodifiableListView<UserScript>([
-      UserScript(
-        source: kStealthScript,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ),
-    ]),
+    initialUserScripts: UnmodifiableListView<UserScript>(scripts),
     initialSettings: InAppWebViewSettings(
       userAgent: kDesktopChromeUA,
       javaScriptEnabled: true,
@@ -56,7 +73,32 @@ WebBundle createInAppWebView(
       // Safari → Develop → <device> → <page>
       isInspectable: kDebugMode,
     ),
-    onWebViewCreated: (controller) => webBundle.controller = controller,
+    onWebViewCreated: (controller) async {
+      webBundle.controller = controller;
+      
+      if (isAuth) {
+        final cookieManager = CookieManager.instance();
+        
+        // See what cookies exist BEFORE deletion
+        final before = await cookieManager.getCookies(url: WebUri("https://passport.webull.com"));
+        print("BEFORE deletion: ${before.map((c) => '${c.name}=${c.value}').join(', ')}");
+        
+        for (final domain in [
+          "https://webull.com",
+          "https://www.webull.com",
+          "https://app.webull.com",
+          "https://userapi.webull.com",
+          "https://trade.webull.com",
+          "https://passport.webull.com",
+        ]) {
+          await cookieManager.deleteCookies(url: WebUri(domain));
+        }
+        
+        // Confirm they're gone AFTER deletion
+        final after = await cookieManager.getCookies(url: WebUri("https://passport.webull.com"));
+        print("AFTER deletion: ${after.map((c) => '${c.name}=${c.value}').join(', ')}");
+      }
+    },
     onLoadStop: (controller, url) {
       if (injectionScript != "") {
         onReady?.call(webBundle);
@@ -77,7 +119,7 @@ WebBundle createInAppWebView(
       }
     },
     onConsoleMessage: (controller, message) {
-      print(message.message);
+      print("Console message : " + message.message);
     },
     onCreateWindow: (controller, createWindowAction) async {
       final ctx = navigatorKey.currentContext;
@@ -88,7 +130,7 @@ WebBundle createInAppWebView(
     shouldOverrideUrlLoading: (controller, navigationAction) async {
       if (!navigationAction.isForMainFrame) return NavigationActionPolicy.ALLOW;
 
-      print("I am here with overload");
+      print("I am here with overload ${navigationAction.request.url}");
       final requestUrl = navigationAction.request.url?.toString() ?? '';
       if (exit != null && requestUrl != url && requestUrl.contains(domain)) {
         exit.call();

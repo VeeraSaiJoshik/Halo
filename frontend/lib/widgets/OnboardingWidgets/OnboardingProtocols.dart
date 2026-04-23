@@ -50,7 +50,7 @@ class GoogleAuth implements AuthMethods {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     print("Google Auth onboaridng started ${loginUrl}");
-    createInAppWebView(loginUrl, onReady: onReady, getReady: getReady, exit: exit, domain: domain);
+    createInAppWebView(loginUrl, onReady: onReady, getReady: getReady, exit: exit, domain: domain, isAuth: true);
   }
 }
 
@@ -60,7 +60,7 @@ class WebullEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull", isAuth: true);
   }
 }
 
@@ -79,7 +79,7 @@ class WebullPhoneAuth implements AuthMethods {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    createInAppWebView(authUrl, onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, onReady: onReady, getReady: getReady, exit: exit, domain: "webull", isAuth: true);
   }
 }
 
@@ -98,7 +98,7 @@ class WebullQRCodeAuth implements AuthMethods {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const authUrl = "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center";
-    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_qr_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull");
+    createInAppWebView(authUrl, injectionScript: 'assets/scripts/webull_qr_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "webull", isAuth: true);
   }
 }
 
@@ -106,7 +106,7 @@ class WebullQRCodeAuth implements AuthMethods {
 class RobinhoodEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
-    createInAppWebView("https://robinhood.com/login/", onReady: onReady, getReady: getReady, exit: exit, domain: "robinhood");
+    createInAppWebView("https://robinhood.com/login/", onReady: onReady, getReady: getReady, exit: exit, domain: "robinhood", isAuth: true);
   }
 }
 
@@ -115,7 +115,7 @@ class TradingViewEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://www.tradingview.com/pricing/?source=header_go_pro_button&feature=start_free_trial";
-    createInAppWebView(link, injectionScript: 'assets/scripts/tradingview_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview");
+    createInAppWebView(link, injectionScript: 'assets/scripts/tradingview_email_auth.js', onReady: onReady, getReady: getReady, exit: exit, domain: "tradingview", isAuth: true);
   }
 }
 
@@ -124,7 +124,7 @@ class FinizEmailAuth extends EmailAuth {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://finviz.com/login-email?remember=true";
-    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "finviz");
+    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "finviz", isAuth: true);
   }
 }
 
@@ -144,7 +144,7 @@ class ThinkOrSwimIDAuth implements AuthMethods {
   @override
   void launchSignupMethod(void Function(WebBundle)? onReady, void Function()? getReady, void Function()? exit) {
     const link = "https://trade.thinkorswim.com/";
-    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "thinkorswim");
+    createInAppWebView(link, onReady: onReady, getReady: getReady, exit: exit, domain: "thinkorswim", isAuth: true);
   }
 }
 
@@ -152,11 +152,11 @@ class Platform {
   final String id;
   final String logoUrl;
   final Color brandColor;
-  String link;
+  List<String> links;
   bool authenticated = false;
   List<AuthMethods> authMethods;
 
-  Platform(this.id, this.brandColor, {required this.link, required this.authMethods})
+  Platform(this.id, this.brandColor, {required this.links, required this.authMethods})
       : logoUrl = 'assets/images/icons/$id.png';
 }
 
@@ -164,7 +164,13 @@ List<Platform> buyingPlatforms = [
   Platform(
     'Webull',
     Color(0xFF1942E0),
-    link: "https://www.webull.com/",
+    links: [
+      "https://www.webull.com/", 
+      "https://userapi.webull.com/", 
+      "https://app.webull.com/", 
+      "https://passport.webull.com/",
+      "https://trade.webull.com/",
+    ],
     authMethods: [
       GoogleAuth(loginUrl: "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center", domain: "webull"),
       WebullPhoneAuth(),
@@ -175,7 +181,7 @@ List<Platform> buyingPlatforms = [
   Platform(
     'Robinhood',
     Color(0xFF00C805),
-    link: "https://robinhood.com/",
+    links: ["https://robinhood.com/"],
     authMethods: [
       RobinhoodEmailAuth(),
     ],
@@ -186,7 +192,7 @@ List<Platform> chartingPlatforms = [
   Platform(
     'TradingView',
     Colors.blue,
-    link: "https://www.tradingview.com/",
+    links: ["https://www.tradingview.com/"],
     authMethods: [
       GoogleAuth(loginUrl: "https://www.tradingview.com/sign-in/", domain: "tradingview"),
       TradingViewEmailAuth(),
@@ -195,7 +201,7 @@ List<Platform> chartingPlatforms = [
   Platform(
     'Finiz',
     Color(0xFF5FAAF4),
-    link: "https://finviz.com/",
+    links: ["https://finviz.com/"],
     authMethods: [
       FinizEmailAuth(),
     ],
@@ -203,7 +209,7 @@ List<Platform> chartingPlatforms = [
   Platform(
     'Think or Swim',
     Color(0xFF00A651),
-    link: "https://trade.thinkorswim.com/",
+    links: ["https://trade.thinkorswim.com/"],
     authMethods: [
       ThinkOrSwimIDAuth(),
     ],

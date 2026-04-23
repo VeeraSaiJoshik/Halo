@@ -1,17 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
+import 'package:frontend/services/cookie_manager.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
-import 'package:frontend/widgets/background_gradient_animation.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-
 
 class PlatformAuthPage extends StatefulWidget {
   final Platform authPlatform;
@@ -19,27 +14,50 @@ class PlatformAuthPage extends StatefulWidget {
   void Function() getReady;
   void Function() exitAuth;
   FormController controller;
-  PlatformAuthPage({super.key, required this.controller, required this.authPlatform, required this.launchAuthWebView, required this.getReady, required this.exitAuth});
+  PlatformAuthPage({
+    super.key,
+    required this.controller,
+    required this.authPlatform,
+    required this.launchAuthWebView,
+    required this.getReady,
+    required this.exitAuth,
+  });
 
   @override
   State<PlatformAuthPage> createState() => _PlatformAuthPageState();
 }
 
 class _PlatformAuthPageState extends State<PlatformAuthPage> {
-  void _handleAuthTap(AuthMethods method) {
-    print(widget.controller.selectedBuyingPlatform!.link);
-    CookieManager.instance().deleteAllCookies();
-    if(widget.controller.currentIndex == 2) {
-      CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedBuyingPlatform!.link));
-    } else if (widget.controller.currentIndex == 4) {
-      CookieManager.instance().deleteCookies(url: WebUri(widget.controller.selectedChartingPlatform!.link));
-    }
-    
-    method.launchSignupMethod((controller) {
-      if (!mounted) return;
-      widget.launchAuthWebView(controller);
-    }, widget.getReady, widget.exitAuth);
+  void _handleAuthTap(AuthMethods method) async {
+  List<String> links = [];
+
+  if (widget.controller.currentIndex == 2) {
+    links = widget.controller.selectedBuyingPlatform!.links;
+  } else if (widget.controller.currentIndex == 4) {
+    links = widget.controller.selectedChartingPlatform!.links;
   }
+
+  if (links.isNotEmpty) {
+    final uniqueDomains = links
+        .map((l) => Uri.parse(l).host)
+        .map((h) {
+          final parts = h.split('.');
+          return parts.length > 2
+              ? '${parts[parts.length - 2]}.${parts[parts.length - 1]}'
+              : h;
+        })
+        .toSet();
+
+    for (final domain in uniqueDomains) {
+      await NativeCookieManager.deleteCookiesForDomain(domain);
+    }
+  }
+
+  method.launchSignupMethod((controller) {
+    if (!mounted) return;
+    widget.launchAuthWebView(controller);
+  }, widget.getReady, widget.exitAuth);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +73,16 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
             SizedBox(
               width: 100,
               height: 100,
-              child: Image.asset(widget.authPlatform.logoUrl, fit: BoxFit.contain),
+              child: Image.asset(
+                widget.authPlatform.logoUrl,
+                fit: BoxFit.contain,
+              ),
             ),
             const SizedBox(height: 15),
-            Text('Sign in to ${widget.authPlatform.id}', style: theme.headlineMedium),
+            Text(
+              'Sign in to ${widget.authPlatform.id}',
+              style: theme.headlineMedium,
+            ),
             const SizedBox(height: 8),
             // Swaps between subtitle and connected indicator
             AnimatedSwitcher(
@@ -94,7 +118,6 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
 }
 
 const _kConnectedGreen = Color(0xFF22C55E);
-
 
 class _ConnectedPill extends StatelessWidget {
   final HaloThemeData theme;
@@ -142,71 +165,93 @@ class _AuthMethodButtonState extends ConsumerState<_AuthMethodButton> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        onTapDown:   (_) => setState(() => _pressed = true),
-        onTapUp:     (_) => setState(() => _pressed = false),
-        onTapCancel: ()  => setState(() => _pressed = false),
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
         child: AnimatedRotation(
           turns: _hovered ? 0.004 : 0.0,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutBack,
           child: AnimatedScale(
-          scale: _pressed ? 1.06 : _hovered ? 1.03 : 1.0,
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOutBack,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            width: 280,
-            height: 52,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.brandColor.withOpacity(widget.selected ? 0.45 : _hovered ? 0.25 : 0.12),
-                  blurRadius: widget.selected ? 28 : _hovered ? 20 : 10,
-                  spreadRadius: widget.selected ? 1 : 0,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: widget.selected
-                          ? widget.brandColor.withOpacity(0.85)
-                          : theme.whiteColor.withOpacity(_hovered ? 0.40 : 0.24),
-                      width: 1.5,
+            scale: _pressed
+                ? 1.06
+                : _hovered
+                ? 1.03
+                : 1.0,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutBack,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              width: 280,
+              height: 52,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.brandColor.withOpacity(
+                      widget.selected
+                          ? 0.45
+                          : _hovered
+                          ? 0.25
+                          : 0.12,
                     ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: theme.backgroundGradient,
-                    ),
+                    blurRadius: widget.selected
+                        ? 28
+                        : _hovered
+                        ? 20
+                        : 10,
+                    spreadRadius: widget.selected ? 1 : 0,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 12,
-                    children: [
-                      SizedBox(width: 18, height: 18, child: FittedBox(child: widget.method.authLogo)),
-                      Text(
-                        widget.method.authName,
-                        style: theme.titleMedium.copyWith(color: theme.whiteColor),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: widget.selected
+                            ? widget.brandColor.withOpacity(0.85)
+                            : theme.whiteColor.withOpacity(
+                                _hovered ? 0.40 : 0.24,
+                              ),
+                        width: 1.5,
                       ),
-                    ],
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: theme.backgroundGradient,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 12,
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: FittedBox(child: widget.method.authLogo),
+                        ),
+                        Text(
+                          widget.method.authName,
+                          style: theme.titleMedium.copyWith(
+                            color: theme.whiteColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
         ),
       ),
     );
@@ -232,10 +277,7 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
         Consumer(
           builder: (context, ref, _) {
             final theme = ref.watch(haloThemeProvider);
-            return Text(
-              'Where do you trade?',
-              style: theme.headlineMedium,
-            );
+            return Text('Where do you trade?', style: theme.headlineMedium);
           },
         ),
         const SizedBox(height: 8),
@@ -244,7 +286,9 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               'Select your buying platform',
-              style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
+              style: theme.bodyMedium.copyWith(
+                color: theme.whiteColor.withOpacity(0.8),
+              ),
             );
           },
         ),
@@ -256,7 +300,7 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
             ...buyingPlatforms.asMap().entries.map((e) {
               final p = e.value;
               final flip = e.key < buyingPlatforms.length ~/ 2;
-             
+
               return PlushyButton(
                 glowColor: p.brandColor,
                 padding: const EdgeInsets.all(22),
@@ -265,7 +309,9 @@ class _BuyingPortalPageState extends State<BuyingPortalPage> {
                   widget.formController.setSelectedBuyingPlatform(p);
                   widget.formController.next();
                 }),
-                selected: widget.formController.selectedBuyingPlatform != null && widget.formController.selectedBuyingPlatform!.id == p.id,
+                selected:
+                    widget.formController.selectedBuyingPlatform != null &&
+                    widget.formController.selectedBuyingPlatform!.id == p.id,
                 child: Image.asset(
                   p.logoUrl,
                   width: 90,
@@ -300,10 +346,7 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
         Consumer(
           builder: (context, ref, _) {
             final theme = ref.watch(haloThemeProvider);
-            return Text(
-              'Where do you chart?',
-              style: theme.headlineMedium,
-            );
+            return Text('Where do you chart?', style: theme.headlineMedium);
           },
         ),
         const SizedBox(height: 8),
@@ -312,7 +355,9 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
             final theme = ref.watch(haloThemeProvider);
             return Text(
               'Select your charting platform',
-              style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
+              style: theme.bodyMedium.copyWith(
+                color: theme.whiteColor.withOpacity(0.8),
+              ),
             );
           },
         ),
@@ -324,7 +369,7 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
             ...chartingPlatforms.asMap().entries.map((e) {
               final p = e.value;
               final flip = e.key < chartingPlatforms.length ~/ 2;
-             
+
               return PlushyButton(
                 glowColor: p.brandColor,
                 padding: const EdgeInsets.all(22),
@@ -333,7 +378,9 @@ class _ChartingPlatformPageState extends State<ChartingPlatformPage> {
                   widget.formController.setSelectedChartingPlatform(p);
                   widget.formController.next();
                 }),
-                selected: widget.formController.selectedChartingPlatform != null && widget.formController.selectedChartingPlatform!.id == p.id,
+                selected:
+                    widget.formController.selectedChartingPlatform != null &&
+                    widget.formController.selectedChartingPlatform!.id == p.id,
                 child: Image.asset(
                   p.logoUrl,
                   width: 90,
@@ -366,14 +413,13 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'Choose your vibe',
-          style: theme.headlineMedium,
-        ),
+        Text('Choose your vibe', style: theme.headlineMedium),
         const SizedBox(height: 8),
         Text(
           'Select your charting platform',
-          style: theme.bodyMedium.copyWith(color: theme.whiteColor.withOpacity(0.8)),
+          style: theme.bodyMedium.copyWith(
+            color: theme.whiteColor.withOpacity(0.8),
+          ),
         ),
         const SizedBox(height: 48),
         SizedBox(
@@ -392,7 +438,9 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
                     child: _ThemePreviewCard(
                       theme: t,
                       selected: t.type == ref.watch(haloThemeTypeProvider),
-                      onTap: () => ref.read(haloThemeTypeProvider.notifier).state = t.type,
+                      onTap: () =>
+                          ref.read(haloThemeTypeProvider.notifier).state =
+                              t.type,
                     ),
                   );
                 }).toList(),
@@ -422,7 +470,11 @@ class _ThemePreviewCard extends StatefulWidget {
   final HaloThemeData theme;
   final bool selected;
   final VoidCallback onTap;
-  const _ThemePreviewCard({required this.theme, required this.selected, required this.onTap});
+  const _ThemePreviewCard({
+    required this.theme,
+    required this.selected,
+    required this.onTap,
+  });
   @override
   State<_ThemePreviewCard> createState() => _ThemePreviewCardState();
 }
@@ -438,7 +490,7 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedRotation(
@@ -461,7 +513,12 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
                   width: widget.selected ? 1.5 : 1.0,
                 ),
                 boxShadow: widget.selected && blobs.isNotEmpty
-                    ? [BoxShadow(color: blobs[0].withValues(alpha: 0.40), blurRadius: 24)]
+                    ? [
+                        BoxShadow(
+                          color: blobs[0].withValues(alpha: 0.40),
+                          blurRadius: 24,
+                        ),
+                      ]
                     : null,
               ),
               child: ClipRRect(
@@ -509,14 +566,20 @@ class _ThemePreviewCardState extends State<_ThemePreviewCard> {
                       ),
                     if (widget.selected)
                       Positioned(
-                        top: 8, right: 8,
+                        top: 8,
+                        right: 8,
                         child: Container(
-                          width: 18, height: 18,
+                          width: 18,
+                          height: 18,
                           decoration: BoxDecoration(
                             color: t.whiteColor.withValues(alpha: 0.90),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.check, size: 11, color: Colors.black),
+                          child: const Icon(
+                            Icons.check,
+                            size: 11,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                   ],
