@@ -47,6 +47,10 @@ dependencies:
   gradient_borders: ^1.0.2
   google_fonts: ^6.2.1
   flutter_inappwebview: ^6.0.0
+  sqflite_common_ffi: ^2.3.3
+  flutter_local_notifications: ^18.0.1
+  path: ^1.9.0
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:  
