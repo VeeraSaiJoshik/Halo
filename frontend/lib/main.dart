@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/ai/ai_providers.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/pages/HomePage.dart';
@@ -15,7 +16,14 @@ void main() async {
 
   await windowManager.ensureInitialized();
 
-  runApp(ProviderScope(
+  // Initialize AI-layer singletons before the first frame so the repository
+  // and notifications are ready when the detection engine starts producing.
+  final container = ProviderContainer();
+  await container.read(insightRepositoryProvider).init();
+  await container.read(notificationControllerProvider).init();
+
+  runApp(UncontrolledProviderScope(
+    container: container,
     child: MyApp(),
   ));
 
