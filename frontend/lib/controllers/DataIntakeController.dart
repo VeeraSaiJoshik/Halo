@@ -6,6 +6,7 @@ import 'package:frontend/controllers/DetectionController.dart';
 import 'package:frontend/controllers/NotificationController.dart';
 import 'package:frontend/services/app_event_bus.dart';
 
+import '../ai/verdict_dispatcher.dart';
 import '../models/candle.dart';
 import '../engine/stocks/candle_aggregator.dart';
 import '../engine/clients/alpaca_client.dart';
@@ -30,6 +31,12 @@ class IntakeService {
   final FinnhubClient? finnhubClient;
   final NotificationController notificationController = NotificationController();
   final AppEventBus eventBus;
+
+  /// Optional: when set, scored setups from the detection engine flow through
+  /// this dispatcher → Claude → notification + sidebar.
+  /// Left null for environments with no proxy token configured (detection
+  /// still runs; only the AI layer is silent).
+  VerdictDispatcher? verdictDispatcher;
 
   OnCandlesReady? onTickerSwitch;
 
@@ -179,10 +186,21 @@ class IntakeService {
       for (final candle in recent) {
         if (_lastCandleTimestamp == null || candle.timestamp.isAfter(_lastCandleTimestamp!)) {
           _lastCandleTimestamp = candle.timestamp;
-          detectionEngine!.onCandle(candle);
+          final setups = detectionEngine!.onCandle(candle);
 
-          bool emitNotification = notificationController.postNotification();
-          if(emitNotification) eventBus.emit(AppEvent.newNotifcation);
+          // Fan out to the AI reasoning layer. The dispatcher handles its own
+          // dedup, cooldowns, and failure cases — fire and forget.
+          final dispatcher = verdictDispatcher;
+          if (dispatcher != null && setups.isNotEmpty) {
+            unawaited(dispatcher.handleSetups(
+              setups: setups,
+              atr: detectionEngine!.atr,
+              currentPrice: candle.close,
+              profile: detectionEngine!.profile,
+              recentCandles: detectionEngine!.buffer.candles,
+            ));
+            eventBus.emit(AppEvent.newNotifcation);
+          }
         }
       }
     } catch (e) {

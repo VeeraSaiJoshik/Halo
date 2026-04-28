@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:frontend/ai/ai_providers.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/controllers/DataIntakeController.dart';
 import 'package:frontend/engine/clients/alpaca_client.dart';
@@ -44,11 +45,12 @@ final intakeServiceProvider = Provider<IntakeService>((ref) {
   final finnhubClient = FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY"));
 
   final intakeService = IntakeService(
-    eventBus: eventBus, 
-    alpacaClient: alpacaClient, 
-    binanceClient: binanceClient, 
+    eventBus: eventBus,
+    alpacaClient: alpacaClient,
+    binanceClient: binanceClient,
     finnhubClient: finnhubClient
   );
+  intakeService.verdictDispatcher = ref.read(verdictDispatcherProvider);
 
   ref.onDispose(() => intakeService.dispose());
 
