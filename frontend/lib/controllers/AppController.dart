@@ -7,6 +7,7 @@ import 'package:frontend/engine/clients/finnhub_client.dart';
 import 'package:frontend/engine/stocks/ticker_identifier.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/services/browser_startup.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/window_tab.dart';
 import 'package:uuid/uuid.dart';
@@ -100,6 +101,7 @@ class AppController extends ChangeNotifier{
     final portalController = createInAppWebView(
       'https://app.webull.com/watch', 
       injectionScript: "assets/scripts/dom_listener.js",
+      startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase())
     );
     final chartingController = createInAppWebView(
       'https://www.tradingview.com/chart/d3IIUEuI/', 

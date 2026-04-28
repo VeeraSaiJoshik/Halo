@@ -45,7 +45,8 @@ WebBundle createInAppWebView(
     void Function(WebBundle)? onReady,
     void Function()? getReady,
     void Function()? exit, 
-    bool isAuth = false
+    bool isAuth = false, 
+    List<UserScript> startupScripts = const []
   }
 ) {
   WebBundle webBundle = WebBundle();
@@ -68,6 +69,7 @@ WebBundle createInAppWebView(
       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
     ));
   }
+  scripts.addAll(startupScripts);
 
   // Then use it:
   print("Auth is ${isAuth} ${scripts}");
