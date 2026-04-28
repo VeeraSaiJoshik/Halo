@@ -89,32 +89,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   ],
                 ),
                 Expanded(child: SizedBox()),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: widget.context.isActive
-                        ? Colors.red.withOpacity(0.4)
-                        : Colors.grey.withAlpha(50),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 3,
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.arrowDown,
-                        color: theme.whiteColor,
-                        size: 11,
-                      ),
-                      Text(
-                        '-0.42%',
-                        style: theme.ticker,
-                      ),
-                    ],
-                  ),
-                ),
+                _PriceBadge(context: widget.context, theme: theme),
                 Container(width: 5),
                 InkWell(
                   onHover: (value) => setState(() {
@@ -179,6 +154,61 @@ class _WindowTabState extends ConsumerState<WindowTab>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PriceBadge extends StatelessWidget {
+  final WindowInfo context;
+  final dynamic theme;
+
+  const _PriceBadge({required this.context, required this.theme});
+
+  @override
+  Widget build(BuildContext ctx) {
+    final price = context.latestPrice;
+    final change = context.priceChangePercent;
+
+    // Not yet loaded – show a neutral placeholder
+    if (price == null || change == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.grey.withAlpha(50),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Text('--', style: theme.ticker),
+      );
+    }
+
+    final bool isPositive = change >= 0;
+    final Color badgeColor = context.isActive
+        ? (isPositive ? Colors.green.withOpacity(0.4) : Colors.red.withOpacity(0.4))
+        : Colors.grey.withAlpha(50);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        spacing: 3,
+        children: [
+          FaIcon(
+            isPositive ? FontAwesomeIcons.arrowUp : FontAwesomeIcons.arrowDown,
+            color: theme.whiteColor,
+            size: 11,
+          ),
+          Text(
+            '${change.toStringAsFixed(2)}%',
+            style: theme.ticker,
+          ),
+        ],
       ),
     );
   }

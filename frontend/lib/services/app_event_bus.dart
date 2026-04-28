@@ -18,6 +18,7 @@ enum AppEvent {
   newNotifcation, graphView, portalView, toggleNotificaitonView,
 }
 
+
 /// Broadcast stream bus.  One instance lives for the lifetime of the app,
 /// provided via [appEventBusProvider].  Emit with [emit]; listen via [stream].
 class AppEventBus {
@@ -25,7 +26,6 @@ class AppEventBus {
   final _tabSwitch  = StreamController<int>.broadcast();
 
   Stream<AppEvent> get stream         => _controller.stream;
-  /// Emits a 0-based tab index when the user presses ⌘+1…9.
   Stream<int>      get tabSwitchStream => _tabSwitch.stream;
 
   void emit(AppEvent event)    => _controller.add(event);

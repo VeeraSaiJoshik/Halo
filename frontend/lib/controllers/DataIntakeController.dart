@@ -33,12 +33,17 @@ class IntakeService {
 
   OnCandlesReady? onTickerSwitch;
 
+  // Fires with (latestClose, changePercent) whenever a new price is known.
+  // changePercent is relative to the close of the candle before it.
+  void Function(double price, double changePercent)? onPriceUpdate;
+
   String? _currentSymbol;
   String? _currentTimeframe;
   ResolvedTicker? _currentResolved;
   Timer? _pollTimer;
   CandleAggregator? _aggregator;
   DateTime? _lastCandleTimestamp;
+  double? _lastKnownClose;
   DetectionEngine? detectionEngine;
 
   late Function updateNotifications;
@@ -88,6 +93,17 @@ class IntakeService {
     print("Intake Source " + _currentResolved!.source.toString() + " returned " + history.length.toString() + " candles");
     if (history.isNotEmpty) {
       _lastCandleTimestamp = history.last.timestamp;
+      _lastKnownClose = history.last.close;
+
+      if (history.length >= 2) {
+        final prevClose = history[history.length - 2].close;
+        final changePercent = prevClose != 0
+            ? (history.last.close - prevClose) / prevClose * 100
+            : 0.0;
+        onPriceUpdate?.call(history.last.close, changePercent);
+      } else {
+        onPriceUpdate?.call(history.last.close, 0.0);
+      }
     }
 
     detectionEngine!.switchTicker(symbol, timeframe, history, source: _currentResolved!.source);
@@ -176,9 +192,29 @@ class IntakeService {
           return;
       }
 
+      // Always push the latest available price on every poll, not just when
+      // a new candle opens. This keeps the badge refreshing every 15 s.
+      if (recent.isNotEmpty) {
+        final latestClose = recent.last.close;
+        // Use the second-to-last candle as the reference so % change reflects
+        // "current candle vs the previous closed candle".  Fall back to
+        // _lastKnownClose when the response only contains a single candle.
+        final refClose = recent.length >= 2
+            ? recent[recent.length - 2].close
+            : _lastKnownClose;
+        if (refClose != null && refClose != 0) {
+          onPriceUpdate?.call(
+            latestClose,
+            (latestClose - refClose) / refClose * 100,
+          );
+        }
+      }
+
+      // Feed only genuinely new candles to the detection engine.
       for (final candle in recent) {
         if (_lastCandleTimestamp == null || candle.timestamp.isAfter(_lastCandleTimestamp!)) {
           _lastCandleTimestamp = candle.timestamp;
+          _lastKnownClose = candle.close;
           detectionEngine!.onCandle(candle);
 
           bool emitNotification = notificationController.postNotification();

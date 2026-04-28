@@ -30,6 +30,12 @@ class WindowInfo {
 
   List<String> notifications = [];
 
+  double webviewSplit = 0.5;
+  double notifFraction = 0.3;
+
+  double? latestPrice;
+  double? priceChangePercent;
+
   IntakeService intakeService;
 
   void portalDomListener(String DOM) {}
@@ -92,7 +98,7 @@ class AppController extends ChangeNotifier{
     }
 
     final portalController = createInAppWebView(
-      'https://www.webull.com/center', 
+      'https://app.webull.com/watch', 
       injectionScript: "assets/scripts/dom_listener.js",
     );
     final chartingController = createInAppWebView(
@@ -101,6 +107,12 @@ class AppController extends ChangeNotifier{
     );
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
+
+    newTab.intakeService.onPriceUpdate = (price, change) {
+      newTab.latestPrice = price;
+      newTab.priceChangePercent = change;
+      notifyListeners();
+    };
 
     tabs.add(
       newTab
