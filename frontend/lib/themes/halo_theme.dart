@@ -42,44 +42,57 @@ extension HaloThemeTypeExt on HaloThemeType {
   }
 }
 
+HaloThemeType parseString(String theme) {
+  switch(theme) {
+    case 'Golden':
+      return HaloThemeType.golden;
+    case 'Terminal':
+      return HaloThemeType.terminal;
+    case 'Meridian':
+      return HaloThemeType.meridian;
+    case 'Blue':
+      return HaloThemeType.blue;
+    case 'Green':
+      return HaloThemeType.green;
+    case 'Pink':
+      return HaloThemeType.pink;
+    case 'Red':
+      return HaloThemeType.red;
+  }
+
+  return HaloThemeType.golden;
+}
+
 abstract class HaloThemeData {
   HaloThemeType get type;
-
-  // Display — hero text, welcome screen titles
+ 
   TextStyle get displayLarge;
   TextStyle get displayMedium;
-
-  // Headline — section titles, page headings
+ 
   TextStyle get headlineLarge;
   TextStyle get headlineMedium;
 
-  // Title — prominent labels, button text
   TextStyle get titleLarge;
   TextStyle get titleMedium;
 
-  // Body — main and secondary content
   TextStyle get bodyLarge;
   TextStyle get bodyMedium;
 
-  // Label — uppercase tags, captions, URL bar, nav items
   TextStyle get labelLarge;
   TextStyle get labelSmall;
 
-  // Ticker — prices, numbers, financial data (always monospace)
   TextStyle get ticker;
   TextStyle get tickerLarge;
 
-  // Semantic text colors
   Color get textPrimary;
   Color get textSecondary;
   Color get textMuted;
   Color get textAccent;
 
-  // Background color system — drives BackgroundGradientAnimation
-  List<Color> get backgroundGradient; // 2-stop LinearGradient [start, end]
-  List<Color> get blobColors;         // 4-6 ambient blob colors
-  Color get glassOverlay;             // BackdropFilter container color (pre-opacity)
-  double get blobOpacity;             // Radial gradient center opacity (0.0–1.0)
+  List<Color> get backgroundGradient;
+  List<Color> get blobColors;
+  Color get glassOverlay;
+  double get blobOpacity;
   Color get accentColor;
   Color get whiteColor;
   Color get backgroundColor;

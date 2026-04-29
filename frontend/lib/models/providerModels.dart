@@ -19,7 +19,6 @@ class WindowNotifier extends StateNotifier<WindowParams>{
   void updateFullScreenStatus(bool isFullScreen) {
     state.isFullScreen = isFullScreen;
   }
-
 }
 
 final windowProvider = StateNotifierProvider<WindowNotifier, WindowParams>(
