@@ -8,8 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsHandler {
   late SharedPreferences globalSettings;
   
-  late Platform? buyingPlatform;
-  late Platform? chartingPlatform;
+  Platform? buyingPlatform;
+  Platform? chartingPlatform;
   HaloThemeType? theme;
   
   Future<bool> initialize() async {
@@ -38,7 +38,7 @@ class SettingsHandler {
   }
 
   bool onboardingFlag() {
-    return buyingPlatform != null && chartingPlatform != null && theme != null;
+    return buyingPlatform == null && chartingPlatform == null && theme == null;
   }
 
   Future<bool> saveFormControllerData (FormController form) async {

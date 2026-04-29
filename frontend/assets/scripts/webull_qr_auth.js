@@ -9,7 +9,7 @@
     };
     check();
   });
-  const span = await waitFor(() => document.querySelector('div.csr30 span'));
+  const span = await waitFor(() => document.querySelector('div.csr31'));
   if (span) span.click();
   window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
 })();
