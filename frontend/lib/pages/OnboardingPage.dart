@@ -1,9 +1,11 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/main.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
@@ -17,7 +19,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class FormController {
   int currentIndex = -1;
-  VoidCallback? onChanged;
+  int finalIndex = 5;
+  late VoidCallback onChanged;
+  late VoidCallback finishOnboarding;
   Platform? selectedBuyingPlatform;
   Platform? selectedChartingPlatform;
 
@@ -40,7 +44,12 @@ class FormController {
   
   void next() {
     currentIndex++;
-    onChanged?.call();
+
+    if(currentIndex == finalIndex) {
+      finishOnboarding.call();
+    } else {
+      onChanged.call();
+    }
   }
 
   bool nextAvailable() {
@@ -56,7 +65,7 @@ class FormController {
 
   void back() {
     currentIndex--;
-    onChanged?.call();
+    onChanged.call();
   }
 }
 
@@ -70,14 +79,22 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   bool showWelcome = true;
   bool loadWebView = false;
-  FormController formController = FormController();
   WebBundle? controller;
+  FormController formController = FormController();
+
+  Future<bool> finishOnboarding() async {
+    await ref.read(settingsProvider).saveFormControllerData(formController);
+    // something to trigger a cool animation
+
+    return true;
+  }
 
   void initState() {
     super.initState();
     formController.onChanged = () {
       setState(() {});
     };
+    formController.finishOnboarding = finishOnboarding;
   }
 
   void launchAuthWebView (WebBundle authController) {
