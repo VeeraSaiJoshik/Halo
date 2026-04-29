@@ -96,12 +96,12 @@ class _NavButtonState extends ConsumerState<NavButton> {
                     height: widget.height,
                     decoration: BoxDecoration(
                       color: widget.isAccented
-                          ? CustomColors.accent
+                          ? theme.accentColor
                           : CustomColors.background.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(
                         color: widget.isAccented
-                            ? CustomColors.accent
+                            ? theme.accentColor
                             : CustomColors.background.withValues(alpha: _hovered ? 0.4 : 0.07),
                         width: 1,
                       ),
@@ -130,7 +130,7 @@ class _NavButtonState extends ConsumerState<NavButton> {
                     child: FaIcon(
                       widget.icon,
                       color: widget.isAccented
-                          ? CustomColors.primary
+                          ? theme.primaryColor
                           : CustomColors.background.withValues(alpha: _hovered ? 1.0 : 0.85),
                       size: 15,
                     ),
@@ -215,7 +215,7 @@ class _UrlPillState extends State<_UrlPill> {
                       : FaIcon(
                           FontAwesomeIcons.lock,
                           key: const ValueKey('lock'),
-                          size: 8,
+                          size: 8, 
                           color: CustomColors.background
                               .withValues(alpha: _hovered ? 0.6 : 0.3),
                         ),

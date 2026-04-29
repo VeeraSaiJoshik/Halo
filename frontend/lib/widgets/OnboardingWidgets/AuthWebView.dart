@@ -104,7 +104,7 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: CustomColors.darkPurple.withValues(alpha: _hovered ? 1.0 : 0.9),
+                          color: widget.theme.primaryColor.withValues(alpha: _hovered ? 1.0 : 0.9),
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
                             color: widget.theme.whiteColor.withValues(alpha: 0.18),
@@ -112,7 +112,7 @@ class _WebViewCloseButtonState extends State<_WebViewCloseButton> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: CustomColors.darkPurple.withValues(alpha: _hovered ? 0.45 : 0.25),
+                              color: widget.theme.primaryColor.withValues(alpha: _hovered ? 0.45 : 0.25),
                               blurRadius: _hovered ? 22 : 14,
                               spreadRadius: 0,
                             ),
