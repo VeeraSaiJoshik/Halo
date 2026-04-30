@@ -10,7 +10,7 @@ import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/Buttons/plushyButton.dart';
 import 'package:frontend/widgets/OnboardingWidgets/OnboardingProtocols.dart';
 
-class PlatformAuthPage extends StatefulWidget {
+class PlatformAuthPage extends ConsumerStatefulWidget {
   final Platform authPlatform;
   Function launchAuthWebView;
   void Function() getReady;
@@ -26,10 +26,14 @@ class PlatformAuthPage extends StatefulWidget {
   });
 
   @override
-  State<PlatformAuthPage> createState() => _PlatformAuthPageState();
+  ConsumerState<PlatformAuthPage> createState() => _PlatformAuthPageState();
 }
 
-class _PlatformAuthPageState extends State<PlatformAuthPage> {
+enum go
+
+class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
+  bool redirectingToGoogle = false;
+  
   void _handleAuthTap(AuthMethods method) async {
     List<String> links = [];
 
@@ -55,80 +59,95 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
       }
     }
 
-    method.launchSignupMethod((controller) {
-      if (!mounted) return;
-      widget.launchAuthWebView(controller);
-    }, widget.getReady, () {
-      widget.exit.call();
+    if(method.runtimeType == GoogleAuth) {
+      (method as GoogleAuth).launchGoogleAuthWebView(() {
+        setState(() {
+          redirectingToGoogle = true;
+        });
+      });
+    } else {
+      method.launchSignupMethod((controller) {
+        if (!mounted) return;
+        widget.launchAuthWebView(controller);
+      }, widget.getReady, () {
+        widget.exit.call();
 
-      widget.controller.setAuthState(AuthState.authenticated);
-      widget.controller.onChanged?.call();
-    });
+        widget.controller.setAuthState(AuthState.authenticated);
+        widget.controller.onChanged?.call();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final theme = ref.watch(haloThemeProvider);
-        final authenticated = widget.authPlatform.authenticated;
+    final theme = ref.watch(haloThemeProvider);
+    final authenticated = widget.authPlatform.authenticated;
 
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo — gains a green ring when connected
-            SizedBox(
-              width: 100,
-              height: 100,
-              child: Image.asset(
-                widget.authPlatform.logoUrl,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              'Sign in to ${widget.authPlatform.id}',
-              style: theme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            // Swaps between subtitle and connected indicator
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              child: authenticated == AuthState.authenticated
-                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: true,) : 
-                  authenticated == AuthState.failedAuthentication
-                  ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: false,) : 
-                  authenticated == AuthState.checking ? 
-                  Row(
-                    spacing: 5,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        key: const ValueKey('hint'),
-                        'Verifying authentication',
-                        style: theme.bodyMedium.copyWith(
-                          color: theme.whiteColor.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                        width: 10,
-                        child: CircularProgressIndicator(
-                          color: theme.whiteColor.withValues(alpha: 0.6),
-                          strokeWidth: 2,
-                        ),    
-                      ),
-                    ],
-                  ) 
-                  : Text(
-                      key: const ValueKey('hint'),
-                      'Choose how you\'d like to authenticate',
-                      style: theme.bodyMedium.copyWith(
-                        color: theme.whiteColor.withValues(alpha: 0.6),
-                      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Logo — gains a green ring when connected
+        SizedBox(
+          width: !redirectingToGoogle ? null : 100,
+          height: !redirectingToGoogle ? 150 : 100,
+          child: Image.asset(
+            redirectingToGoogle ? widget.authPlatform.logoUrl : "assets/images/google_auth.png",
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 15),
+        Text(
+          'Sign in to ${widget.authPlatform.id}',
+          style: theme.headlineMedium,
+        ),
+        const SizedBox(height: 8),
+        // Swaps between subtitle and connected indicator
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          child:  authenticated == AuthState.authenticated
+              ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: true,) : 
+              authenticated == AuthState.failedAuthentication
+              ? _ConnectedPill(key: const ValueKey('pill'), theme: theme, success: false,) : 
+              authenticated == AuthState.checking ? Row(
+                spacing: 5,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    key: const ValueKey('hint'),
+                    'Verifying authentication',
+                    style: theme.bodyMedium.copyWith(
+                      color: theme.whiteColor.withValues(alpha: 0.6),
                     ),
-            ),
-            const SizedBox(height: 48),
+                  ),
+                  SizedBox(
+                    height: 10,
+                    width: 10,
+                    child: CircularProgressIndicator(
+                      color: theme.whiteColor.withValues(alpha: 0.6),
+                      strokeWidth: 2,
+                    ),    
+                  ),
+                ],
+              ) : 
+              redirectingToGoogle ? Text(
+                key: const ValueKey('hint'),
+                'Continue google auth in native browser',
+                style: theme.bodyMedium.copyWith(
+                  color: theme.whiteColor.withValues(alpha: 0.6),
+                ),
+              ) : 
+              Text(
+                key: const ValueKey('hint'),
+                'Choose how you\'d like to authenticate',
+                style: theme.bodyMedium.copyWith(
+                  color: theme.whiteColor.withValues(alpha: 0.6),
+                ),
+              ),
+        ),
+        const SizedBox(height: 48),
+        AnimatedSwitcher(
+          duration: Duration(milliseconds: 500), 
+          child: redirectingToGoogle ?
             Column(
               mainAxisSize: MainAxisSize.min,
               spacing: 12,
@@ -140,10 +159,21 @@ class _PlatformAuthPageState extends State<PlatformAuthPage> {
                   onTap: () => _handleAuthTap(method),
                 );
               }).toList(),
-            ),
-          ],
-        );
-      },
+            ) : 
+            Container()
+        )
+      ],
+    );
+  }
+}
+
+class _GoogleRedirectPlaceholder extends StatelessWidget {
+  const _GoogleRedirectPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(),
     );
   }
 }

@@ -48,6 +48,7 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_inappwebview: ^6.0.0
   shared_preferences: ^2.5.5
+  flutter_web_auth_2: ^5.0.2
 
 dev_dependencies:
   flutter_test:  
@@ -75,18 +76,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/scripts/
-    - assets/images/icon.png
-    - assets/images/search.png
-    - assets/images/graph.png
-
-    - assets/images/icons/Finiz.png
-    - assets/images/icons/TradingView.png
-    - assets/images/icons/Think or Swim.png
-
-    - assets/images/icons/Webull.png
-    - assets/images/icons/Robinhood.png
-
-    - assets/images/stock_image.png
+    - assets/images/
+    - assets/images/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
