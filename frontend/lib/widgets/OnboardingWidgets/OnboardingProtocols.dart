@@ -1,15 +1,10 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/browser/browser_constants.dart';
-import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/themes/theme_provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:frontend/widgets/OnboardingWidgets/CefAuthView.dart';
 
 abstract class AuthMethods {
   String get authName;
@@ -42,48 +37,18 @@ abstract class EmailAuth implements AuthMethods {
 class GoogleAuth implements AuthMethods {
   final String loginUrl;
   final String id;
+  final String cookieDomain;
+  final IsSuccessUrl isSuccessUrl;
 
-  const GoogleAuth({required this.loginUrl, required this.id});
+  const GoogleAuth({
+    required this.loginUrl,
+    required this.id,
+    required this.cookieDomain,
+    required this.isSuccessUrl,
+  });
 
   @override
   String get authName => 'Google';
-  
-  static Future<bool> openNativeBrowserAuth(String authUrl, VoidCallback onCache, VoidCallback onFinish) async {
-    try {
-      final modifiedUrl = authUrl.replaceFirst(
-        RegExp(r'redirect_uri=[^&]+'),
-        'redirect_uri=${Uri.encodeComponent('yourapp://auth/callback')}',
-      );
-
-      final result = await FlutterWebAuth2.authenticate(
-        url: modifiedUrl,
-        callbackUrlScheme: 'yourapp',
-      );
-
-      final uri = Uri.parse(result);
-      final sessionToken = uri.queryParameters['session'];
-      final accessToken = uri.queryParameters['access_token'];
-
-      onCache.call();
-      // Inject cookie directly into flutter_inappwebview's cookie store
-      await CookieManager.instance().setCookie(
-        url: WebUri('https://yourapp.com'),
-        name: 'session',
-        value: sessionToken!,
-        domain: 'yourapp.com',
-        path: '/',
-        isSecure: true,
-        isHttpOnly: true,
-        sameSite: HTTPCookieSameSitePolicy.LAX,
-      );
-
-      onFinish.call();
-    } catch (e) {
-      debugPrint('Auth failed: $e');
-    }
-    
-    return true;
-  }
 
   @override
   Widget get authLogo => Consumer(
@@ -101,45 +66,15 @@ class GoogleAuth implements AuthMethods {
   ) {
     final webBundle = WebBundle();
 
-    webBundle.widget = InAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(loginUrl)),
-      initialUserScripts: UnmodifiableListView([
-        UserScript(
-          source: kStealthScript,
-          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-        ),
-      ]),
-      initialSettings: InAppWebViewSettings(
-        userAgent: kDesktopChromeUA,
-        javaScriptEnabled: true,
-        useShouldOverrideUrlLoading: true,
-        sharedCookiesEnabled: false,
-        thirdPartyCookiesEnabled: true,
-      ),
-      onWebViewCreated: (controller) {
-        webBundle.controller = controller;
-      },
-      onLoadStop: (controller, url) {
-        getReady?.call();
-      },
-      shouldOverrideUrlLoading: (controller, nav) async {
-        if (!nav.isForMainFrame) return NavigationActionPolicy.ALLOW;
-        final url = nav.request.url?.toString() ?? '';
-        if (_isGoogleAuthUrl(url)) {
-          openNativeBrowserAuth(url, () {}, () => exit?.call());
-          return NavigationActionPolicy.CANCEL;
-        }
-        return NavigationActionPolicy.ALLOW;
-      },
+    webBundle.widget = CefAuthView(
+      loginUrl: loginUrl,
+      cookieDomain: cookieDomain,
+      isSuccessUrl: isSuccessUrl,
+      onLoaded: () => getReady?.call(),
+      onSuccess: () => exit?.call(),
     );
 
     onReady?.call(webBundle);
-  }
-
-  bool _isGoogleAuthUrl(String url) {
-    return url.contains('accounts.google.com') ||
-        url.contains('google.com/o/oauth2') ||
-        url.contains('oauth2/auth');
   }
 }
 
@@ -364,6 +299,8 @@ List<Platform> buyingPlatforms = [
         loginUrl:
             "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center",
         id: "webull",
+        cookieDomain: "webull.com",
+        isSuccessUrl: _isWebullSuccessUrl,
       ),
       WebullPhoneAuth(),
       WebullEmailAuth(),
@@ -387,6 +324,8 @@ List<Platform> chartingPlatforms = [
       GoogleAuth(
         loginUrl: "https://www.tradingview.com/sign-in/",
         id: "tradingview",
+        cookieDomain: "tradingview.com",
+        isSuccessUrl: _isTradingViewSuccessUrl,
       ),
       TradingViewEmailAuth(),
     ],
@@ -404,3 +343,14 @@ List<Platform> chartingPlatforms = [
     authMethods: [ThinkOrSwimIDAuth()],
   ),
 ];
+
+bool _isWebullSuccessUrl(String url) {
+  return url.contains('webull.com/center');
+}
+
+bool _isTradingViewSuccessUrl(String url) {
+  if (url.contains('accounts.google.com')) return false;
+  if (url.contains('/sign-in')) return false;
+  if (url.contains('/accounts/signin')) return false;
+  return url.contains('tradingview.com');
+}

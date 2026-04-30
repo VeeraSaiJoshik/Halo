@@ -9,7 +9,7 @@ import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebBundle {
-  InAppWebView? widget;
+  Widget? widget;
   InAppWebViewController? controller;
   int initialCookies = 0;
 

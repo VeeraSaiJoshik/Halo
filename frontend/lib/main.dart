@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/browser/browser_constants.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/settings.dart';
@@ -11,6 +12,7 @@ import 'package:frontend/browser/navigation_key.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/DevMenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_cef/webview_cef.dart';
 import 'package:window_manager/window_manager.dart';
 
 final settingsProvider = Provider<SettingsHandler>((ref) => throw UnimplementedError());
@@ -18,7 +20,8 @@ final settingsProvider = Provider<SettingsHandler>((ref) => throw UnimplementedE
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
-  
+  await WebviewManager().initialize(userAgent: kDesktopChromeUA);
+
   SettingsHandler globalSettings = SettingsHandler();
   await globalSettings.initialize();
 
