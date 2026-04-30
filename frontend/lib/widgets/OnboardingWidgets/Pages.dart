@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/cookie_manager.dart';
 import 'package:frontend/themes/halo_theme.dart';

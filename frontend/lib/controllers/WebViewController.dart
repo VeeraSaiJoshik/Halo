@@ -12,7 +12,7 @@ class WebBundle {
   InAppWebView? widget;
   InAppWebViewController? controller;
   int initialCookies = 0;
-  
+
   VoidCallback? reloadState;
 
   void reload() {
@@ -167,3 +167,4 @@ WebBundle createInAppWebView(
 
   return webBundle;
 }
+

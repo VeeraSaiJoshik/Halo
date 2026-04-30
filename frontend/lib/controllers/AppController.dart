@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/DataIntakeController.dart';
-import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/engine/clients/alpaca_client.dart';
 import 'package:frontend/engine/clients/binance_client.dart';
 import 'package:frontend/engine/clients/finnhub_client.dart';

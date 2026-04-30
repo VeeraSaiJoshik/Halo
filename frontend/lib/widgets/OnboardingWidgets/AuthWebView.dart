@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/controllers/createWebViewController.dart';
+import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:webview_flutter/webview_flutter.dart';
