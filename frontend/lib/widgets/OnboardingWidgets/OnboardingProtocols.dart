@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -100,17 +101,21 @@ class GoogleAuth implements AuthMethods {
     void Function()? exit,
   ) {}
 
-  String getJavaScriptByPlatform() {
-    switch (id) {
-      case "Webull":
-        return "";
-      case "Robinhood":
-        return "";
-      case "TradingView":
-        return "";
-    }
+  Future<String> getJavaScriptByPlatform() async {
+    const scriptPaths = {
+      'webull': 'assets/scripts/google_auth/webull.js',
+      'tradingview': 'assets/scripts/google_auth/tradingview.js',
+    };
 
-    return "";
+    final path = scriptPaths[id.toLowerCase()];
+    if (path == null) return '';
+
+    try {
+      return await rootBundle.loadString(path);
+    } catch (e) {
+      debugPrint('Failed to load Google auth script for $id: $e');
+      return '';
+    }
   }
 
   bool _isGoogleAuthUrl(String url) {
@@ -119,18 +124,19 @@ class GoogleAuth implements AuthMethods {
         url.contains('oauth2/auth');
   }
 
-  void launchGoogleAuthWebView(
+  Future<void> launchGoogleAuthWebView(
     Function redirectUrl,
     VoidCallback onCache,
     VoidCallback onFinish,
-  ) {
+  ) async {
+    final script = await getJavaScriptByPlatform();
     HeadlessInAppWebView? headlessView;
 
     headlessView = HeadlessInAppWebView(
       initialUrlRequest: URLRequest(url: WebUri(loginUrl)),
       initialUserScripts: UnmodifiableListView([
         UserScript(
-          source: getJavaScriptByPlatform(),
+          source: script,
           injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
         ),
       ]),

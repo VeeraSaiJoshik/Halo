@@ -1,38 +1,42 @@
-(async () => {
-  const waitFor = (findFn, timeout = 5000) => new Promise((resolve) => {
-    const start = Date.now();
-    const check = () => {
-      const el = findFn();
-      if (el) return resolve(el);
-      if (Date.now() - start > timeout) return resolve(null);
-      requestAnimationFrame(check);
-    };
-    check();
-  });
+(async () => {                                                  
+    const waitFor = (findFn, timeout = 5000) => new Promise((resolve) => {
+      const start = Date.now();                                                                                                                     
+      const poll = () => {
+        const el = findFn();                                                                                                                        
+        if (el) return resolve(el);                               
+        if (Date.now() - start > timeout) return resolve(null);                                                                                     
+        setTimeout(poll, 100);
+      };                                                                                                                                            
+      poll();                                                     
+    });
 
-  const clickEl = (el) => {
-    const target = el.closest('button, a, [role="button"], [onclick]') || el;
-    target.click();
-  };
-
-  const menuBtn = await waitFor(() =>
-    document.querySelector('[aria-label="Open user menu"]')
-    || [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Open user menu')
-  );
-  if (!menuBtn) { window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready'); return; }
-  clickEl(menuBtn);
-
-  const cls = 'label-jFqVJoPk.label-mDJVFqQ3.label-YQGjel_5';
-  const span = await waitFor(() => document.querySelector(`span.${cls}`));
-  if (!span) { window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready'); return; }
-  clickEl(span);
-
-  const emailBtn = await waitFor(() =>
-    [...document.querySelectorAll('button, a, [role="button"], span')]
-      .find(b => b.textContent.trim() === 'Email')
-  );
-  if (!emailBtn) { window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready'); return; }
-  clickEl(emailBtn);
-
-  window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
-})();
+    const done = () => {
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');                                                                          
+      }
+    };                                                                                                                                              
+                                                                  
+    // Step 1: Open menu
+    const menuBtn = await waitFor(() =>
+      document.querySelector('[aria-label="Open user menu"]')                                                                                       
+    );
+    if (!menuBtn) { console.log('❌ menuBtn not found'); done(); return; }                                                                          
+    console.log('✅ menuBtn found'); menuBtn.click();             
+                                                                                                                                                    
+    // Step 2: Click Sign in (stable data-name selector)
+    await new Promise(r => setTimeout(r, 500));                                                                                                     
+    const signInBtn = await waitFor(() =>                                                                                                           
+      document.querySelector('[data-name="header-user-menu-sign-in"]')
+    );                                                                                                                                              
+    if (!signInBtn) { console.log('❌ signInBtn not found'); done(); return; }
+    console.log('✅ signInBtn found'); signInBtn.click();                                                                                           
+   
+    // Step 3: Click Google button                                                                                                                  
+    const googleBtn = await waitFor(() =>                         
+      document.querySelector('div.nsm7Bb-HzV7m-LgbsSe-MJoBVe')                                                                                      
+    );
+    if (!googleBtn) { console.log('❌ googleBtn not found'); done(); return; }                                                                      
+    console.log('✅ googleBtn found'); googleBtn.click();         
+                                                                                                                                                    
+    done();
+  })();      
