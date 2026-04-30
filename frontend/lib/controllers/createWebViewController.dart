@@ -12,6 +12,8 @@ class WebBundle {
   InAppWebView? widget;
   InAppWebViewController? controller;
   int initialCookies = 0;
+  
+  VoidCallback? reloadState;
 
   void reload() {
     if(controller != null) {
@@ -90,8 +92,6 @@ WebBundle createInAppWebView(
       disableContextMenu: false,
       disableHorizontalScroll: false,
       disableVerticalScroll: false,
-      // Enable Safari DevTools inspection in debug mode:
-      // Safari → Develop → <device> → <page>
       isInspectable: kDebugMode,
     ),
     onWebViewCreated: (controller) async {
