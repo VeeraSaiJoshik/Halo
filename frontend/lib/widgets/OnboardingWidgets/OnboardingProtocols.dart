@@ -48,7 +48,7 @@ class GoogleAuth implements AuthMethods {
   @override
   String get authName => 'Google';
   
-  static Future<bool> openNativeBrowserAuth(String authUrl, VoidCallback onResponse) async {
+  static Future<bool> openNativeBrowserAuth(String authUrl, VoidCallback onCache, VoidCallback onFinish) async {
     try {
       final modifiedUrl = authUrl.replaceFirst(
         RegExp(r'redirect_uri=[^&]+'),
@@ -64,6 +64,7 @@ class GoogleAuth implements AuthMethods {
       final sessionToken = uri.queryParameters['session'];
       final accessToken = uri.queryParameters['access_token'];
 
+      onCache.call();
       // Inject cookie directly into flutter_inappwebview's cookie store
       await CookieManager.instance().setCookie(
         url: WebUri('https://yourapp.com'),
@@ -76,7 +77,7 @@ class GoogleAuth implements AuthMethods {
         sameSite: HTTPCookieSameSitePolicy.LAX,
       );
 
-      onResponse.call();
+      onFinish.call();
     } catch (e) {
       debugPrint('Auth failed: $e');
     }
@@ -120,6 +121,8 @@ class GoogleAuth implements AuthMethods {
 
   void launchGoogleAuthWebView(
     Function redirectUrl,
+    VoidCallback onCache,
+    VoidCallback onFinish,
   ) {
     HeadlessInAppWebView? headlessView;
 
@@ -136,6 +139,7 @@ class GoogleAuth implements AuthMethods {
         if (!_isGoogleAuthUrl(requestUrl)) return NavigationActionPolicy.ALLOW;
 
         redirectUrl.call(requestUrl);
+        openNativeBrowserAuth(requestUrl, onCache, onFinish);
         await headlessView!.dispose();
 
         return NavigationActionPolicy.CANCEL;

@@ -29,10 +29,15 @@ class PlatformAuthPage extends ConsumerStatefulWidget {
   ConsumerState<PlatformAuthPage> createState() => _PlatformAuthPageState();
 }
 
-enum go
+enum RedirectStatus {
+  idle, 
+  acquiring_link, 
+  redirecting, 
+  post_processing
+}
 
 class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
-  bool redirectingToGoogle = false;
+  RedirectStatus redirectingToGoogle = RedirectStatus.idle;
   
   void _handleAuthTap(AuthMethods method) async {
     List<String> links = [];
@@ -60,11 +65,14 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
     }
 
     if(method.runtimeType == GoogleAuth) {
-      (method as GoogleAuth).launchGoogleAuthWebView(() {
-        setState(() {
-          redirectingToGoogle = true;
-        });
+      setState(() {
+        redirectingToGoogle = RedirectStatus.acquiring_link;
       });
+      (method as GoogleAuth).launchGoogleAuthWebView(
+        () => setState(() {redirectingToGoogle = RedirectStatus.redirecting;}),
+        () => setState(() {redirectingToGoogle = RedirectStatus.post_processing;}),
+        () => setState(() {redirectingToGoogle = RedirectStatus.idle;})
+      );
     } else {
       method.launchSignupMethod((controller) {
         if (!mounted) return;
@@ -88,10 +96,10 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
       children: [
         // Logo — gains a green ring when connected
         SizedBox(
-          width: !redirectingToGoogle ? null : 100,
-          height: !redirectingToGoogle ? 150 : 100,
+          width: redirectingToGoogle != RedirectStatus.idle ? null : 100,
+          height: redirectingToGoogle != RedirectStatus.idle ? 150 : 100,
           child: Image.asset(
-            redirectingToGoogle ? widget.authPlatform.logoUrl : "assets/images/google_auth.png",
+            redirectingToGoogle != RedirectStatus.idle ? "assets/images/google_auth.png" : widget.authPlatform.logoUrl,
             fit: BoxFit.contain,
           ),
         ),
@@ -129,9 +137,13 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
                   ),
                 ],
               ) : 
-              redirectingToGoogle ? Text(
-                key: const ValueKey('hint'),
-                'Continue google auth in native browser',
+              redirectingToGoogle != RedirectStatus.idle ? Text(
+                key: const ValueKey('redirect_hint'),
+                redirectingToGoogle == RedirectStatus.acquiring_link ? 
+                'Redirecting you to secure google auth' : 
+                redirectingToGoogle == RedirectStatus.redirecting ? 
+                "Continue google auth in native browser" : 
+                "Injecting cookies",
                 style: theme.bodyMedium.copyWith(
                   color: theme.whiteColor.withValues(alpha: 0.6),
                 ),
@@ -147,7 +159,7 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
         const SizedBox(height: 48),
         AnimatedSwitcher(
           duration: Duration(milliseconds: 500), 
-          child: redirectingToGoogle ?
+          child: redirectingToGoogle == RedirectStatus.idle ?
             Column(
               mainAxisSize: MainAxisSize.min,
               spacing: 12,
