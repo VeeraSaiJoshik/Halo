@@ -1,12 +1,11 @@
 import 'dart:collection';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:frontend/browser/browser_constants.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/themes/theme_provider.dart';
@@ -99,60 +98,48 @@ class GoogleAuth implements AuthMethods {
     void Function(WebBundle)? onReady,
     void Function()? getReady,
     void Function()? exit,
-  ) {}
+  ) {
+    final webBundle = WebBundle();
 
-  Future<String> getJavaScriptByPlatform() async {
-    const scriptPaths = {
-      'webull': 'assets/scripts/google_auth/webull.js',
-      'tradingview': 'assets/scripts/google_auth/tradingview.js',
-    };
+    webBundle.widget = InAppWebView(
+      initialUrlRequest: URLRequest(url: WebUri(loginUrl)),
+      initialUserScripts: UnmodifiableListView([
+        UserScript(
+          source: kStealthScript,
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      ]),
+      initialSettings: InAppWebViewSettings(
+        userAgent: kDesktopChromeUA,
+        javaScriptEnabled: true,
+        useShouldOverrideUrlLoading: true,
+        sharedCookiesEnabled: false,
+        thirdPartyCookiesEnabled: true,
+      ),
+      onWebViewCreated: (controller) {
+        webBundle.controller = controller;
+      },
+      onLoadStop: (controller, url) {
+        getReady?.call();
+      },
+      shouldOverrideUrlLoading: (controller, nav) async {
+        if (!nav.isForMainFrame) return NavigationActionPolicy.ALLOW;
+        final url = nav.request.url?.toString() ?? '';
+        if (_isGoogleAuthUrl(url)) {
+          openNativeBrowserAuth(url, () {}, () => exit?.call());
+          return NavigationActionPolicy.CANCEL;
+        }
+        return NavigationActionPolicy.ALLOW;
+      },
+    );
 
-    final path = scriptPaths[id.toLowerCase()];
-    if (path == null) return '';
-
-    try {
-      return await rootBundle.loadString(path);
-    } catch (e) {
-      debugPrint('Failed to load Google auth script for $id: $e');
-      return '';
-    }
+    onReady?.call(webBundle);
   }
 
   bool _isGoogleAuthUrl(String url) {
     return url.contains('accounts.google.com') ||
         url.contains('google.com/o/oauth2') ||
         url.contains('oauth2/auth');
-  }
-
-  Future<void> launchGoogleAuthWebView(
-    Function redirectUrl,
-    VoidCallback onCache,
-    VoidCallback onFinish,
-  ) async {
-    final script = await getJavaScriptByPlatform();
-    HeadlessInAppWebView? headlessView;
-
-    headlessView = HeadlessInAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(loginUrl)),
-      initialUserScripts: UnmodifiableListView([
-        UserScript(
-          source: script,
-          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-        ),
-      ]),
-      shouldOverrideUrlLoading: (controller, nav) async {
-        final requestUrl = nav.request.url?.toString() ?? '';
-        if (!_isGoogleAuthUrl(requestUrl)) return NavigationActionPolicy.ALLOW;
-
-        redirectUrl.call(requestUrl);
-        openNativeBrowserAuth(requestUrl, onCache, onFinish);
-        await headlessView!.dispose();
-
-        return NavigationActionPolicy.CANCEL;
-      },
-    );
-
-    headlessView.run();
   }
 }
 

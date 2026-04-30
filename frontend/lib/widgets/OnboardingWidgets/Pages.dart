@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/cookie_manager.dart';
 import 'package:frontend/themes/halo_theme.dart';
@@ -29,16 +27,7 @@ class PlatformAuthPage extends ConsumerStatefulWidget {
   ConsumerState<PlatformAuthPage> createState() => _PlatformAuthPageState();
 }
 
-enum RedirectStatus {
-  idle, 
-  acquiring_link, 
-  redirecting, 
-  post_processing
-}
-
 class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
-  RedirectStatus redirectingToGoogle = RedirectStatus.idle;
-  
   void _handleAuthTap(AuthMethods method) async {
     List<String> links = [];
 
@@ -64,26 +53,14 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
       }
     }
 
-    if(method.runtimeType == GoogleAuth) {
-      setState(() {
-        redirectingToGoogle = RedirectStatus.acquiring_link;
-      });
-      (method as GoogleAuth).launchGoogleAuthWebView(
-        () => setState(() {redirectingToGoogle = RedirectStatus.redirecting;}),
-        () => setState(() {redirectingToGoogle = RedirectStatus.post_processing;}),
-        () => setState(() {redirectingToGoogle = RedirectStatus.idle;})
-      );
-    } else {
-      method.launchSignupMethod((controller) {
-        if (!mounted) return;
-        widget.launchAuthWebView(controller);
-      }, widget.getReady, () {
-        widget.exit.call();
-
-        widget.controller.setAuthState(AuthState.authenticated);
-        widget.controller.onChanged?.call();
-      });
-    }
+    method.launchSignupMethod((controller) {
+      if (!mounted) return;
+      widget.launchAuthWebView(controller);
+    }, widget.getReady, () {
+      widget.exit.call();
+      widget.controller.setAuthState(AuthState.authenticated);
+      widget.controller.onChanged?.call();
+    });
   }
 
   @override
@@ -94,12 +71,11 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Logo — gains a green ring when connected
         SizedBox(
-          width: redirectingToGoogle != RedirectStatus.idle ? null : 100,
-          height: redirectingToGoogle != RedirectStatus.idle ? 150 : 100,
+          width: 100,
+          height: 100,
           child: Image.asset(
-            redirectingToGoogle != RedirectStatus.idle ? "assets/images/google_auth.png" : widget.authPlatform.logoUrl,
+            widget.authPlatform.logoUrl,
             fit: BoxFit.contain,
           ),
         ),
@@ -137,17 +113,6 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
                   ),
                 ],
               ) : 
-              redirectingToGoogle != RedirectStatus.idle ? Text(
-                key: const ValueKey('redirect_hint'),
-                redirectingToGoogle == RedirectStatus.acquiring_link ? 
-                'Redirecting you to secure google auth' : 
-                redirectingToGoogle == RedirectStatus.redirecting ? 
-                "Continue google auth in native browser" : 
-                "Injecting cookies",
-                style: theme.bodyMedium.copyWith(
-                  color: theme.whiteColor.withValues(alpha: 0.6),
-                ),
-              ) : 
               Text(
                 key: const ValueKey('hint'),
                 'Choose how you\'d like to authenticate',
@@ -157,22 +122,17 @@ class _PlatformAuthPageState extends ConsumerState<PlatformAuthPage> {
               ),
         ),
         const SizedBox(height: 48),
-        AnimatedSwitcher(
-          duration: Duration(milliseconds: 500), 
-          child: redirectingToGoogle == RedirectStatus.idle ?
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 12,
-              children: widget.authPlatform.authMethods.map((method) {
-                return _AuthMethodButton(
-                  method: method,
-                  brandColor: Colors.transparent,
-                  selected: false,
-                  onTap: () => _handleAuthTap(method),
-                );
-              }).toList(),
-            ) : 
-            Container()
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: widget.authPlatform.authMethods.map((method) {
+            return _AuthMethodButton(
+              method: method,
+              brandColor: Colors.transparent,
+              selected: false,
+              onTap: () => _handleAuthTap(method),
+            );
+          }).toList(),
         )
       ],
     );
