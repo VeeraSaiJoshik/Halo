@@ -62,7 +62,7 @@ class _WebViewState extends ConsumerState<CustomWebView>
         ),
         child: Stack(
           children: [ 
-            widget.context.browserControllerReady && widget.controller.loadingComplete?  
+            widget.controller.loadingComplete?  
               widget.controller.widget! : 
               Center(child: GlassProgressIndicator.circular(),)
             ,

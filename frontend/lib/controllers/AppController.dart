@@ -21,13 +21,15 @@ enum AppPage {
 
 class WindowInfo {
   final StockName Stock;
+  
   final WebBundle? portalController;
+  
   final WebBundle? chartController;
+  
   late bool isActive;
   late String uuid;
   late List<AppPage> pages;
   bool aiListenerReady = false;
-  bool browserControllerReady = true;
 
   List<String> notifications = [];
 
