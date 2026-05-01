@@ -82,7 +82,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   FormController formController = FormController();
 
   Future<bool> finishOnboarding(BuildContext context) async {
-    await ref.read(settingsProvider).saveFormControllerData(formController);
+    await ref.read(settingsProvider).saveFormControllerData(formController, ref.read(haloThemeTypeProvider));
     Navigator.of(context).popAndPushNamed("HomePage");
 
     return true;

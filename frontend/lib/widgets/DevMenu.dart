@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../main.dart';
+import '../services/logout_service.dart';
 import '../themes/halo_theme.dart';
 import '../themes/theme_provider.dart';
 
@@ -85,6 +87,14 @@ class DevMenu extends ConsumerWidget {
                             onClose();
                           },
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      _LogoutButton(
+                        onTap: () async {
+                          final settings = ref.read(settingsProvider);
+                          onClose();
+                          await logoutAndReset(context, settings);
+                        },
                       ),
                       const SizedBox(height: 4),
                       Center(
@@ -244,6 +254,77 @@ class _ThemeCardState extends ConsumerState<_ThemeCard> {
                   Icon(Icons.check_rounded, color: _accent, size: 16),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutButton extends ConsumerStatefulWidget {
+  final VoidCallback onTap;
+  const _LogoutButton({required this.onTap});
+
+  @override
+  ConsumerState<_LogoutButton> createState() => _LogoutButtonState();
+}
+
+class _LogoutButtonState extends ConsumerState<_LogoutButton> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
+    const accent = Color(0xFFF87171);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
+            color: _hovering ? accent.withOpacity(0.12) : accent.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: accent.withOpacity(_hovering ? 0.45 : 0.25),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.logout_rounded, color: accent, size: 16),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sign out',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.whiteColor.withOpacity(0.85),
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Clears cookies and local settings',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: accent.withOpacity(0.7),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

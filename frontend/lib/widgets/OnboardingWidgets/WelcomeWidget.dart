@@ -66,7 +66,7 @@ class _WelcomewidgetState extends State<Welcomewidget> {
         const SizedBox(height: 56),
 
         PlushyButton(
-          onPressed: widget.formController.next,
+          onPressed: () => widget.formController.next(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
