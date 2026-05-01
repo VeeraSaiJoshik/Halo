@@ -28,7 +28,6 @@ class _WebViewState extends ConsumerState<CustomWebView>
   @override
   void initState() {
     super.initState();
-
     widget.controller.reloadState = () => setState(() => {});
 
     _animController = AnimationController(
@@ -63,7 +62,7 @@ class _WebViewState extends ConsumerState<CustomWebView>
         ),
         child: Stack(
           children: [ 
-            widget.context.browserControllerReady ?  
+            widget.context.browserControllerReady && widget.controller.loadingComplete?  
               widget.controller.widget! : 
               Center(child: GlassProgressIndicator.circular(),)
             ,

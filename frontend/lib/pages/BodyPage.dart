@@ -31,7 +31,16 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
       } else if (event == AppEvent.toggleNotificaitonView) {
         ref.read(appControllerProvider).toggleNotifications();
       } else if (event == AppEvent.openSettings) {
-        ref.read(appControllerProvider).openSettings();
+        final controller = ref.read(appControllerProvider);
+        if (controller.settingsOpen) {
+          if (controller.tabs.isNotEmpty) {
+            controller.switchTab(controller.tabs.first);
+          } else {
+            controller.closeSettings();
+          }
+        } else {
+          controller.openSettings();
+        }
       }
     });
     bus.tabSwitchStream.listen((index) {

@@ -113,15 +113,23 @@ class AppController extends ChangeNotifier{
       switchTab(tabs.elementAt(tabExists));
       return;
     }
-
-    final portalController = createInAppWebView(
+    
+    WebBundle portalController = createInAppWebView(
       'https://app.webull.com/watch', 
       injectionScript: "assets/scripts/dom_listener.js",
-      startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase())
+      startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase()), 
+      onReady: (controller) {
+        controller.loadingComplete = true;
+        controller.reloadState!();
+      },
     );
-    final chartingController = createInAppWebView(
+    WebBundle chartingController = createInAppWebView(
       'https://www.tradingview.com/chart/d3IIUEuI/', 
-      injectionScript: "assets/scripts/dom_listener.js"
+      injectionScript: "assets/scripts/dom_listener.js", 
+      onReady: (controller) {
+        controller.loadingComplete = true;
+        controller.reloadState!();
+      },
     );
 
     WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
