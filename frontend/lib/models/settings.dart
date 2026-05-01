@@ -42,6 +42,11 @@ class SettingsHandler {
     return buyingPlatform == null && chartingPlatform == null && theme == null;
   }
 
+  Future<void> applyTheme(HaloThemeType type) async {
+    theme = type;
+    await globalSettings.setString("themeId", type.displayName);
+  }
+
   Future<bool> saveFormControllerData (FormController form, HaloThemeType theme) async {
     if(
       form.selectedBuyingPlatform == null ||

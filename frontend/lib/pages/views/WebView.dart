@@ -28,6 +28,9 @@ class _WebViewState extends ConsumerState<CustomWebView>
   @override
   void initState() {
     super.initState();
+
+    widget.controller.reloadState = () => setState(() => {});
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),

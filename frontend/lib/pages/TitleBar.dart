@@ -29,6 +29,8 @@ class _TitleBarState extends ConsumerState<TitleBar> {
 
   double newTabTilt = 0;
   bool _newTabPressed = false;
+  double _settingsTilt = 0;
+  bool _settingsPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,42 @@ class _TitleBarState extends ConsumerState<TitleBar> {
                 )
               ),
             ),
-          )
+          ),
+          const Spacer(),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _settingsTilt = 0.08),
+            onExit:  (_) => setState(() => _settingsTilt = 0),
+            child: GestureDetector(
+              onTap: () => ref.read(appEventBusProvider).emit(AppEvent.openSettings),
+              onTapDown:   (_) => setState(() => _settingsPressed = true),
+              onTapUp:     (_) => setState(() => _settingsPressed = false),
+              onTapCancel: ()  => setState(() => _settingsPressed = false),
+              child: SizedBox(
+                height: 38,
+                width: 32,
+                child: Center(
+                  child: AnimatedScale(
+                    scale: _settingsPressed ? 0.78 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeOut,
+                    child: AnimatedRotation(
+                      turns: _settingsTilt,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: FaIcon(
+                        FontAwesomeIcons.gear,
+                        size: 14,
+                        color: controller.settingsOpen
+                            ? CustomColors.background
+                            : CustomColors.background.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -40,6 +40,25 @@ extension HaloThemeTypeExt on HaloThemeType {
         return 'Crimson Fire';
     }
   }
+
+  Color get previewAccent {
+    switch (this) {
+      case HaloThemeType.golden:
+        return const Color(0xFFF59E0B);
+      case HaloThemeType.terminal:
+        return const Color(0xFF00D97A);
+      case HaloThemeType.meridian:
+        return const Color(0xFF3B82F6);
+      case HaloThemeType.blue:
+        return const Color(0xFF60A5FA);
+      case HaloThemeType.green:
+        return const Color(0xFF34D399);
+      case HaloThemeType.pink:
+        return const Color(0xFFF472B6);
+      case HaloThemeType.red:
+        return const Color(0xFFF87171);
+    }
+  }
 }
 
 HaloThemeType parseString(String theme) {

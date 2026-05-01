@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/pages/SettingsPage.dart';
 import 'package:frontend/pages/views/AISummaryView.dart';
 import 'package:frontend/pages/views/WebView.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -29,6 +30,8 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
         ref.read(appControllerProvider).switchTabSubPage(AppPage.GRAPH_VIEWER);
       } else if (event == AppEvent.toggleNotificaitonView) {
         ref.read(appControllerProvider).toggleNotifications();
+      } else if (event == AppEvent.openSettings) {
+        ref.read(appControllerProvider).openSettings();
       }
     });
     bus.tabSwitchStream.listen((index) {
@@ -201,6 +204,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
     final appController = ref.watch(appControllerProvider);
     final theme = ref.watch(haloThemeProvider);
     final bool tabExists = appController.getCurrentTab() != null;
+    final bool showSettings = appController.settingsOpen;
 
     return Container(
       margin: EdgeInsets.fromLTRB(5, 0, 5, 5),
@@ -223,22 +227,24 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
                   // All tabs are rendered simultaneously. Inactive tabs are
                   // wrapped in Offstage so their WebViews stay loaded while
                   // hidden, making tab switches instant.
-                  child: appController.tabs.isEmpty
-                      ? _EmptyState()
-                      : Stack(
-                          children: [
-                            for (final tab in appController.tabs)
-                              Positioned.fill(
-                                child: Offstage(
-                                  offstage: !tab.isActive,
-                                  child: _buildTabContent(tab),
-                                ),
-                              ),
-                          ],
-                        ),
+                  child: showSettings
+                      ? const SettingsPage()
+                      : (appController.tabs.isEmpty
+                          ? _EmptyState()
+                          : Stack(
+                              children: [
+                                for (final tab in appController.tabs)
+                                  Positioned.fill(
+                                    child: Offstage(
+                                      offstage: !tab.isActive,
+                                      child: _buildTabContent(tab),
+                                    ),
+                                  ),
+                              ],
+                            )),
                 ),
-                tabExists ? AddSubSection(side: Side.left) : const SizedBox(),
-                tabExists ? AddSubSection(side: Side.right) : const SizedBox(),
+                (tabExists && !showSettings) ? AddSubSection(side: Side.left) : const SizedBox(),
+                (tabExists && !showSettings) ? AddSubSection(side: Side.right) : const SizedBox(),
               ],
             ),
           ),

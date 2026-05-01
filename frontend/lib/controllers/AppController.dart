@@ -87,10 +87,26 @@ class WindowInfo {
 class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
   IntakeService intakeEngine;
+  bool settingsOpen = false;
 
   AppController({required this.intakeEngine});
 
+  void openSettings() {
+    settingsOpen = true;
+    for (final window in tabs) {
+      window.isActive = false;
+    }
+    notifyListeners();
+  }
+
+  void closeSettings() {
+    if (!settingsOpen) return;
+    settingsOpen = false;
+    notifyListeners();
+  }
+
   void newTab(StockName stock, AppEventBus eventBus) {
+    settingsOpen = false;
     final tabExists = tabs.indexWhere((tab) => tab.Stock.symbol == stock.symbol);
 
     if(tabExists != -1) {
@@ -134,6 +150,7 @@ class AppController extends ChangeNotifier{
   }
 
   void switchTab(WindowInfo tab) {
+    settingsOpen = false;
     late WindowInfo currentTab;
     for(WindowInfo window in tabs) {
       if(window.uuid == tab.uuid) {

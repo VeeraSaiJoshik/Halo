@@ -12,6 +12,7 @@ class WebBundle {
   InAppWebView? widget;
   InAppWebViewController? controller;
   int initialCookies = 0;
+  bool loadingComplete = false;
 
   VoidCallback? reloadState;
 

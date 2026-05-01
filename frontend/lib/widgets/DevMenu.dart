@@ -82,8 +82,9 @@ class DevMenu extends ConsumerWidget {
                         (type) => _ThemeCard(
                           type: type,
                           isSelected: type == currentType,
-                          onTap: () {
+                          onTap: () async {
                             ref.read(haloThemeTypeProvider.notifier).state = type;
+                            await ref.read(settingsProvider).applyTheme(type);
                             onClose();
                           },
                         ),
