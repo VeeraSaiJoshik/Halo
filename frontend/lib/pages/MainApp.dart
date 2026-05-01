@@ -28,10 +28,14 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
   void initState() {
     super.initState();
     windowManager.addListener(this);
-    
-    print(ref.read(settingsProvider).theme);
-    if(ref.read(settingsProvider).theme != null) {
-      ref.read(haloThemeTypeProvider.notifier).state = ref.read(settingsProvider).theme!;
+
+    final savedTheme = ref.read(settingsProvider).theme;
+    print(savedTheme);
+    if (savedTheme != null) {
+      Future.microtask(() {
+        if (!mounted) return;
+        ref.read(haloThemeTypeProvider.notifier).state = savedTheme;
+      });
     }
   }
 
@@ -40,9 +44,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
     windowManager.removeListener(this);
     super.dispose();
   }
-
   
-
   @override
   void onWindowEnterFullScreen() => setState(() => 
     ref.read(windowProvider.notifier).updateFullScreenStatus(true)

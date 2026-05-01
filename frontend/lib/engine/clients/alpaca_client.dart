@@ -74,6 +74,30 @@ class AlpacaClient {
     return _barToCandle(bar);
   }
 
+  Future<double?> getLatestPrice(String symbol) async {
+    try {
+      final tradeUri = Uri.parse('$baseUrl/v2/stocks/$symbol/trades/latest')
+          .replace(queryParameters: const {'feed': 'iex'});
+      final tradeResponse = await _httpClient.get(tradeUri, headers: _headers);
+      if (tradeResponse.statusCode == 200) {
+        final data = jsonDecode(tradeResponse.body) as Map<String, dynamic>;
+        final trade = data['trade'] as Map<String, dynamic>?;
+        final price = _maybeDouble(trade?['p']);
+        if (price != null) return price;
+      }
+    } catch (_) {}
+
+    final bar = await getLatestBar(symbol);
+    return bar?.close;
+  }
+
+  double? _maybeDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
   void close() {
     if (_ownsClient) {
       _httpClient.close();

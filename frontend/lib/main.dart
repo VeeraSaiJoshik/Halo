@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/customColors.dart';
-import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/settings.dart';
-import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/pages/MainApp.dart';
-import 'package:frontend/pages/OnboardingPage.dart';
-import 'package:frontend/services/app_event_bus.dart';
-import 'package:frontend/browser/navigation_key.dart';
-import 'package:frontend/themes/theme_provider.dart';
-import 'package:frontend/widgets/DevMenu.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {

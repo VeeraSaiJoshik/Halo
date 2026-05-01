@@ -151,9 +151,28 @@ class IntakeService {
 
   void _startPolling() {
     _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) async {
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       await _pollForNewCandles();
     });
+    Future(() => _pollForNewCandles());
+  }
+
+  Future<double?> _fetchLatestPrice(ResolvedTicker resolved) async {
+    try {
+      switch (resolved.source) {
+        case DataSource.alpaca:
+          return await alpacaClient?.getLatestPrice(resolved.apiSymbol);
+        case DataSource.binance:
+          return await binanceClient.getLatestPrice(resolved.apiSymbol);
+        case DataSource.finnhub:
+          return await finnhubClient?.getLatestPrice(resolved.apiSymbol);
+        default:
+          return null;
+      }
+    } catch (e) {
+      print('[IntakeService] Live-price error: $e');
+      return null;
+    }
   }
 
   Future<void> _pollForNewCandles() async {
@@ -192,17 +211,36 @@ class IntakeService {
           return;
       }
 
-      // Always push the latest available price on every poll, not just when
-      // a new candle opens. This keeps the badge refreshing every 15 s.
+      // Push the freshest price on every poll. We prefer a live-price
+      // endpoint (latest trade / live quote / in-progress 1m bar) so the
+      // badge keeps moving inside a single bar.
       if (recent.isNotEmpty) {
-        final latestClose = recent.last.close;
-        // Use the second-to-last candle as the reference so % change reflects
-        // "current candle vs the previous closed candle".  Fall back to
-        // _lastKnownClose when the response only contains a single candle.
-        final refClose = recent.length >= 2
-            ? recent[recent.length - 2].close
-            : _lastKnownClose;
-        if (refClose != null && refClose != 0) {
+        final livePrice = await _fetchLatestPrice(_currentResolved!);
+
+        // Binance klines include the in-progress bar as recent.last; Alpaca
+        // and Finnhub return only closed bars. Pick the right reference:
+        // we want the close of the most recently *finalized* bar.
+        final isBinance = _currentResolved!.source == DataSource.binance;
+        final closedCandleClose = isBinance
+            ? (recent.length >= 2 ? recent[recent.length - 2].close : null)
+            : recent.last.close;
+
+        final double? latestClose;
+        final double? refClose;
+        if (livePrice != null) {
+          latestClose = livePrice;
+          refClose = closedCandleClose ?? _lastKnownClose;
+        } else {
+          // Fallback: no live endpoint available, use candle data only.
+          latestClose = recent.last.close;
+          refClose = isBinance
+              ? closedCandleClose
+              : (recent.length >= 2
+                  ? recent[recent.length - 2].close
+                  : _lastKnownClose);
+        }
+
+        if (latestClose != null && refClose != null && refClose != 0) {
           onPriceUpdate?.call(
             latestClose,
             (latestClose - refClose) / refClose * 100,

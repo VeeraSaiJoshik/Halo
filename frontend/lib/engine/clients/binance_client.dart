@@ -57,6 +57,24 @@ class BinanceClient {
     return candles;
   }
 
+  Future<double?> getLatestPrice(String symbol) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/v3/ticker/price').replace(
+        queryParameters: <String, String>{'symbol': symbol},
+      );
+      final response = await _httpClient.get(uri);
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = data['price'];
+      if (raw is num) return raw.toDouble();
+      if (raw is String) return double.tryParse(raw);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void close() {
     if (_ownsClient) {
       _httpClient.close();

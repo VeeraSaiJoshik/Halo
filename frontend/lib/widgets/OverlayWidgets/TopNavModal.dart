@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/themes/theme_provider.dart';
 
-class TopNavModel extends StatelessWidget {
+class TopNavModel extends ConsumerWidget {
   final Function closeTab;
   final Function reload;
   final String url;
@@ -18,14 +18,16 @@ class TopNavModel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(haloThemeProvider);
+
     return Container(
       margin: const EdgeInsets.only(top: 5),
       decoration: BoxDecoration(
-        color: CustomColors.primary.withValues(alpha: 0.96),
+        color: theme.primaryColor.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
-          color: CustomColors.background.withValues(alpha: 0.1),
+          color: theme.backgroundColor.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
@@ -71,6 +73,8 @@ class _NavButtonState extends ConsumerState<NavButton> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
+    print("the theme type ${theme.runtimeType}");
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),

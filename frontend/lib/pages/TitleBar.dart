@@ -1,13 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/commandButtons.dart';
 import 'package:frontend/widgets/window_tab.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 class TitleBar extends ConsumerStatefulWidget {
   const TitleBar({super.key});
@@ -35,6 +33,8 @@ class _TitleBarState extends ConsumerState<TitleBar> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(appControllerProvider);
+    final theme = ref.watch(haloThemeProvider);
+    final iconColor = theme.whiteColor;
     return Container(
       width: double.infinity,
       height: 40,
@@ -70,7 +70,7 @@ class _TitleBarState extends ConsumerState<TitleBar> {
                       turns: newTabTilt,
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOut,
-                      child: FaIcon(FontAwesomeIcons.plus, size: 15, color: CustomColors.background),
+                      child: FaIcon(FontAwesomeIcons.plus, size: 15, color: iconColor),
                     ),
                   ),
                 )
@@ -103,8 +103,8 @@ class _TitleBarState extends ConsumerState<TitleBar> {
                         FontAwesomeIcons.gear,
                         size: 14,
                         color: controller.settingsOpen
-                            ? CustomColors.background
-                            : CustomColors.background.withOpacity(0.7),
+                            ? iconColor
+                            : iconColor.withOpacity(0.7),
                       ),
                     ),
                   ),

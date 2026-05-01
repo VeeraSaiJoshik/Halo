@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/themes/theme_provider.dart';
 
 /// A styled button whose size is entirely determined by [child].
@@ -55,15 +54,15 @@ class _StandardButtonState extends ConsumerState<StandardButton> {
                 duration: const Duration(milliseconds: 300),
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: CustomColors.darkPurple,
+                  color: theme.primaryColor,
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
-                    color: CustomColors.purple,
+                    color: theme.accentColor.withOpacity(0.6),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: CustomColors.purple.withValues(
+                      color: theme.accentColor.withValues(
                         alpha: _hovered ? 0.6 : 0.3,
                       ),
                       blurRadius: _hovered ? 15 : 8,

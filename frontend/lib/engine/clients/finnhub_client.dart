@@ -90,6 +90,38 @@ class FinnhubClient {
     return candles;
   }
 
+  Future<double?> getLatestPrice(String symbol) async {
+    try {
+      final normalizedSymbol = _normalizeSymbol(symbol);
+      if (_looksLikeForexSymbol(normalizedSymbol)) {
+        final now = DateTime.now().toUtc();
+        final from = now.subtract(const Duration(minutes: 5));
+        final candles = await getCandles(
+          normalizedSymbol,
+          resolution: '1',
+          from: from,
+          to: now,
+        );
+        if (candles.isEmpty) return null;
+        return candles.last.close;
+      }
+
+      final uri = Uri.parse('$baseUrl/quote').replace(
+        queryParameters: <String, String>{
+          'symbol': normalizedSymbol,
+          'token': apiKey,
+        },
+      );
+      final response = await _httpClient.get(uri);
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return _toDouble(data['c']);
+    } catch (_) {
+      return null;
+    }
+  }
+
   void close() {
     if (_ownsClient) {
       _httpClient.close();
