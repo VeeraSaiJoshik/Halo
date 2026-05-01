@@ -122,7 +122,7 @@ class AppController extends ChangeNotifier{
       startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase()), 
       onReady: (controller) {
         controller.loadingComplete = true;
-        controller.reloadState!();
+        notifyListeners();
       },
     );
     WebBundle chartingController = createInAppWebView(
@@ -130,7 +130,7 @@ class AppController extends ChangeNotifier{
       injectionScript: "assets/scripts/dom_listener.js", 
       onReady: (controller) {
         controller.loadingComplete = true;
-        controller.reloadState!();
+        notifyListeners();
       },
     );
 

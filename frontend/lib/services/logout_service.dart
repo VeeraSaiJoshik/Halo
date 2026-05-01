@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:frontend/models/settings.dart';
+import 'package:frontend/models/transitions.dart';
+import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,8 +18,6 @@ Future<void> logoutAndReset(BuildContext context, SettingsHandler settings) asyn
   settings.theme = null;
 
   if (!context.mounted) return;
-  Navigator.of(context).pushAndRemoveUntil(
-    MaterialPageRoute(builder: (_) => const OnboardingPage()),
-    (route) => false,
-  );
+  Navigator.of(context).pop();
+  Navigator.of(context).push(createCustomRoute(OnboardingPage()));
 }

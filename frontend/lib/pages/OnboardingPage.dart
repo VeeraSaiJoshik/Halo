@@ -6,6 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/transitions.dart';
+import 'package:frontend/pages/HomePage.dart';
+import 'package:frontend/pages/MainApp.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/OnboardingWidgets/AuthWebView.dart';
@@ -83,7 +86,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   Future<bool> finishOnboarding(BuildContext context) async {
     await ref.read(settingsProvider).saveFormControllerData(formController, ref.read(haloThemeTypeProvider));
-    Navigator.of(context).popAndPushNamed("HomePage");
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop();
+    Navigator.of(context).push(createCustomRoute(HomePage()));
 
     return true;
   }
@@ -117,41 +122,43 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   Widget build(BuildContext context) {
     final theme = ref.watch(haloThemeProvider);
 
-    return Container(
-      decoration: BoxDecoration(color: theme.backgroundColor),
-      width: double.infinity,
-      child: BackgroundGradientAnimation(
-        child: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  CommandButtons(), 
-                  Expanded(
-                    child: controller != null ? AuthWebView(
-                      closeFunction: () => setState(() {
-                        controller = null;
-                        loadWebView = false;
-                      }),
-                      controller: controller, 
-                      loadWebView: loadWebView, 
-                      theme: theme, 
-                    ) : formController.currentIndex == -1 ? 
-                    Welcomewidget(formController: formController) :
-                    FormWidget(
-                      formController: formController, 
-                      launchAuth: launchAuthWebView, 
-                      launchLoad: getReady, 
-                      exit: exitFunction
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(color: theme.backgroundColor),
+        width: double.infinity,
+        child: BackgroundGradientAnimation(
+          child: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    CommandButtons(), 
+                    Expanded(
+                      child: controller != null ? AuthWebView(
+                        closeFunction: () => setState(() {
+                          controller = null;
+                          loadWebView = false;
+                        }),
+                        controller: controller, 
+                        loadWebView: loadWebView, 
+                        theme: theme, 
+                      ) : formController.currentIndex == -1 ? 
+                      Welcomewidget(formController: formController) :
+                      FormWidget(
+                        formController: formController, 
+                        launchAuth: launchAuthWebView, 
+                        launchLoad: getReady, 
+                        exit: exitFunction
+                      )
                     )
-                  )
-                ],
+                  ],
+                ),
               ),
-            ),
-          ]
+            ]
+          )
         )
-      )
+      ),
     );
   }
 }
