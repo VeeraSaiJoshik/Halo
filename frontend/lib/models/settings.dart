@@ -38,6 +38,7 @@ class SettingsHandler {
   }
 
   bool onboardingFlag() {
+    print("${buyingPlatform} ${chartingPlatform} ${theme}");
     return buyingPlatform == null && chartingPlatform == null && theme == null;
   }
 

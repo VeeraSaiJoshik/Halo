@@ -360,11 +360,6 @@ List<Platform> buyingPlatforms = [
       "https://trade.webull.com/",
     ],
     authMethods: [
-      GoogleAuth(
-        loginUrl:
-            "https://passport.webull.com/auth/simple/login?source=seo-direct-home&hl=en&redirect_uri=https://www.webull.com/center",
-        id: "webull",
-      ),
       WebullPhoneAuth(),
       WebullEmailAuth(),
       WebullQRCodeAuth(),
@@ -384,10 +379,6 @@ List<Platform> chartingPlatforms = [
     Colors.blue,
     links: ["https://www.tradingview.com/"],
     authMethods: [
-      GoogleAuth(
-        loginUrl: "https://www.tradingview.com/sign-in/",
-        id: "tradingview",
-      ),
       TradingViewEmailAuth(),
     ],
   ),

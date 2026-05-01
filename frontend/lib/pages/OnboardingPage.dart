@@ -20,7 +20,7 @@ class FormController {
   int currentIndex = -1;
   int finalIndex = 5;
   late VoidCallback onChanged;
-  late VoidCallback finishOnboarding;
+  late Function finishOnboarding;
   Platform? selectedBuyingPlatform;
   Platform? selectedChartingPlatform;
 
@@ -41,11 +41,11 @@ class FormController {
     selectedChartingPlatform = platform;
   }
   
-  void next() {
+  void next(BuildContext context) async {
     currentIndex++;
 
     if(currentIndex == finalIndex) {
-      finishOnboarding.call();
+      await finishOnboarding.call(context);
     } else {
       onChanged.call();
     }
@@ -81,9 +81,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   WebBundle? controller;
   FormController formController = FormController();
 
-  Future<bool> finishOnboarding() async {
+  Future<bool> finishOnboarding(BuildContext context) async {
     await ref.read(settingsProvider).saveFormControllerData(formController);
-    // something to trigger a cool animation
+    Navigator.of(context).popAndPushNamed("HomePage");
 
     return true;
   }

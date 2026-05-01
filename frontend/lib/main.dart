@@ -57,6 +57,8 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
     super.initState();
     windowManager.addListener(this);
     HardwareKeyboard.instance.addHandler(_onKey);
+    
+    print(ref.read(settingsProvider).theme);
     if(ref.read(settingsProvider).theme != null) {
       ref.read(haloThemeTypeProvider.notifier).state = ref.read(settingsProvider).theme!;
     }
@@ -165,6 +167,9 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
           seedColor: CustomColors.purple,
         ),
       ),
+      routes: {
+        "homePage": (ctx) => HomePage()
+      },
       home: ClipRRect(
         borderRadius: BorderRadius.circular(windowContext.isFullScreen ? 0 : 15),
         child: Scaffold(

@@ -76,6 +76,8 @@ WebBundle createInAppWebView(
   // Then use it:
   print("Auth is ${isAuth} ${scripts}");
 
+  bool firstLoad = true;
+
   webBundle.widget = InAppWebView(
     initialUrlRequest: URLRequest(url: WebUri(url)),
     initialUserScripts: UnmodifiableListView<UserScript>(scripts),
@@ -149,11 +151,15 @@ WebBundle createInAppWebView(
       return true;
     },
     shouldOverrideUrlLoading: (controller, navigationAction) async {
+      if (firstLoad) {
+        firstLoad = false;
+        return NavigationActionPolicy.ALLOW;
+      }
       if (!navigationAction.isForMainFrame) return NavigationActionPolicy.ALLOW;
 
-      print("I am here with overload ${navigationAction.request.url}");
+      print("I am here with overload ${navigationAction.request.url} ${url}");
       final requestUrl = navigationAction.request.url?.toString() ?? '';
-      if (exit != null && requestUrl != url && requestUrl.contains(domain)) {
+      if (exit != null && requestUrl.contains(domain)) {
         exit.call();
       }
 

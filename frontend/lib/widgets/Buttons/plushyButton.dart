@@ -69,6 +69,7 @@ class _PlushyButtonState extends ConsumerState<PlushyButton> {
           onTapCancel: widget.disabled ? null : () => setState(() => _pressed = false),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
@@ -95,23 +96,16 @@ class _PlushyButtonState extends ConsumerState<PlushyButton> {
               borderRadius: BorderRadius.circular(10),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
                 color: widget.selected ? theme.primaryColor.withOpacity(1) : theme.primaryColor.withOpacity(isActive ? 1 : 0.4),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
                   padding: widget.padding,
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
-                    border: GradientBoxBorder(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.whiteColor.withOpacity(0.8),
-                          theme.whiteColor.withOpacity(0.3),
-                        ],
-                      ),
-                      width: 0.5,
-                    ),
+                    border: Border.all(color: theme.whiteColor.withOpacity(0.8))
                   ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),

@@ -15,7 +15,7 @@ class FormWidget extends StatelessWidget {
   final Function launchAuth;
   final void Function() launchLoad;
   final Function exit;
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 5;
 
   const FormWidget({super.key, required this.formController, required this.launchAuth, required this.launchLoad, required this.exit});
 
@@ -66,12 +66,12 @@ class FormWidget extends StatelessWidget {
                   final theme = ref.watch(haloThemeProvider);
                   return PlushyButton(
                     onPressed: formController.back,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    padding: EdgeInsets.symmetric(horizontal: isLast ? 15 : 20, vertical: isLast ? 18 : 15),
                     child: Row(
-                      spacing: 8,
+                      spacing: isLast ? 0 : 8,
                       children: [
-                        FaIcon(FontAwesomeIcons.arrowLeft, size: 12, color: theme.whiteColor),
-                        Text('Back', style: theme.titleLarge.copyWith(color: theme.whiteColor)),
+                        FaIcon(FontAwesomeIcons.arrowLeft, size: isLast ? 18 : 12, color: theme.whiteColor),
+                        !isLast ? Text('Back', style: theme.titleLarge.copyWith(color: theme.whiteColor)) : Container(),
                       ],
                     ),
                   );
@@ -81,9 +81,9 @@ class FormWidget extends StatelessWidget {
                 builder: (context, ref, _) {
                   final theme = ref.watch(haloThemeProvider);
                   return PlushyButton(
-                    onPressed: formController.next,
+                    onPressed: () => formController.next(context),
                     disabled: !formController.nextAvailable(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    padding: EdgeInsets.symmetric(horizontal: isLast ? 30 : 20, vertical: 15),
                     child: Row(
                       spacing: 8,
                       children: [
