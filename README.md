@@ -1,6 +1,6 @@
 # Halo
 
-A desktop Flutter app for multi-tab financial data analysis. Browse trading platforms, track stocks, crypto, and forex, with a clean glassmorphism UI.
+A desktop Flutter app for multi-tab financial data analysis. Browse trading platforms, track stocks, crypto, and forex, with a clean glassmorphism UI. Using NLP technology, social data is leveraged from a multitude of platforms (X, News Channels, Reddit, Discord, etc) to allert traders of financial patterns IRL. All baked into a seamless browser experience.
 
 ---
 
