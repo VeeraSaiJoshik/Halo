@@ -160,6 +160,9 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
                 stocks: stockSearchResults,
                 activeIndex: activeIndex,
                 onStockTap: (stock, _) => _selectStock(stock),
+                setIndex: (int index) => setState(() {
+                  activeIndex = index;
+                }),
               )
             ]
           ],

@@ -8,11 +8,13 @@ import 'package:frontend/themes/theme_provider.dart';
 class StockBar extends StatelessWidget {
   final List<StockName> stocks;
   final int activeIndex;
+  final Function setIndex;
   final void Function(StockName stock, int index)? onStockTap;
   const StockBar({
     super.key,
     required this.stocks,
     required this.activeIndex,
+    required this.setIndex,
     this.onStockTap,
   });
 
@@ -29,6 +31,9 @@ class StockBar extends StatelessWidget {
             child: StockWidget(
               stock: stock,
               isActive: index == activeIndex,
+              onHover: (bool isActive) {
+                if(isActive) setIndex(index);
+              },
               onTap: onStockTap == null ? null : () => onStockTap!(stock, index),
             ),
           );
@@ -42,7 +47,8 @@ class StockWidget extends ConsumerWidget {
   final StockName stock;
   final bool isActive;
   final VoidCallback? onTap;
-  StockWidget({super.key, required this.stock, required this.isActive, this.onTap});
+  final Function? onHover;
+  StockWidget({super.key, required this.stock, required this.isActive, this.onTap, required this.onHover});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,58 +56,69 @@ class StockWidget extends ConsumerWidget {
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
       onTap: onTap,
+      onHover: onHover as Function(bool),
       borderRadius: BorderRadius.circular(5),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        decoration: BoxDecoration(
-          color: !isActive ? theme.primaryColor : Color.fromARGB(255, 66, 72, 207),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              height: 24, 
-              width: 24, 
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              padding: EdgeInsets.all(1.5),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Image.network(
-                  stock.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Color.fromARGB(255, 66, 72, 207),
-                    child: Center(
-                      child: Consumer(
-                        builder: (context, ref, _) {
-                          final theme = ref.watch(haloThemeProvider);
-                          return Text(
-                            stock.symbol[0],
-                            style: theme.ticker,
-                          );
-                        },
+      child: AnimatedScale(
+        duration: Duration(milliseconds: 250),
+        curve: Curves.bounceInOut,
+        scale: isActive ? 1.05 : 1,
+        child: AnimatedRotation(
+          curve: Curves.bounceInOut,
+          duration: Duration(milliseconds: 250),
+          turns: isActive ? -0.03 / (2 * 3.14) : 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            decoration: BoxDecoration(
+              color: !isActive ? theme.primaryColor : theme.accentColor,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  height: 24, 
+                  width: 24, 
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: EdgeInsets.all(1.5),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Image.network(
+                      stock.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Color.fromARGB(255, 66, 72, 207),
+                        child: Center(
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final theme = ref.watch(haloThemeProvider);
+                              return Text(
+                                stock.symbol[0],
+                                style: theme.ticker,
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                SizedBox(width: 7),
+                Expanded(
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final theme = ref.watch(haloThemeProvider);
+                      return Text(
+                        stock.symbol,
+                        style: theme.ticker,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 7),
-            Expanded(
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final theme = ref.watch(haloThemeProvider);
-                  return Text(
-                    stock.symbol,
-                    style: theme.ticker,
-                    overflow: TextOverflow.ellipsis,
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       )
     );
