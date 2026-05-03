@@ -61,9 +61,13 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
           context: tab,
         );
       case AppPage.GRAPH_VIEWER:
+        final chart = tab.chartController;
+        if (chart == null) {
+          return const SizedBox.shrink();
+        }
         return CustomWebView(
           key: ValueKey('${tab.uuid}_viewer'),
-          controller: tab.chartController!,
+          controller: chart,
           pageType: AppPage.GRAPH_VIEWER,
           context: tab,
         );
@@ -85,7 +89,6 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
         const double dividerWidth = 6;
 
         final bool portalActive = tab.pages.contains(AppPage.PORTAL);
-        final bool chartActive = tab.pages.contains(AppPage.GRAPH_VIEWER);
         final bool notifActive = tab.pages.contains(AppPage.NOTIFICATIONS);
 
         final List<AppPage> activeWebViews = tab.pages
@@ -191,17 +194,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
             ),
           ));
         }
-        if (!chartActive) {
-          rowChildren.add(Offstage(
-            key: ValueKey('${tab.uuid}_${AppPage.GRAPH_VIEWER.name}'),
-            offstage: true,
-            child: SizedBox(
-              width: 0,
-              height: double.infinity,
-              child: _buildPanel(AppPage.GRAPH_VIEWER, tab),
-            ),
-          ));
-        }
+        // Chart is created lazily on first request, so no preload Offstage here.
 
         return Row(children: rowChildren);
       },

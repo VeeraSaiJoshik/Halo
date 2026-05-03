@@ -23,9 +23,9 @@ class WindowInfo {
   final StockName Stock;
   
   final WebBundle? portalController;
-  
-  final WebBundle? chartController;
-  
+
+  WebBundle? chartController;
+
   late bool isActive;
   late String uuid;
   late List<AppPage> pages;
@@ -48,7 +48,7 @@ class WindowInfo {
     notifications.add(notification);
   }
 
-  WindowInfo({required this.Stock, required this.portalController, required this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
+  WindowInfo({required this.Stock, required this.portalController, this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
     alpacaClient: AlpacaClient(
       apiKey: const String.fromEnvironment("ALPACA_API_KEY"), 
       secretKey: const String.fromEnvironment("ALPACA_API_SECRET")
@@ -117,24 +117,16 @@ class AppController extends ChangeNotifier{
     }
     
     WebBundle portalController = createInAppWebView(
-      'https://app.webull.com/watch', 
+      'https://www.webull.com/quote/nasdaq-${stock.symbol}',
       injectionScript: "assets/scripts/dom_listener.js",
-      startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase()), 
-      onReady: (controller) {
-        controller.loadingComplete = true;
-        notifyListeners();
-      },
-    );
-    WebBundle chartingController = createInAppWebView(
-      'https://www.tradingview.com/chart/d3IIUEuI/', 
-      injectionScript: "assets/scripts/dom_listener.js", 
+      startupScripts: [],//getBrowserStartupScripts(stock.symbol.toUpperCase()),
       onReady: (controller) {
         controller.loadingComplete = true;
         notifyListeners();
       },
     );
 
-    WindowInfo newTab = WindowInfo(portalController: portalController, chartController: chartingController, Stock: stock, isActive: true, eventBus: eventBus);
+    WindowInfo newTab = WindowInfo(portalController: portalController, Stock: stock, isActive: true, eventBus: eventBus);
 
     newTab.intakeService.onPriceUpdate = (price, change) {
       newTab.latestPrice = price;
@@ -174,22 +166,35 @@ class AppController extends ChangeNotifier{
     notifyListeners();
   }
 
+  void ensureChartController(WindowInfo tab) {
+    if (tab.chartController != null) return;
+    tab.chartController = createInAppWebView(
+      'https://www.tradingview.com/chart/d3IIUEuI/',
+      injectionScript: "assets/scripts/dom_listener.js",
+      onReady: (controller) {
+        controller.loadingComplete = true;
+        notifyListeners();
+      },
+    );
+  }
+
   void switchTabSubPage(AppPage page) {
-    getCurrentTab()!.pages = [page];
+    final tab = getCurrentTab()!;
+    if (page == AppPage.GRAPH_VIEWER) ensureChartController(tab);
+    tab.pages = [page];
     notifyListeners();
   }
 
   void addNewSubPage(AppPage page, Side side) {
-    print("Adding a new subpage ${page} ${side} ${getCurrentTab()!.pages}");
+    final tab = getCurrentTab()!;
+    if (page == AppPage.GRAPH_VIEWER) ensureChartController(tab);
 
     if(side == Side.right) {
-      getCurrentTab()!.pages.add(page);
+      tab.pages.add(page);
     } else {
-      getCurrentTab()!.pages.insert(0, page);
+      tab.pages.insert(0, page);
     }
 
-    print("Adding a new subpage ${page} ${side} ${getCurrentTab()!.pages}");
-    
     notifyListeners();
   }
 
