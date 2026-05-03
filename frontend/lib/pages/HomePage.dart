@@ -11,6 +11,7 @@ import 'package:frontend/pages/TitleBar.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/DevMenu.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
+import 'package:frontend/widgets/OverlayWidgets/TabSwitcherOverlay.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
 import 'package:frontend/widgets/searchBar.dart';
 import 'package:window_manager/window_manager.dart';
@@ -29,12 +30,67 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   bool _searchActive = false;
 
+  bool _tabSwitcherActive = false;
+  int _tabSwitcherIndex = 0;
+
+  void _commitTabSwitcher() {
+    if (!_tabSwitcherActive) return;
+    final controller = ref.read(appControllerProvider);
+    final tabs = controller.tabs;
+    if (tabs.isNotEmpty) {
+      final idx = _tabSwitcherIndex.clamp(0, tabs.length - 1);
+      controller.switchTab(tabs[idx]);
+    }
+    setState(() => _tabSwitcherActive = false);
+  }
+
   /// Returns true to consume the event (prevents further propagation).
   bool _onKey(KeyEvent event) {
+    final key = event.logicalKey;
+
+    // Commit the tab switcher when Option (Alt) is released.
+    if (event is KeyUpEvent &&
+        _tabSwitcherActive &&
+        (key == LogicalKeyboardKey.altLeft ||
+            key == LogicalKeyboardKey.altRight)) {
+      _commitTabSwitcher();
+      return true;
+    }
+
     if (event is! KeyDownEvent) return false;
 
+    final alt = HardwareKeyboard.instance.isAltPressed;
+    final shift = HardwareKeyboard.instance.isShiftPressed;
+
+    // Option+Tab / Option+Shift+Tab — open or advance the tab switcher.
+    if (alt && key == LogicalKeyboardKey.tab) {
+      final controller = ref.read(appControllerProvider);
+      final count = controller.tabs.length;
+      if (count == 0) return true;
+
+      setState(() {
+        if (!_tabSwitcherActive) {
+          final currentIdx = controller.tabs.indexWhere((t) => t.isActive);
+          final start = currentIdx == -1 ? 0 : currentIdx;
+          _tabSwitcherIndex =
+              shift ? (start - 1 + count) % count : (start + 1) % count;
+          _tabSwitcherActive = true;
+        } else {
+          _tabSwitcherIndex = shift
+              ? (_tabSwitcherIndex - 1 + count) % count
+              : (_tabSwitcherIndex + 1) % count;
+        }
+      });
+      return true;
+    }
+
+    // Escape cancels the tab switcher without committing.
+    if (_tabSwitcherActive && key == LogicalKeyboardKey.escape) {
+      setState(() => _tabSwitcherActive = false);
+      return true;
+    }
+
     final meta = HardwareKeyboard.instance.isMetaPressed;
-    final key  = event.logicalKey;
     final bus  = ref.read(appEventBusProvider);
 
     print("Key pressed: ${event.logicalKey.debugName}, meta: $meta");
@@ -168,6 +224,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                 if (_showDevMenu)
                   DevMenu(
                     onClose: () => setState(() => _showDevMenu = false),
+                  ),
+                if (_tabSwitcherActive)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.25),
+                        alignment: Alignment.center,
+                        child: TabSwitcherOverlay(
+                          highlightedIndex: _tabSwitcherIndex,
+                        ),
+                      ),
+                    ),
                   ),
                 MouseRegionEngine(regions: regions, debug: false,),
               ],

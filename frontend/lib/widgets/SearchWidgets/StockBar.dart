@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/flag_service.dart';
 import 'package:frontend/themes/halo_theme.dart';
@@ -9,7 +8,13 @@ import 'package:frontend/themes/theme_provider.dart';
 class StockBar extends StatelessWidget {
   final List<StockName> stocks;
   final int activeIndex;
-  const StockBar({super.key, required this.stocks, required this.activeIndex});
+  final void Function(StockName stock, int index)? onStockTap;
+  const StockBar({
+    super.key,
+    required this.stocks,
+    required this.activeIndex,
+    this.onStockTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,13 @@ class StockBar extends StatelessWidget {
         spacing: 3,
         children: stocks.indexed.map((entry) {
           final (index, stock) = entry;
-          return Expanded(child: StockWidget(stock: stock, isActive: index == activeIndex));
+          return Expanded(
+            child: StockWidget(
+              stock: stock,
+              isActive: index == activeIndex,
+              onTap: onStockTap == null ? null : () => onStockTap!(stock, index),
+            ),
+          );
         }).toList(),
       ),
     );
@@ -30,17 +41,20 @@ class StockBar extends StatelessWidget {
 class StockWidget extends ConsumerWidget {
   final StockName stock;
   final bool isActive;
-  StockWidget({super.key, required this.stock, required this.isActive});
+  final VoidCallback? onTap;
+  StockWidget({super.key, required this.stock, required this.isActive, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(haloThemeProvider);
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         decoration: BoxDecoration(
-          color: !isActive ? CustomColors.primary : Color.fromARGB(255, 66, 72, 207),
+          color: !isActive ? theme.primaryColor : Color.fromARGB(255, 66, 72, 207),
           borderRadius: BorderRadius.circular(5),
         ),
         child: Row(
@@ -49,7 +63,6 @@ class StockWidget extends ConsumerWidget {
               height: 24, 
               width: 24, 
               decoration: BoxDecoration(
-                color: theme.whiteColor,
                 borderRadius: BorderRadius.circular(5),
               ),
               padding: EdgeInsets.all(1.5),

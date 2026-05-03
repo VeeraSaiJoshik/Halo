@@ -5,6 +5,7 @@ import 'package:frontend/pages/MainApp.dart';
 import 'package:frontend/services/logout_service.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
+import 'package:frontend/widgets/OnboardingWidgets/Pages.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -134,15 +135,15 @@ class _ThemeGrid extends ConsumerWidget {
         return Wrap(
           spacing: gap,
           runSpacing: gap,
-          children: HaloThemeType.values.map((type) {
+          children: themes.map((type) {
             return SizedBox(
               width: cardWidth,
-              child: _ThemeCard(
-                type: type,
-                isSelected: type == currentType,
+              child: ThemePreviewCard(
+                theme: type,
+                selected: type == currentType,
                 onTap: () async {
-                  ref.read(haloThemeTypeProvider.notifier).state = type;
-                  await ref.read(settingsProvider).applyTheme(type);
+                  ref.read(haloThemeTypeProvider.notifier).state = type.type;
+                  await ref.read(settingsProvider).applyTheme(type.type);
                 },
               ),
             );

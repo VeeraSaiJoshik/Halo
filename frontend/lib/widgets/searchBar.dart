@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/engine/clients/alpha_advantage_client.dart';
 import 'package:frontend/engine/clients/yahoo_finance_client.dart';
-import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
@@ -59,6 +58,11 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
     super.dispose();
   }
 
+  void _selectStock(StockName stock) {
+    ref.read(appControllerProvider).newTab(stock, ref.read(appEventBusProvider));
+    toggleSearchBarState();
+  }
+
   void _onEvent(AppEvent event) {
     if (event == AppEvent.openSearch) {
       toggleSearchBarState();
@@ -72,9 +76,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
         activeIndex = (activeIndex - 1).clamp(0, stockSearchResults.length - 1);
       } else if (event == AppEvent.select) {
         if (stockSearchResults.isNotEmpty) {
-          final selectedStock = stockSearchResults[activeIndex];
-          ref.read(appControllerProvider).newTab(selectedStock, ref.read(appEventBusProvider));
-          toggleSearchBarState();
+          _selectStock(stockSearchResults[activeIndex]);
         }
       }
     });
@@ -125,7 +127,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
         border: Border.all(color: theme.whiteColor.withOpacity(active ? 0.35 : 0), width: 1.25, strokeAlign: BorderSide.strokeAlignOutside),
         boxShadow: searchBarWidth == 0 ? [] : [
           BoxShadow(
-            color: CustomColors.purple.withValues(
+            color: theme.primaryColor.withValues(
               // Make the glow more intense on hover
               alpha: 0.6, 
             ),
@@ -154,7 +156,11 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
                 height: 1,
                 color: theme.whiteColor.withOpacity(0.45),
               ),
-              StockBar(stocks: stockSearchResults, activeIndex: activeIndex)
+              StockBar(
+                stocks: stockSearchResults,
+                activeIndex: activeIndex,
+                onStockTap: (stock, _) => _selectStock(stock),
+              )
             ]
           ],
         ),

@@ -469,7 +469,7 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
                 children: themes.map((t) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child: _ThemePreviewCard(
+                    child: ThemePreviewCard(
                       theme: t,
                       selected: t.type == ref.watch(haloThemeTypeProvider),
                       onTap: () =>
@@ -500,20 +500,20 @@ class _ChooseThemePageState extends ConsumerState<ChooseThemePage> {
   }
 }
 
-class _ThemePreviewCard extends StatefulWidget {
+class ThemePreviewCard extends StatefulWidget {
   final HaloThemeData theme;
   final bool selected;
   final VoidCallback onTap;
-  const _ThemePreviewCard({
+  const ThemePreviewCard({
     required this.theme,
     required this.selected,
     required this.onTap,
   });
   @override
-  State<_ThemePreviewCard> createState() => _ThemePreviewCardState();
+  State<ThemePreviewCard> createState() => ThemePreviewCardState();
 }
 
-class _ThemePreviewCardState extends State<_ThemePreviewCard> {
+class ThemePreviewCardState extends State<ThemePreviewCard> {
   bool _hovered = false;
 
   @override
