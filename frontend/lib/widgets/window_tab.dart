@@ -44,7 +44,8 @@ class _WindowTabState extends ConsumerState<WindowTab>
           filter: widget.context.isActive
               ? ImageFilter.blur(sigmaX: 20, sigmaY: 20)
               : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-          child: Container(
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 250),
             decoration: widget.context.isActive
                 ? BoxDecoration(
                     borderRadius: _borderRadius,
