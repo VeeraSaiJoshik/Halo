@@ -17,6 +17,8 @@ enum AppEvent {
 
   newNotifcation, graphView, portalView, toggleNotificaitonView,
 
+  dismissVerdictNotification,
+
   openSettings,
 }
 

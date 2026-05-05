@@ -10,6 +10,7 @@ import 'package:frontend/pages/BodyPage.dart';
 import 'package:frontend/pages/TitleBar.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/widgets/DevMenu.dart';
+import 'package:frontend/widgets/NotificationWidget.dart';
 import 'package:frontend/widgets/OverlayWidgets/AddSubSection.dart';
 import 'package:frontend/widgets/OverlayWidgets/TabSwitcherOverlay.dart';
 import 'package:frontend/widgets/background_gradient_animation.dart';
@@ -94,6 +95,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     final bus  = ref.read(appEventBusProvider);
 
     print("Key pressed: ${event.logicalKey.debugName}, meta: $meta");
+
+    if (key == LogicalKeyboardKey.escape && NotificationWidget.isActive) {
+      bus.emit(AppEvent.dismissVerdictNotification);
+      return true;
+    }
 
     if (key == LogicalKeyboardKey.escape && _showDevMenu) {
       setState(() => _showDevMenu = false);

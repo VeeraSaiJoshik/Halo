@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/ai/verdict.dart';
+import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
 
@@ -19,6 +21,10 @@ class NotificationWidget extends ConsumerWidget {
   });
 
   static OverlayEntry? _activeEntry;
+
+  /// True while a verdict notification overlay is currently mounted.
+  /// Read from app-wide keyboard handlers to gate ESC routing.
+  static bool get isActive => _activeEntry != null;
 
   static Future<void> show(
     BuildContext context, {
@@ -205,7 +211,7 @@ class NotificationWidget extends ConsumerWidget {
   }
 }
 
-class _NotificationOverlayHost extends StatefulWidget {
+class _NotificationOverlayHost extends ConsumerStatefulWidget {
   final Verdict verdict;
   final VoidCallback onClosed;
 
@@ -215,13 +221,14 @@ class _NotificationOverlayHost extends StatefulWidget {
   });
 
   @override
-  State<_NotificationOverlayHost> createState() =>
+  ConsumerState<_NotificationOverlayHost> createState() =>
       _NotificationOverlayHostState();
 }
 
-class _NotificationOverlayHostState extends State<_NotificationOverlayHost>
+class _NotificationOverlayHostState extends ConsumerState<_NotificationOverlayHost>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  StreamSubscription<AppEvent>? _busSub;
   bool _dismissing = false;
 
   @override
@@ -233,10 +240,17 @@ class _NotificationOverlayHostState extends State<_NotificationOverlayHost>
       reverseDuration: const Duration(milliseconds: 180),
     );
     _controller.forward();
+
+    _busSub = ref.read(appEventBusProvider).stream.listen((event) {
+      if (event == AppEvent.dismissVerdictNotification) {
+        _dismiss();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _busSub?.cancel();
     _controller.dispose();
     super.dispose();
   }
