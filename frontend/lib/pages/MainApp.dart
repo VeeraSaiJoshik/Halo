@@ -4,15 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/browser/navigation_key.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
-import 'package:frontend/models/settings.dart';
 import 'package:frontend/pages/HomePage.dart';
 import 'package:frontend/pages/OnboardingPage.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/DevMenu.dart';
 import 'package:window_manager/window_manager.dart';
-
-final settingsProvider = Provider<SettingsHandler>((ref) => throw UnimplementedError());
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});

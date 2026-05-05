@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/settings.dart';
 import 'package:frontend/pages/MainApp.dart';
+import 'package:frontend/ai/ai_providers.dart';
+import 'package:frontend/models/customColors.dart';
+import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/pages/HomePage.dart';
+import 'package:frontend/pages/OnboardingPage.dart';
+import 'package:frontend/services/app_event_bus.dart';
+import 'package:frontend/browser/navigation_key.dart';
+import 'package:frontend/widgets/DevMenu.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -11,9 +19,15 @@ void main() async {
   SettingsHandler globalSettings = SettingsHandler();
   await globalSettings.initialize();
 
-  runApp(ProviderScope(
-    overrides: [settingsProvider.overrideWithValue(globalSettings)],
-    child: MyApp(),
+  final container = ProviderContainer();
+  await container.read(insightRepositoryProvider).init();
+
+  runApp(UncontrolledProviderScope(
+    container: container,
+    child: ProviderScope(
+      overrides: [settingsProvider.overrideWithValue(globalSettings)],
+      child: MyApp()
+    ),
   ));
 
   WindowOptions windowOptions = const WindowOptions(

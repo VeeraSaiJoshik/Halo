@@ -26,6 +26,7 @@ enum AppEvent {
 class AppEventBus {
   final _controller = StreamController<AppEvent>.broadcast();
   final _tabSwitch  = StreamController<int>.broadcast();
+  final notifications  = StreamController<int>.broadcast();
 
   Stream<AppEvent> get stream         => _controller.stream;
   Stream<int>      get tabSwitchStream => _tabSwitch.stream;

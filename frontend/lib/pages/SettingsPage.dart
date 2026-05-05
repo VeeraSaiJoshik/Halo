@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/main.dart';
-import 'package:frontend/pages/MainApp.dart';
+import 'package:frontend/models/providerModels.dart';
 import 'package:frontend/services/logout_service.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
