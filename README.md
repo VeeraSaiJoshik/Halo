@@ -39,6 +39,16 @@ A real-time detection engine runs over the candle stream and identifies:
 
 Each pattern is scored, asset-class-tuned (separate parameter profiles for crypto, US equities, and forex), and surfaced as a notification on the relevant tab.
 
+### AI Notification System
+When the detection engine fires a high-confidence setup, an on-device LLM reasons over it and emits a structured **verdict** that surfaces as a notification. End-to-end, local-first — no setup data leaves the machine.
+
+- **Trigger gate.** Detection events feed into the verdict dispatcher, which only escalates when the setup's confluence score crosses a threshold (default 3.5) *and* price is approaching the setup zone. Marginal patterns never reach the LLM.
+- **Per-fingerprint dedup.** Each setup is hashed into a fingerprint based on its pattern, levels, and ATR. The dispatcher applies a cooldown (default 2 min) so the same setup can't re-fire in a hot scan; the reasoning service layers a 30-minute TTL cache so identical fingerprints reuse a prior verdict; in-flight coalescing collapses bursts of identical requests into one model call.
+- **Structured verdicts.** The LLM returns a JSON object (validated against a fixed schema) carrying: direction, confidence (1–10), entry plan (`limit` / `market` / `stop` with price + zone), invalidation level, target, written thesis, and a `keyRisks` list. Each verdict is also tagged with a `modelId` so model attribution is visible in the UI.
+- **Three-state pipeline.** Each insight progresses through `reasoning` (spinner card while the model is generating), `ready` (full verdict card), or `failed` (hint with reason — load error, generation error, etc.).
+- **Persistence.** Verdicts are written to a local SQLite store (`halo_insights.db`) keyed by setup fingerprint, with `pinned` and `dismissed` flags. The same store backs filtered queries — per-ticker and by date — for review later.
+- **Pluggable LLM backend.** The `LocalLlm` interface ships with a deterministic `EchoLlm` stub so the rest of the system runs end-to-end during development. A real engine (llama.cpp, ggml, ONNX runtime, etc.) plugs in by overriding `localLlmProvider` at app launch — see `docs/LOCAL_LLM_INTEGRATION.md`.
+
 ### Onboarding & Broker Authentication
 First launch walks you through linking accounts on supported platforms:
 - **Brokerages:** Webull (phone, email, or QR code), Robinhood (email)
@@ -87,12 +97,12 @@ A continuously-running screen across the user's universe (or the broader market)
 - **Cross-signal triage** — combine technical patterns with sentiment spikes, unusual volume, and news catalysts to rank candidates by strength.
 - **User-tuned watchlists** — define screens like "S&P 500 with bullish confluence + positive social delta in the last hour" and have results stream in live.
 
-### AI Recommendations
-The placeholder AI Summary pane evolves into an **active recommendation surface**:
-- **Setup explanations** — when the engine flags a pattern, the AI generates a plain-language brief: what the pattern is, why it matters on this ticker right now, what would invalidate it, and recent comparable setups.
-- **Personalized suggestions** — based on the user's past tab activity, watchlist, and trade behavior, surface tickers and timeframes the user is statistically likely to care about.
-- **Risk & position sizing** — paired with the active broker session, suggest position sizes consistent with the user's account size and recent volatility on the instrument.
-- **End-of-day digest** — a generated recap of what the user watched, what fired, and what to watch tomorrow.
+### AI Recommendations (extending the verdict system)
+The verdict pipeline today produces a structured per-setup brief on demand. The roadmap expands it into an **active recommendation surface**:
+- **Personalized suggestions** — based on the user's past tab activity, watchlist, and trade behavior, surface tickers and timeframes the user is statistically likely to care about, even when no setup has fired yet.
+- **Risk & position sizing** — paired with the active broker session, suggest position sizes consistent with the user's account size and the instrument's recent volatility.
+- **End-of-day digest** — a generated recap of what the user watched, which verdicts fired, how each resolved, and what to watch tomorrow.
+- **Cross-symbol synthesis** — instead of one verdict per symbol, the AI layer reasons over correlated tickers (sector peers, related crypto pairs) and surfaces basket-level theses.
 
 The unifying idea: the detection engine produces *signals*, the social NLP layer produces *context*, and the AI layer turns both into *decisions* the user can act on.
 
