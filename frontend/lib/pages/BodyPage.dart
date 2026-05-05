@@ -222,31 +222,46 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
             ),
             child: Stack(
               children: [
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  padding: EdgeInsets.all(5),
-                  // All tabs are rendered simultaneously. Inactive tabs are
-                  // wrapped in Offstage so their WebViews stay loaded while
-                  // hidden, making tab switches instant.
-                  child: showSettings
-                      ? const SettingsPage()
-                      : (appController.tabs.isEmpty
-                          ? _EmptyState()
-                          : Stack(
-                              children: [
-                                for (final tab in appController.tabs)
-                                  Positioned.fill(
-                                    child: Offstage(
-                                      offstage: !tab.isActive,
-                                      child: _buildTabContent(tab),
-                                    ),
-                                  ),
-                              ],
-                            )),
+                AnimatedOpacity(
+                  duration: Duration(milliseconds: 250),
+                  opacity: showSettings? 1 : 0,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    padding: EdgeInsets.all(5),
+                    // All tabs are rendered simultaneously. Inactive tabs are
+                    // wrapped in Offstage so their WebViews stay loaded while
+                    // hidden, making tab switches instant.
+                    child: const SettingsPage()
+                  ),
                 ),
-                (tabExists && !showSettings) ? AddSubSection(side: Side.left) : const SizedBox(),
-                (tabExists && !showSettings) ? AddSubSection(side: Side.right) : const SizedBox(),
+                AnimatedOpacity(
+                  duration: Duration(milliseconds: 250),
+                  opacity: !showSettings? 1 : 0,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    padding: EdgeInsets.all(5),
+                    // All tabs are rendered simultaneously. Inactive tabs are
+                    // wrapped in Offstage so their WebViews stay loaded while
+                    // hidden, making tab switches instant.
+                    child: (appController.tabs.isEmpty
+                            ? _EmptyState()
+                            : Stack(
+                                children: [
+                                  for (final tab in appController.tabs)
+                                    Positioned.fill(
+                                      child: Offstage(
+                                        offstage: !tab.isActive,
+                                        child: _buildTabContent(tab),
+                                      ),
+                                    ),
+                                ],
+                              )),
+                  ),
+                ),
+                (tabExists) ? AddSubSection(side: Side.left) : const SizedBox(),
+                (tabExists) ? AddSubSection(side: Side.right) : const SizedBox(),
               ],
             ),
           ),

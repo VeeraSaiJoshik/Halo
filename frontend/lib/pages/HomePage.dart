@@ -237,7 +237,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                   ),
-                MouseRegionEngine(regions: regions, debug: false,),
+                MouseRegionEngine(regions: regions, debug: false, ),
               ],
             )
           ),

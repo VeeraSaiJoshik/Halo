@@ -88,6 +88,6 @@ class CustomMouseRegion {
 const double kTitleBarHeight = 40;
 
 List<CustomMouseRegion> regions = [
-    CustomMouseRegion(r_width: 35, r_height: 200, alignment: Alignment.centerLeft,  topBarOffset: kTitleBarHeight, event: AppEvent.leftAdd),
-    CustomMouseRegion(r_width: 35, r_height: 200, alignment: Alignment.centerRight, topBarOffset: kTitleBarHeight, event: AppEvent.rightAdd),
+    CustomMouseRegion(r_width: 15, r_height: 200, alignment: Alignment.centerLeft,  topBarOffset: kTitleBarHeight, event: AppEvent.leftAdd),
+    CustomMouseRegion(r_width: 15, r_height: 200, alignment: Alignment.centerRight, topBarOffset: kTitleBarHeight, event: AppEvent.rightAdd),
 ];

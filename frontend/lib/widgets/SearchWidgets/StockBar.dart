@@ -69,7 +69,7 @@ class StockWidget extends ConsumerWidget {
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             decoration: BoxDecoration(
-              color: !isActive ? theme.primaryColor : theme.accentColor,
+              color: !isActive ? theme.primaryColor : theme.accentColor.withOpacity(0.6),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Row(

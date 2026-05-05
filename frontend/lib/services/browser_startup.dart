@@ -1,10 +1,12 @@
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:frontend/models/settings.dart';
 
 String openWebullEditor(String stock) {
   return """
-
 (async () => {
-const stock = "${stock}";
+const symbol = "${stock}";
+console.log("this is the stock")
+console.log(symbol)
 /** Wait up to `timeout` ms for `fn()` to return a truthy value. */
   function waitFor(fn, timeout = 5000, interval = 100) {
     return new Promise((resolve, reject) => {
@@ -35,7 +37,7 @@ const stock = "${stock}";
 
   // ── Step 1: Find the search input ─────────────────────────────────────────
 
-  console.log(`[searchStock] Looking for search bar…`);
+  console.log(`[searchStock] Waiting for search bar to mount…`);
 
   // Try common selectors; adjust if the site uses a different attribute.
   const SEARCH_SELECTORS = [
@@ -48,21 +50,16 @@ const stock = "${stock}";
     'input[aria-label*="Name"]',
   ];
 
-  let searchInput = null;
-  for (const sel of SEARCH_SELECTORS) {
-    searchInput = document.querySelector(sel);
-    if (searchInput) {
-      console.log(`[searchStock] Found input with selector: \${sel}`);
-      break;
+  const searchInput = await waitFor(() => {
+    for (const sel of SEARCH_SELECTORS) {
+      const el = document.querySelector(sel);
+      if (el) {
+        console.log(`[searchStock] Found input with selector: \${sel}`);
+        return el;
+      }
     }
-  }
-
-  if (!searchInput) {
-    throw new Error(
-      "Could not find the Symbol/Name search input. " +
-      "Inspect the input element and add its selector to SEARCH_SELECTORS."
-    );
-  }
+    return null;
+  }, 15000, 100);
 
   // ── Step 2: Focus + type the symbol ───────────────────────────────────────
 
@@ -112,26 +109,56 @@ const stock = "${stock}";
 
   targetButton.click();
   console.log(`[searchStock] ✅ Done — selected \${symbol.toUpperCase()}.`);
+
+  // ── Step 5: Anchor horizontal overflow to the right ─────────────────────
+  // Webull's stocks page has a min-width of ~1000px. When the WebView panel is
+  // narrower than that, the leftmost columns (watchlist, chart) take up all the
+  // visible space and the right-side trading panel is hidden off-screen. Force
+  // the page to be horizontally scrollable and pin the scroll position to the
+  // right so the trading panel is the default visible region.
+
+  const anchorStyle = document.createElement('style');
+  anchorStyle.id = 'halo-anchor-right';
+  anchorStyle.textContent = \`
+    html, body { overflow-x: auto !important; }
+    main, [class*="Portal__PortalContent"], [class*="Portal__PortalBody"] {
+      overflow-x: visible !important;
+    }
+  \`;
+  document.head.appendChild(anchorStyle);
+
+  const anchorRight = () => {
+    const el = document.scrollingElement || document.documentElement;
+    if (el && el.scrollWidth > el.clientWidth) {
+      el.scrollLeft = el.scrollWidth;
+    }
+  };
+
+  anchorRight();
+  window.addEventListener('resize', anchorRight);
+  window.addEventListener('load', anchorRight);
+  setInterval(anchorRight, 250);
+  new MutationObserver(anchorRight).observe(document.body, {
+    childList: true, subtree: true,
+  });
+
+  console.log('[Halo] Anchored Webull overflow to the right for ' + symbol);
+
   window.flutter_inappwebview.callHandler('HaloAuthReady', 'ready');
 })();
-
-async function searchStock(symbol) {
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
-  
-}
-
-// ── Run ─────────────────────────────────────────────────────────────────────
-// Change the symbol here or call searchStock() from your own code.
-searchStock("${stock}");
 """;
 }
 
-List<UserScript> getBrowserStartupScripts(String stock) {
-  return [
+List<UserScript> getBrowserStartupScripts(String stock, SettingsHandler settings) {
+  print("onboarding flow : ${settings.buyingPlatform!.id}");
+  if(settings.buyingPlatform == null) return [];
+
+  if(settings.buyingPlatform!.id == "Webull") return [
     UserScript(
-      source: openWebullEditor(stock),
-      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      source:  openWebullEditor(stock),
+      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
     )
   ];
+
+  return [];
 }

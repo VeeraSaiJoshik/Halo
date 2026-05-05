@@ -5,6 +5,7 @@ import 'package:frontend/controllers/AppController.dart';
 import 'package:frontend/controllers/WebViewController.dart';
 import 'package:frontend/models/customColors.dart';
 import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/themes/theme_provider.dart';
 import 'package:frontend/widgets/OverlayWidgets/TopNavModal.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -51,21 +52,25 @@ class _WebViewState extends ConsumerState<CustomWebView>
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(haloThemeProvider);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
         height: double.infinity,
         decoration: BoxDecoration(
-          color: CustomColors.primary,
+          color: theme.primaryColor,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Stack(
           children: [ 
-            widget.controller.loadingComplete?  
-              widget.controller.widget! : 
-              Center(child: GlassProgressIndicator.circular(),)
-            ,
+            AnimatedOpacity(
+              duration: Duration(milliseconds: 250),
+              opacity: widget.controller.loadingComplete ? 1 : 0,
+              child: widget.controller.widget,
+            ),
+            !widget.controller.loadingComplete ?  Center(child: GlassProgressIndicator.circular(),) : Container(),
             Positioned(
               left: 0,
               right: 0,

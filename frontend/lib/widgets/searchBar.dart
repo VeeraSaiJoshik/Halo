@@ -59,7 +59,7 @@ class CustomSearchBarState extends ConsumerState<CustomSearchBar> {
   }
 
   void _selectStock(StockName stock) {
-    ref.read(appControllerProvider).newTab(stock, ref.read(appEventBusProvider));
+    ref.read(appControllerProvider).newTab(stock, ref.read(appEventBusProvider), ref.read(settingsProvider));
     toggleSearchBarState();
   }
 

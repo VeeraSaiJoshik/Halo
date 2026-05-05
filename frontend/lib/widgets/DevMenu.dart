@@ -1,11 +1,36 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/ai/verdict.dart';
 import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/widgets/NotificationWidget.dart';
 import '../main.dart';
 import '../services/logout_service.dart';
 import '../themes/halo_theme.dart';
 import '../themes/theme_provider.dart';
+
+Verdict _sampleVerdict() => Verdict(
+      direction: 'bullish',
+      confidence: 8,
+      entry: const EntryPlan(
+        type: 'limit',
+        price: 184.20,
+        zoneLower: 183.40,
+        zoneUpper: 185.10,
+      ),
+      invalidation: 181.50,
+      target: 192.80,
+      thesis:
+          'NVDA reclaimed the 50-day moving average on rising volume after a clean retest of the prior breakout shelf. Relative strength versus SPY is making new highs, options flow skewed call-side, and the 4H stochastic just crossed up from oversold. Bias remains long while price holds above 182.',
+      keyRisks: const [
+        'CPI print Thursday could spike rates and compress multiples',
+        'Gap-fill back to 180.20 would invalidate the breakout structure',
+        'Sector rotation out of semis if AI-spend narrative cools',
+      ],
+      generatedAt: DateTime.now().subtract(const Duration(minutes: 12)),
+      modelId: 'llama-3.2-3b-q4',
+      cached: false,
+    );
 
 class DevMenu extends ConsumerWidget {
   final VoidCallback onClose;
@@ -89,6 +114,16 @@ class DevMenu extends ConsumerWidget {
                             onClose();
                           },
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      _PreviewVerdictButton(
+                        onTap: () {
+                          onClose();
+                          NotificationWidget.show(
+                            context,
+                            verdict: _sampleVerdict(),
+                          );
+                        },
                       ),
                       const SizedBox(height: 8),
                       _LogoutButton(
@@ -256,6 +291,80 @@ class _ThemeCardState extends ConsumerState<_ThemeCard> {
                   Icon(Icons.check_rounded, color: _accent, size: 16),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewVerdictButton extends ConsumerStatefulWidget {
+  final VoidCallback onTap;
+  const _PreviewVerdictButton({required this.onTap});
+
+  @override
+  ConsumerState<_PreviewVerdictButton> createState() =>
+      _PreviewVerdictButtonState();
+}
+
+class _PreviewVerdictButtonState extends ConsumerState<_PreviewVerdictButton> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(haloThemeProvider);
+    final accent = theme.accentColor;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
+            color: _hovering
+                ? accent.withOpacity(0.12)
+                : accent.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: accent.withOpacity(_hovering ? 0.45 : 0.22),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, color: accent, size: 16),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Preview verdict notification',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.whiteColor.withOpacity(0.85),
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Opens the modal with sample dummy data',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: accent.withOpacity(0.7),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

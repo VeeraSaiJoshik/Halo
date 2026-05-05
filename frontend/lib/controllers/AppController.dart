@@ -5,6 +5,7 @@ import 'package:frontend/engine/clients/alpaca_client.dart';
 import 'package:frontend/engine/clients/binance_client.dart';
 import 'package:frontend/engine/clients/finnhub_client.dart';
 import 'package:frontend/engine/stocks/ticker_identifier.dart';
+import 'package:frontend/models/settings.dart';
 import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/services/browser_startup.dart';
@@ -107,7 +108,7 @@ class AppController extends ChangeNotifier{
     notifyListeners();
   }
 
-  void newTab(StockName stock, AppEventBus eventBus) {
+  void newTab(StockName stock, AppEventBus eventBus, SettingsHandler settings) {
     settingsOpen = false;
     final tabExists = tabs.indexWhere((tab) => tab.Stock.symbol == stock.symbol);
 
@@ -116,12 +117,14 @@ class AppController extends ChangeNotifier{
       return;
     }
     
-    WebBundle portalController = createInAppWebView(
-      'https://www.webull.com/quote/nasdaq-${stock.symbol}',
+    WebBundle? portalController;
+    
+    portalController = createInAppWebView(
+      'https://app.webull.com/watch',
       injectionScript: "assets/scripts/dom_listener.js",
-      startupScripts: [],//getBrowserStartupScripts(stock.symbol.toUpperCase()),
-      onReady: (controller) {
-        controller.loadingComplete = true;
+      startupScripts: getBrowserStartupScripts(stock.symbol.toUpperCase(), settings),
+      getReady: () {
+        portalController!.loadingComplete = true;
         notifyListeners();
       },
     );
@@ -169,7 +172,7 @@ class AppController extends ChangeNotifier{
   void ensureChartController(WindowInfo tab) {
     if (tab.chartController != null) return;
     tab.chartController = createInAppWebView(
-      'https://www.tradingview.com/chart/d3IIUEuI/',
+      'https://www.tradingview.com/chart/?symbol=${tab.Stock.symbol}',
       injectionScript: "assets/scripts/dom_listener.js",
       onReady: (controller) {
         controller.loadingComplete = true;
