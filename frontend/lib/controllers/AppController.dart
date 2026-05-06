@@ -21,7 +21,7 @@ enum AppPage {
 }
 
 class WindowInfo {
-  final StockName Stock;
+  final StockName stock;
   
   final WebBundle? portalController;
 
@@ -49,7 +49,7 @@ class WindowInfo {
     notifications.add(notification);
   }
 
-  WindowInfo({required this.Stock, required this.portalController, this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
+  WindowInfo({required this.stock, required this.portalController, this.chartController, required this.isActive, required AppEventBus eventBus,pages}): intakeService = IntakeService(
     alpacaClient: AlpacaClient(
       apiKey: const String.fromEnvironment("ALPACA_API_KEY"), 
       secretKey: const String.fromEnvironment("ALPACA_API_SECRET")
@@ -57,6 +57,7 @@ class WindowInfo {
     binanceClient: BinanceClient(),
     finnhubClient: FinnhubClient(apiKey: const String.fromEnvironment("FINNHUB_API_KEY")),
     eventBus: eventBus,
+    data: stock
   ){
     print("ALPACA_API_KEY : ${const String.fromEnvironment("ALPACA_API_KEY")}");
     print("ALPACA_API_SECRET : ${const String.fromEnvironment("ALPACA_API_SECRET")}");
@@ -78,7 +79,7 @@ class WindowInfo {
 
   Future<bool> initializeIntakeService() async {
     TickerInfo? info = await intakeService.initializeInput(
-      Stock.symbol,
+      stock.symbol,
       "5m"
     );
     aiListenerReady = true;
@@ -89,10 +90,7 @@ class WindowInfo {
 
 class AppController extends ChangeNotifier{
   List<WindowInfo> tabs = [];
-  IntakeService intakeEngine;
   bool settingsOpen = false;
-
-  AppController({required this.intakeEngine});
 
   void openSettings() {
     settingsOpen = true;
@@ -110,7 +108,7 @@ class AppController extends ChangeNotifier{
 
   void newTab(StockName stock, AppEventBus eventBus, SettingsHandler settings) {
     settingsOpen = false;
-    final tabExists = tabs.indexWhere((tab) => tab.Stock.symbol == stock.symbol);
+    final tabExists = tabs.indexWhere((tab) => tab.stock.symbol == stock.symbol);
 
     if(tabExists != -1) {
       switchTab(tabs.elementAt(tabExists));
@@ -129,7 +127,7 @@ class AppController extends ChangeNotifier{
       },
     );
 
-    WindowInfo newTab = WindowInfo(portalController: portalController, Stock: stock, isActive: true, eventBus: eventBus);
+    WindowInfo newTab = WindowInfo(portalController: portalController, stock: stock, isActive: true, eventBus: eventBus);
 
     newTab.intakeService.onPriceUpdate = (price, change) {
       newTab.latestPrice = price;
@@ -172,7 +170,7 @@ class AppController extends ChangeNotifier{
   void ensureChartController(WindowInfo tab) {
     if (tab.chartController != null) return;
     tab.chartController = createInAppWebView(
-      'https://www.tradingview.com/chart/?symbol=${tab.Stock.symbol}',
+      'https://www.tradingview.com/chart/?symbol=${tab.stock.symbol}',
       injectionScript: "assets/scripts/dom_listener.js",
       onReady: (controller) {
         controller.loadingComplete = true;

@@ -126,7 +126,7 @@ class _TabIcon extends ConsumerWidget {
                   duration: duration,
                   opacity: isHighlighted ? 1.0 : 0.6,
                   child: Image.network(
-                    tab.Stock.imageUrl,
+                    tab.stock.imageUrl,
                     fit: BoxFit.contain,
                   ),
                 ),

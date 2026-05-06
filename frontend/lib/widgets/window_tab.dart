@@ -75,7 +75,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   height: 17,
                   width: 17,
                   child: Image.network(
-                    widget.context.Stock.imageUrl,
+                    widget.context.stock.imageUrl,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -84,7 +84,7 @@ class _WindowTabState extends ConsumerState<WindowTab>
                   spacing: 8,
                   children: [
                     Text(
-                      widget.context.Stock.symbol,
+                      widget.context.stock.symbol,
                       style: theme.ticker,
                     ),
                   ],

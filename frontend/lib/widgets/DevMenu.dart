@@ -104,17 +104,6 @@ class DevMenu extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 22),
-                      ...HaloThemeType.values.map(
-                        (type) => _ThemeCard(
-                          type: type,
-                          isSelected: type == currentType,
-                          onTap: () async {
-                            ref.read(haloThemeTypeProvider.notifier).state = type;
-                            await ref.read(settingsProvider).applyTheme(type);
-                            onClose();
-                          },
-                        ),
-                      ),
                       const SizedBox(height: 8),
                       _PreviewVerdictButton(
                         onTap: () {

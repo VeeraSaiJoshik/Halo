@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Art History Flashcards</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --border: #e0ddd6;
+    --text: #1a1814;
+    --muted: #7a766e;
+    --accent: #2d2926;
+    --green: #2d6a2d;
+    --green-bg: #edf7ed;
+    --red: #a32020;
+    --red-bg: #fdf0f0;
+    --yellow-bg: #fffbec;
+    --yellow: #7a6200;
+  }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .ctrl-btn {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .ctrl-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .ctrl-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat {
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    min-width: 70px;
+  }
+
+  .stat-num {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--accent);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .progress-wrap {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .card-area {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .card-img-wrap {
+    width: 100%;
+    height: 300px;
+    background: #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-img-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .img-loading {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  .card-q {
+    padding: 1rem 1.25rem 0.75rem;
+    font-size: 1rem;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+  }
+
+  .card-num {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .opt {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.12s;
+    line-height: 1.4;
+  }
+
+  .opt:hover:not(:disabled) {
+    background: #f7f5f0;
+    border-color: var(--accent);
+  }
+
+  .opt:disabled { cursor: default; }
+
+  .opt.correct {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+    font-weight: bold;
+  }
+
+  .opt.wrong {
+    background: var(--red-bg);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .opt.reveal {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .next-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    display: none;
+    transition: opacity 0.15s;
+  }
+
+  .next-btn:hover { opacity: 0.85; }
+
+  .complete {
+    display: none;
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+  }
+
+  .score-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  .complete h2 {
+    font-size: 1.4rem;
+    font-weight: normal;
+    margin-bottom: 0.5rem;
+  }
+
+  .complete p {
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+  }
+
+  .end-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .end-btn {
+    padding: 0.65rem 1.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    font-family: 'Georgia', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .end-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .end-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .end-btn.primary:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Art History Flashcards</h1>
+  <p>44 works from your quiz</p>
+</header>
+
+<div class="controls">
+  <button class="ctrl-btn active" onclick="startAll(this)">All 44</button>
+  <button class="ctrl-btn" onclick="startMissed(this)">Missed only</button>
+  <button class="ctrl-btn" onclick="startShuffle(this)">Shuffle</button>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><span class="stat-num" id="s-card">1</span><span class="stat-label">Card</span></div>
+  <div class="stat"><span class="stat-num" id="s-right" style="color:#2d6a2d">0</span><span class="stat-label">Correct</span></div>
+  <div class="stat"><span class="stat-num" id="s-wrong" style="color:#a32020">0</span><span class="stat-label">Missed</span></div>
+  <div class="stat"><span class="stat-num" id="s-left">44</span><span class="stat-label">Left</span></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-fill" id="prog" style="width:0%"></div>
+</div>
+
+<div class="card-area">
+  <div id="quiz">
+    <div class="card" id="main-card">
+      <div class="card-img-wrap" id="img-wrap">
+        <span class="img-loading">Loading...</span>
+      </div>
+      <div class="card-q">
+        <div class="card-num" id="card-num"></div>
+        <div id="q-text"></div>
+      </div>
+    </div>
+    <div class="options" id="options"></div>
+    <button class="next-btn" id="next-btn" onclick="nextCard()">Next →</button>
+  </div>
+
+  <div class="complete" id="complete">
+    <div class="score-ring" id="score-ring"></div>
+    <h2>Session complete</h2>
+    <p id="complete-msg"></p>
+    <div class="end-btns">
+      <button class="end-btn primary" onclick="startAll()">Start over</button>
+      <button class="end-btn" onclick="startMissed()">Review missed</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL = [
+  {q:"The artist who created this work was", img:"images/01_mona_lisa.jpg", a:"Leonardo da Vinci", opts:["Michelangelo","Raphael","Leonardo da Vinci","Donatello"]},
+  {q:"The artist who created this work was", img:"images/02_nighthawks.jpg", a:"Edward Hopper", opts:["Charles Demuth","Edward Hopper","Georgia O'Keeffe","Norman Rockwell"]},
+  {q:"The artist who created this work was", img:"images/03_liberty_leading.jpg", a:"Eugène Delacroix", opts:["Edouard Manet","Gustave Courbet","Eugène Delacroix","Honoré Daumier"]},
+  {q:"The artist who created this work was", img:"images/04_nude_descending.jpg", a:"Marcel Duchamp", opts:["John Heartfield","Hannah Hoch","David Smith","Marcel Duchamp"]},
+  {q:"The artist who created this work was", img:"images/05_birth_of_venus.jpg", a:"Sandro Botticelli", opts:["Leonardo da Vinci","Michelangelo","Sandro Botticelli","Caravaggio"]},
+  {q:"The title of this artwork is", img:"images/06_jahangir.jpg", a:"Jahangir Preferring a Sufi Shaikh to Kings", opts:["Emperor Jahangir and his Counsel","The Royal Court of Emperor Jahangir","The Russian King at the Indian Court","Jahangir Preferring a Sufi Shaikh to Kings"]},
+  {q:"The artist who created this work was", img:"images/07_demoiselles.jpg", a:"Pablo Picasso", opts:["Pablo Picasso","George Braques","Juan Gris","Paul Klee"]},
+  {q:"The artist who created this work was", img:"images/08_school_of_athens.jpg", a:"Raphael", opts:["Leonardo Da Vinci","Raphael","Artemisia Gentileschi","Michelangelo"]},
+  {q:"The artist who created this work was", img:"images/09_kerry_marshall.jpg", a:"Kerry James Marshall", opts:["Kerry James Marshall","Bob Thompson","Salvador Dali","Paul Klee"]},
+  {q:"The artist who created this work was", img:"images/10_american_gothic.jpg", a:"Grant Wood", opts:["James Rosenquist","George Tooker","Jared French","Grant Wood"]},
+  {q:"Who is the woman in this portrait bust?", img:"images/11_nefertiti.jpg", a:"Nefertiti", opts:["Tiye","Nefertiti","Hatshepsut","Cleopatra"]},
+  {q:"The architect of this memorial is", img:"images/12_vietnam_memorial.jpg", a:"Maya Lin", opts:["Frank Gehry","Frank Lloyd Wright","Maya Lin","Moshe Safdie"]},
+  {q:"Who is the Roman emperor in this sculpture?", img:"images/13_augustus.jpg", a:"Augustus of Primaporta", opts:["Nero","Augustus of Primaporta","Caracalla","Julius Caesar"]},
+  {q:"What is this famous work of ancient Greek architecture?", img:"images/14_parthenon.jpg", a:"Parthenon", opts:["Parthenon","Treasury of Atreus","Erechthion","Hera's Temple"]},
+  {q:"The artist who created this work was", img:"images/15_creation_of_adam.jpg", a:"Michelangelo", opts:["Caravaggio","Michelangelo","Raphael","Leonardo da Vinci"]},
+  {q:"What is the name of this famous sculpture?", img:"images/16_doryphoros.jpg", a:'Doryphoros or "Spear-Bearer"', opts:['The Athlete','Doryphoros or "Spear-Bearer"','Polykleitos','The Laocoon']},
+  {q:"What is the name of this famous sculpture?", img:"images/17_venus_de_milo.jpg", a:"Venus de Milo", opts:["Venus de Milo","Diana After Her Bath","Hera","Athena"]},
+  {q:"What is the name of this famous work of architecture?", img:"images/18_hagia_sophia.jpg", a:"Hagia Sophia", opts:["The Palatine Chapel of Charlemagne","Abbey Church of St. Michael at Hildesheim","Hagia Sophia","Laon Cathedral"]},
+  {q:"The title of this artwork is", img:"images/19_oba_head.jpg", a:"Head of Oba", opts:["Fanga Head","Ghanian King","Head of Isis","Head of Oba"]},
+  {q:"The artist who created this work was", img:"images/20_el_anatsui.jpg", a:"El Anatsui", opts:["Alexander Calder","El Anatsui","Marcel Duchamp","Donald Judd"]},
+  {q:"The artist who created this work was", img:"images/21_grande_odalisque.jpg", a:"Jean-Auguste-Dominique Ingres", opts:["Artemisia Gentileschi","Jean-Auguste-Dominique Ingres","Angelica Hoffmann","Gustave Courbet"]},
+  {q:"The artist who created this work was", img:"images/22_arnolfini.jpg", a:"Jan van Eyck", opts:["Rogier van der Weyden","Jan van Eyck","Robert Campin","Caravaggio"]},
+  {q:"The artist who created this work was", img:"images/23_giotto_lamentation.jpg", a:"Giotto", opts:["Gislebertus","Cimabue","Giotto","The Byzantine Master"]},
+  {q:"The artist who created this work was", img:"images/24_marilyn_warhol.jpg", a:"Andy Warhol", opts:["Roy Lichtenstein","Brigette Riley","James Rosenquist","Andy Warhol"]},
+  {q:"The artist who created this work was", img:"images/25_donatello_david.jpg", a:"Donatello", opts:["Michelangelo","Bernini","Verrocchio","Donatello"]},
+  {q:"The artist who created this work was", img:"images/26_bernini_david.jpg", a:"Gianlorenzo Bernini", opts:["Verrocchio","Donatello","Gianlorenzo Bernini","Michelangelo"]},
+  {q:"The title of this artwork by Caravaggio is", img:"images/27_calling_matthew.jpg", a:"Calling of St. Matthew", opts:["Holofernes","Calling of St. Matthew","Doubting Thomas","Conversion of St. Paul"]},
+  {q:"The artist who created this work was", img:"images/28_judith_holofernes.jpg", a:"Artemisia Gentileschi", opts:["Johannes Vermeer","Caravaggio","Artemisia Gentileschi","Rembrandt Van Rijn"]},
+  {q:"The artist who created this work was", img:"images/29_migrant_mother.jpg", a:"Dorothea Lange", opts:["Diane Arbus","Dorothea Lange","Nan Goldin","Cindy Sherman"]},
+  {q:"The artist who created this work was", img:"images/30_rembrandt_self.jpg", a:"Rembrandt van Rijn", opts:["Titian","Tintoretto","Caravaggio","Rembrandt van Rijn"]},
+  {q:"The artist who created this work was", img:"images/31_death_of_marat.jpg", a:"Jacques-Louis David", opts:["Gustave Courbet","Jacques-Louis David","Girodot","Angelica Hoffmann"]},
+  {q:"The artist who created this work was", img:"images/32_saturn_goya.jpg", a:"Francisco Goya", opts:["Honoré Daumier","Odilon Redon","Eugène Delacroix","Francisco Goya"]},
+  {q:"The artist who created this work was", img:"images/33_dejeuner.jpg", a:"Edouard Manet", opts:["Edouard Manet","Claude Monet","Edgar Degas","Gustave Courbet"]},
+  {q:"The artist who created this work was", img:"images/34_grande_jatte.jpg", a:"Georges Seurat", opts:["Edgar Degas","Paul Cezanne","Claude Monet","Georges Seurat"]},
+  {q:"The artist who created this work was", img:"images/35_starry_night.jpg", a:"Vincent van Gogh", opts:["Edvard Munch","Georges Seurat","Edgar Degas","Vincent van Gogh"]},
+  {q:"The artist who created this work was", img:"images/36_dinner_party.jpg", a:"Judy Chicago", opts:["Judy Pfaff","Hannah Hoch","Elaine DeKooning","Judy Chicago"]},
+  {q:"The artist who created this work was", img:"images/37_frida_kahlo.jpg", a:"Frida Kahlo", opts:["Frida Kahlo","Carmen Herrera","Verrochio","Camille Claudel"]},
+  {q:"The artist who created this work was", img:"images/38_matisse_dance.jpg", a:"Henri Matisse", opts:["Andre Derain","Ernst Ludwig Kirchner","Henri Matisse","Emil Nolde"]},
+  {q:"The artist who created this work was", img:"images/39_ai_weiwei.jpg", a:"Ai Weiwei", opts:["Zhang Xiaogang","Salvador Dali","Ai Weiwei","Liu Wei"]},
+  {q:"The artist who created this work was", img:"images/40_persistence.jpg", a:"Salvador Dali", opts:["Rene Magritte","Salvador Dali","Joan Miro","Paul Klee"]},
+  {q:"The title of this painting is", img:"images/41_lavender_mist.jpg", a:"Lavender Mist", opts:["Composition IV","Lavender Mist","Abstraction No.5","The Great Wave"]},
+  {q:"The architect of this building was", img:"images/42_guggenheim.jpg", a:"Frank Lloyd Wright", opts:["Frank Lloyd Wright","Frank Gehry","Phillip Johnson","Ludwig Mies van der Rohe"]},
+  {q:"The artist who created this work was", img:"images/43_titian.jpg", a:"Titian", opts:["Caravaggio","Titian","Tintoretto","Artemisia Gentileschi"]},
+  {q:"The artist who created this work was", img:"images/44_water_lilies.jpg", a:"Claude Monet", opts:["Mary Cassatt","Edgar Degas","Claude Monet","Berthe Morisot"]},
+];
+
+let deck = [...ALL];
+let idx = 0, correct = 0, incorrect = 0, wrongCards = [], answered = false;
+
+function updateStats() {
+  document.getElementById('s-card').textContent = idx + 1;
+  document.getElementById('s-right').textContent = correct;
+  document.getElementById('s-wrong').textContent = incorrect;
+  document.getElementById('s-left').textContent = deck.length - idx;
+  document.getElementById('prog').style.width = (idx / deck.length * 100) + '%';
+}
+
+function render() {
+  answered = false;
+  const c = deck[idx];
+  updateStats();
+
+  const wrap = document.getElementById('img-wrap');
+  wrap.innerHTML = '<span class="img-loading">Loading image...</span>';
+  const im = new Image();
+  im.onload = () => { wrap.innerHTML = ''; wrap.appendChild(im); };
+  im.onerror = () => { wrap.innerHTML = '<span class="img-loading">Image unavailable</span>'; };
+  im.src = c.img;
+  im.alt = 'Artwork';
+
+  document.getElementById('card-num').textContent = `Card ${idx + 1} of ${deck.length}`;
+  document.getElementById('q-text').textContent = c.q;
+
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  c.opts.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = opt;
+    b.onclick = () => select(b, opt, c.a, c);
+    optsEl.appendChild(b);
+  });
+
+  document.getElementById('next-btn').style.display = 'none';
+}
+
+function select(btn, chosen, answer, card) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === answer) b.classList.add('reveal');
+  });
+  if (chosen === answer) { btn.classList.add('correct'); correct++; }
+  else { btn.classList.add('wrong'); incorrect++; wrongCards.push(card); }
+  document.getElementById('s-right').textContent = correct;
+  document.getElementById('s-wrong').textContent = incorrect;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextCard() {
+  idx++;
+  if (idx >= deck.length) { showComplete(); return; }
+  render();
+}
+
+function showComplete() {
+  document.getElementById('quiz').style.display = 'none';
+  const comp = document.getElementById('complete');
+  comp.style.display = 'block';
+  const total = correct + incorrect;
+  const pct = total ? Math.round(correct / total * 100) : 0;
+  document.getElementById('score-ring').textContent = pct + '%';
+  document.getElementById('complete-msg').textContent =
+    `${correct} correct and ${incorrect} missed out of ${total} cards.` +
+    (incorrect > 0 ? ' Use "Review missed" to drill the ones you got wrong.' : ' Perfect!');
+}
+
+function startAll(el) {
+  deck = [...ALL]; reset(el, 0);
+}
+
+function startMissed(el) {
+  deck = wrongCards.length ? [...wrongCards] : [...ALL]; reset(el, 1);
+}
+
+function startShuffle(el) {
+  deck = [...ALL].sort(() => Math.random() - 0.5); reset(el, 2);
+}
+
+function reset(el, activeIdx) {
+  idx = 0; correct = 0; incorrect = 0; wrongCards = [];
+  document.querySelectorAll('.ctrl-btn').forEach((b, i) => b.classList.toggle('active', i === activeIdx));
+  document.getElementById('complete').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

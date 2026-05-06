@@ -34,33 +34,9 @@ final appEventBusProvider = Provider<AppEventBus>((ref) {
   return bus;
 });
 
-final intakeServiceProvider = Provider<IntakeService>((ref) {
-  final eventBus = ref.read(appEventBusProvider);
-
-  final alpacaClient = AlpacaClient(
-    apiKey: const String.fromEnvironment("ALPACA_API_KEY"), 
-    secretKey: const String.fromEnvironment("ALPACA_API_SECRET")
-  );
-  final binanceClient = BinanceClient();
-  final finnhubClient = FinnhubClient(apiKey: String.fromEnvironment("FINNHUB_API_KEY"));
-
-  final intakeService = IntakeService(
-    eventBus: eventBus,
-    alpacaClient: alpacaClient,
-    binanceClient: binanceClient,
-    finnhubClient: finnhubClient
-  );
-  intakeService.verdictDispatcher = ref.read(verdictDispatcherProvider);
-
-  ref.onDispose(() => intakeService.dispose());
-
-  return intakeService;
-});
-
 final appControllerProvider = ChangeNotifierProvider<AppController>(
   (ref) {
-    final intakeService = ref.read(intakeServiceProvider);
-    return AppController(intakeEngine: intakeService);
+    return AppController();
   }
 );
 

@@ -29,10 +29,7 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
     final savedTheme = ref.read(settingsProvider).theme;
     print(savedTheme);
     if (savedTheme != null) {
-      Future.microtask(() {
-        if (!mounted) return;
-        ref.read(haloThemeTypeProvider.notifier).state = savedTheme;
-      });
+      ref.read(haloThemeTypeProvider.notifier).state = savedTheme;
     }
   }
 

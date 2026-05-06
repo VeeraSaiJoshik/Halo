@@ -86,7 +86,7 @@ class _BodyPageDartState extends ConsumerState<BodyPageDart> {
   Widget _buildTabContent(WindowInfo tab) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const double dividerWidth = 6;
+        const double dividerWidth = 12;
 
         final bool portalActive = tab.pages.contains(AppPage.PORTAL);
         final bool notifActive = tab.pages.contains(AppPage.NOTIFICATIONS);
@@ -327,6 +327,7 @@ class _PanelDividerState extends ConsumerState<_PanelDivider> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onHorizontalDragStart: (_) => setState(() => _dragging = true),
         onHorizontalDragEnd: (_) => setState(() => _dragging = false),
         onHorizontalDragUpdate: (details) => widget.onDrag(details.delta.dx),

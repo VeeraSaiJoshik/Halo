@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/ai/verdict.dart';
 import 'package:frontend/models/providerModels.dart';
+import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
 import 'package:frontend/themes/halo_theme.dart';
 import 'package:frontend/themes/theme_provider.dart';
@@ -13,12 +14,9 @@ import 'package:frontend/themes/theme_provider.dart';
 class NotificationWidget extends ConsumerWidget {
   final Verdict verdict;
   final VoidCallback? onClose;
+  final StockName stock;
 
-  const NotificationWidget({
-    super.key,
-    required this.verdict,
-    this.onClose,
-  });
+  const NotificationWidget({super.key, required this.verdict, this.onClose, required this.stock});
 
   static OverlayEntry? _activeEntry;
 
@@ -26,10 +24,7 @@ class NotificationWidget extends ConsumerWidget {
   /// Read from app-wide keyboard handlers to gate ESC routing.
   static bool get isActive => _activeEntry != null;
 
-  static Future<void> show(
-    BuildContext context, {
-    required Verdict verdict,
-  }) {
+  static Future<void> show(BuildContext context, {required Verdict verdict}) {
     _activeEntry?.remove();
     _activeEntry = null;
 
@@ -49,10 +44,8 @@ class NotificationWidget extends ConsumerWidget {
     }
 
     entry = OverlayEntry(
-      builder: (ctx) => _NotificationOverlayHost(
-        verdict: verdict,
-        onClosed: remove,
-      ),
+      builder: (ctx) =>
+          _NotificationOverlayHost(verdict: verdict, onClosed: remove),
     );
 
     _activeEntry = entry;
@@ -73,10 +66,79 @@ class NotificationWidget extends ConsumerWidget {
     final maxW = media.size.width < 420 ? media.size.width - 32 : 380.0;
     final maxH = media.size.height * 0.72;
 
-    return Material(
+    return Container(
+      width: maxW,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: theme.whiteColor.withValues(alpha: 0.20),
+          width: 0.5,
+          strokeAlign: BorderSide.strokeAlignOutside,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: glow.withValues(alpha: 0.30),
+            blurRadius: 28,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: dirColor.withValues(alpha: 0.10),
+            blurRadius: 32,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: ColoredBox(
+          color: theme.primaryColor,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            child: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: theme.whiteColor.withValues(alpha: 0.6),
+                  width: 0.5,
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.primaryColor.withValues(alpha: 0.92),
+                    theme.backgroundColor.withValues(alpha: 0.92),
+                  ],
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 30, 
+                        width: 30,
+                        child: Image.asset(name),
+                      )
+                    ],
+                  ),
+                  _ConfidenceBar(theme: theme, dirColor: dirColor, confidence: 8)
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Material(
       color: Colors.transparent,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
+      child: Container(
+        //    decoration: BoxDecoration(wi: maxW, maxHeight: maxH),
         child: Semantics(
           liveRegion: true,
           label: '${isBullish ? 'Bullish' : 'Bearish'} verdict notification',
@@ -132,6 +194,10 @@ class NotificationWidget extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        Row(children: [
+
+                          ],
+                        ),
                         _Header(
                           theme: theme,
                           dirColor: dirColor,
@@ -225,7 +291,8 @@ class _NotificationOverlayHost extends ConsumerStatefulWidget {
       _NotificationOverlayHostState();
 }
 
-class _NotificationOverlayHostState extends ConsumerState<_NotificationOverlayHost>
+class _NotificationOverlayHostState
+    extends ConsumerState<_NotificationOverlayHost>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   StreamSubscription<AppEvent>? _busSub;
@@ -282,10 +349,7 @@ class _NotificationOverlayHostState extends ConsumerState<_NotificationOverlayHo
           final dy = (1 - t) * 30;
           return Opacity(
             opacity: t,
-            child: Transform.translate(
-              offset: Offset(dx, dy),
-              child: child,
-            ),
+            child: Transform.translate(offset: Offset(dx, dy), child: child),
           );
         },
         child: NotificationWidget(
@@ -320,10 +384,7 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            dirColor.withValues(alpha: 0.10),
-            Colors.transparent,
-          ],
+          colors: [dirColor.withValues(alpha: 0.10), Colors.transparent],
         ),
         border: Border(
           bottom: BorderSide(
@@ -334,7 +395,11 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _DirectionPill(theme: theme, dirColor: dirColor, isBullish: isBullish),
+          _DirectionPill(
+            theme: theme,
+            dirColor: dirColor,
+            isBullish: isBullish,
+          ),
           if (cached) ...[
             const SizedBox(width: 8),
             _MetaPill(theme: theme, label: 'CACHED'),
@@ -367,10 +432,7 @@ class _DirectionPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: dirColor.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: dirColor.withValues(alpha: 0.55),
-            width: 1,
-          ),
+          border: Border.all(color: dirColor.withValues(alpha: 0.55), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -418,10 +480,7 @@ class _MetaPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: theme.labelSmall.copyWith(
-          fontSize: 10,
-          color: theme.textMuted,
-        ),
+        style: theme.labelSmall.copyWith(fontSize: 10, color: theme.textMuted),
       ),
     );
   }
@@ -493,11 +552,6 @@ class _ConfidenceBar extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              'CONFIDENCE',
-              style: theme.labelSmall,
-            ),
-            const Spacer(),
             Text.rich(
               TextSpan(
                 children: [
@@ -507,40 +561,37 @@ class _ConfidenceBar extends StatelessWidget {
                       color: dirColor,
                       fontSize: 18,
                       fontFeatures: const [FontFeature.tabularFigures()],
+                      decoration: TextDecoration.none
                     ),
                   ),
                   TextSpan(
-                    text: ' / 10',
+                    text: '/10',
                     style: theme.ticker.copyWith(
-                      color: theme.textMuted,
+                      color: theme.whiteColor.withOpacity(0.4),
                       fontSize: 12,
+                      decoration: TextDecoration.none
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Semantics(
-          label: 'Confidence $value of 10',
-          child: Row(
-            children: List.generate(10, (i) {
-              final filled = i < value;
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(right: i == 9 ? 0 : 4),
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: filled
-                        ? dirColor.withValues(alpha: 0.85)
-                        : theme.whiteColor.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(3),
+            SizedBox(width: 10,),
+            ...List.generate(10, (i) {
+                final filled = i < value;
+                return Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: i == 9 ? 0 : 4),
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: filled
+                          ? dirColor.withValues(alpha: 0.85)
+                          : theme.whiteColor.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
-                ),
-              );
+                );
             }),
-          ),
+          ],
         ),
       ],
     );
@@ -625,7 +676,8 @@ class _PriceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasZone = zoneLower != null &&
+    final hasZone =
+        zoneLower != null &&
         zoneUpper != null &&
         (zoneLower! > 0 || zoneUpper! > 0);
 
@@ -823,11 +875,7 @@ class _Footer extends StatelessWidget {
       ),
       child: Row(
         children: [
-          FaIcon(
-            FontAwesomeIcons.microchip,
-            size: 10,
-            color: theme.textMuted,
-          ),
+          FaIcon(FontAwesomeIcons.microchip, size: 10, color: theme.textMuted),
           const SizedBox(width: 6),
           Flexible(
             child: Text(

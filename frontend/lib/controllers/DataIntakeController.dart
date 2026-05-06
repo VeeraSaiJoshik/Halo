@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/DetectionController.dart';
 import 'package:frontend/controllers/NotificationController.dart';
+import 'package:frontend/models/stocks.dart';
 import 'package:frontend/services/app_event_bus.dart';
 
 import '../ai/verdict_dispatcher.dart';
@@ -52,6 +53,7 @@ class IntakeService {
   DateTime? _lastCandleTimestamp;
   double? _lastKnownClose;
   DetectionEngine? detectionEngine;
+  StockName data;
 
   late Function updateNotifications;
 
@@ -59,6 +61,7 @@ class IntakeService {
     this.alpacaClient,
     BinanceClient? binanceClient,
     this.finnhubClient,
+    required this.data,
     required this.eventBus,
   }) : binanceClient = binanceClient ?? BinanceClient( baseUrl: Platform.environment['BINANCE_BASE_URL'] ?? 'https://api.binance.com', ) {
     detectionEngine = DetectionEngine();
