@@ -34,6 +34,10 @@ class SettingsHandler {
       theme = parseString(theme_id);
     }
 
+    print("buying_id: ${buyingPlatform.toString()}");
+    print("charting_id: ${chartingPlatform}");
+    print("theme_id: ${theme_id}");
+
     return true;
   }
 

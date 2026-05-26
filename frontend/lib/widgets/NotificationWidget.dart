@@ -123,7 +123,7 @@ class NotificationWidget extends ConsumerWidget {
                       SizedBox(
                         height: 30, 
                         width: 30,
-                        child: Image.asset(name),
+                        //child: Image.asset(name),
                       )
                     ],
                   ),
@@ -352,12 +352,7 @@ class _NotificationOverlayHostState
             child: Transform.translate(offset: Offset(dx, dy), child: child),
           );
         },
-        child: NotificationWidget(
-          verdict: widget.verdict,
-          onClose: () {
-            _dismiss();
-          },
-        ),
+        child: Container()
       ),
     );
   }

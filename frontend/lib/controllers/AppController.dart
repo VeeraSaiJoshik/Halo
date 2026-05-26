@@ -127,19 +127,19 @@ class AppController extends ChangeNotifier{
       },
     );
 
-    WindowInfo newTab = WindowInfo(portalController: portalController, stock: stock, isActive: true, eventBus: eventBus);
+    WindowInfo newTabObj = WindowInfo(portalController: portalController, stock: stock, isActive: true, eventBus: eventBus);
 
-    newTab.intakeService.onPriceUpdate = (price, change) {
-      newTab.latestPrice = price;
-      newTab.priceChangePercent = change;
+    newTabObj.intakeService.onPriceUpdate = (price, change) {
+      newTabObj.latestPrice = price;
+      newTabObj.priceChangePercent = change;
       notifyListeners();
     };
 
     tabs.add(
-      newTab
+      newTabObj
     );
 
-    newTab.initializeIntakeService().then((_) => notifyListeners());
+    newTabObj.initializeIntakeService().then((_) => notifyListeners());
 
     switchTab(tabs.elementAt(tabs.length - 1));
   }

@@ -25,12 +25,6 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
   void initState() {
     super.initState();
     windowManager.addListener(this);
-
-    final savedTheme = ref.read(settingsProvider).theme;
-    print(savedTheme);
-    if (savedTheme != null) {
-      ref.read(haloThemeTypeProvider.notifier).state = savedTheme;
-    }
   }
 
   @override
@@ -53,6 +47,9 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
   Widget build(BuildContext context) {
     final globalSettings = ref.read(settingsProvider);
     Widget content = globalSettings.onboardingFlag() ? OnboardingPage() : HomePage();
+
+    
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Flutter Demo',

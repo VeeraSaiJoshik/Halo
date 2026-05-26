@@ -19,16 +19,17 @@ void main() async {
   SettingsHandler globalSettings = SettingsHandler();
   await globalSettings.initialize();
 
-  final container = ProviderContainer();
+  final container = ProviderContainer(
+    overrides: [
+      settingsProvider.overrideWithValue(globalSettings),
+    ],
+  );
   await container.read(insightRepositoryProvider).init();
 
   runApp(UncontrolledProviderScope(
     container: container,
-    child: ProviderScope(
-      overrides: [settingsProvider.overrideWithValue(globalSettings)],
-      child: MyApp()
-    ),
-  ));
+    child: MyApp(),
+  ),);
 
   WindowOptions windowOptions = const WindowOptions(
     backgroundColor: Colors.transparent,
@@ -42,5 +43,4 @@ void main() async {
     await windowManager.show();
     await windowManager.focus();
   });
-
 }

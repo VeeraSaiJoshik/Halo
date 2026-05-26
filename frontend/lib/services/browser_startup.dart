@@ -110,25 +110,19 @@ console.log(symbol)
   targetButton.click();
   console.log(`[searchStock] ✅ Done — selected \${symbol.toUpperCase()}.`);
 
-  // ── Step 5: Anchor horizontal overflow to the right ─────────────────────
-  // Webull's stocks page has a min-width of ~1000px. When the WebView panel is
-  // narrower than that, the leftmost columns (watchlist, chart) take up all the
-  // visible space and the right-side trading panel is hidden off-screen. Force
-  // the page to be horizontally scrollable and pin the scroll position to the
-  // right so the trading panel is the default visible region.
-
+  // Webull's reset CSS sets html,body { overflow: hidden }, so the page root
+  // never scrolls. The actual overflowing element is the Portal__PortalContent
+  // section, which clips main.jss204 (min-width: 1000px) when narrow.
   const anchorStyle = document.createElement('style');
   anchorStyle.id = 'halo-anchor-right';
   anchorStyle.textContent = \`
     html, body { overflow-x: auto !important; }
-    main, [class*="Portal__PortalContent"], [class*="Portal__PortalBody"] {
-      overflow-x: visible !important;
-    }
+    section[class*="Portal__PortalContent"] { overflow-x: auto !important; }
   \`;
   document.head.appendChild(anchorStyle);
 
   const anchorRight = () => {
-    const el = document.scrollingElement || document.documentElement;
+    const el = document.querySelector('section[class*="Portal__PortalContent"]');
     if (el && el.scrollWidth > el.clientWidth) {
       el.scrollLeft = el.scrollWidth;
     }
@@ -137,7 +131,7 @@ console.log(symbol)
   anchorRight();
   window.addEventListener('resize', anchorRight);
   window.addEventListener('load', anchorRight);
-  setInterval(anchorRight, 250);
+  setInterval(anchorRight, 500);
   new MutationObserver(anchorRight).observe(document.body, {
     childList: true, subtree: true,
   });
